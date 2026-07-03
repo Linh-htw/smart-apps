@@ -102,3 +102,15 @@ Die Runtime- und Build-Abhaengigkeiten im App-Geruest werden in `package.json` e
 - Builds sind besser reproduzierbar.
 - Sicherheits- und Kompatibilitaetsupdates werden bewusst per eigener Abhaengigkeitsaktualisierung eingespielt.
 - Wenn Windows Dateisperren auf generierten Artefakten setzt, muessen diese Artefakte bereinigt werden, bevor erneut gebaut wird.
+
+## 2026-07-03 - Kunden-Enums fuer NW-001 geklaert
+
+**Kontext:** Fuer die Kundenverwaltung braucht die App konkrete Werte fuer Kundentyp und Hauttyp. Diese Werte waren in `NW-039` noch offen.
+
+### Entscheidung
+Kundentyp nutzt die Werte `B2C` und `B2B`. Hauttyp nutzt `normale Haut`, `ölige Haut`, `trockene Haut` und `Mischhaut`.
+
+### Konsequenzen
+- `NW-001` kann als erstes fachliches Modell umgesetzt werden.
+- Die App validiert Kundentyp und Hauttyp zentral gegen diese Werte.
+- Die uebrigen Enum-Werte aus `NW-039` bleiben offen.

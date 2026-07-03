@@ -14,3 +14,23 @@ model AppMeta {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Kunde {
+  id              Int      @id @default(autoincrement())
+  typ             String
+  name            String
+  firmenname      String?
+  ustId           String?
+  email           String?
+  instagramHandle String?
+  adresse         String?
+  zahlungsziel    Int?
+  stammkunde      Boolean  @default(false)
+  vorlieben       String?
+  hauttyp         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([typ])
+  @@index([stammkunde])
+}

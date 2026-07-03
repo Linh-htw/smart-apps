@@ -242,3 +242,12 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 - Gewuenschter Tech-Stack und Hosting.
 - Ob Versandlabel und Tracking in V1 manuell, halbautomatisch oder ueber konkrete Anbieter-Integration laufen sollen.
 - Ob Allergene trotz "Kann warten" in V1 als Datenfeld sichtbar, aber nicht workflow-blockierend umgesetzt werden.
+
+## 9. Geklaerte Enum-Werte
+
+### Kunde
+
+| Feld | Werte |
+|---|---|
+| Kundentyp | B2C, B2B |
+| Hauttyp | normale Haut, ölige Haut, trockene Haut, Mischhaut |
