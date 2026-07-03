@@ -1,0 +1,29 @@
+{
+  "name": "nina-wolff-shop-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "6.11.1",
+    "next": "15.5.19",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@types/node": "22.15.34",
+    "@types/react": "19.0.14",
+    "@types/react-dom": "19.0.6",
+    "eslint": "9.30.1",
+    "eslint-config-next": "15.5.19",
+    "prisma": "6.11.1",
+    "typescript": "5.8.3"
+  }
+}

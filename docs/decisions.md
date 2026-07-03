@@ -74,3 +74,31 @@ Das Repo nutzt `README.md` als kompakten Projekt-Einstieg. Die fachliche Detailw
 - Feature-IDs werden nicht umnummeriert oder wiederverwendet.
 - Backlog-Status ist operativ; strategische Fachlogik bleibt in `docs/spec.md`.
 - Offene Grundsatzfragen wie Enum-Werte, Tech-Stack, Versand-/Tracking-Integration und Allergen-Scope sind als `P0 - Klaerung` sichtbar.
+
+## 2026-07-03 - Next.js mit Prisma und SQLite fuer initiale Umsetzung
+
+**Kontext:** Fuer den Start der Umsetzung braucht das Projekt ein lauffaehiges Web-App-Geruest und eine lokale relationale Datenbank. Das Projekt ist ein Solo-Projekt; Hosting, Authentifizierung und Mehrbenutzerbetrieb sind noch nicht entschieden.
+
+### Entscheidung
+Das Projekt startet mit Next.js, React, TypeScript, Prisma und SQLite. Prisma-Migrationen werden versioniert, die lokale SQLite-Datei bleibt ignoriert.
+
+### Alternativen verworfen
+- Datenbankentscheidung weiter offen lassen: Verworfen, weil ohne persistente Modellierung keine belastbare Umsetzung der Kernentitaeten moeglich ist.
+- Direkt serverbasierte Datenbank waehlen: Vorerst verworfen, weil Hosting und paralleler Betrieb noch offen sind und SQLite fuer lokale Iteration ausreicht.
+
+### Konsequenzen
+- Das fachliche Datenmodell wird in `prisma/schema.prisma` modelliert, sobald die offenen Enum-Werte geklaert sind.
+- Ein spaeterer Wechsel auf eine serverbasierte relationale Datenbank bleibt moeglich.
+- Authentifizierung, Hosting und Deployment bleiben offene technische Entscheidungen.
+
+## 2026-07-03 - Abhaengigkeitsversionen fuer App-Geruest exakt pinnen
+
+**Kontext:** `npm install` darf das frische Next.js-/Prisma-Geruest nicht unbemerkt auf andere Minor- oder Patch-Versionen heben. Beim lokalen Build traten zusaetzlich Windows-Dateisperren in generierten Ordnern wie `.next` und `node_modules` auf.
+
+### Entscheidung
+Die Runtime- und Build-Abhaengigkeiten im App-Geruest werden in `package.json` exakt gepinnt. Generierte Ordner wie `.next`, `node_modules/.prisma` und lokale SQLite-Dateien bleiben nicht versioniert.
+
+### Konsequenzen
+- Builds sind besser reproduzierbar.
+- Sicherheits- und Kompatibilitaetsupdates werden bewusst per eigener Abhaengigkeitsaktualisierung eingespielt.
+- Wenn Windows Dateisperren auf generierten Artefakten setzt, muessen diese Artefakte bereinigt werden, bevor erneut gebaut wird.

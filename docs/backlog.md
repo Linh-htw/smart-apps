@@ -86,7 +86,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
 | NW-039 | Enum-Werte definieren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Kundentyp, Produktkategorie, Chargenstatus, Lagerort, Kanal, Zahlungsstatus, Bestellstatus, Paketstatus, Retourenstatus, Produktzustand, Erstattungsart, Rolle. |
-| NW-040 | Tech-Stack entscheiden | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Framework, Datenbank, Auth, Hosting und Deployment festlegen. |
+| NW-040 | Tech-Stack entscheiden | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment bleiben offen. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Manuell, halbautomatisch oder Anbieter-Integration fuer V1 entscheiden. |
 | NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Datenfeld sichtbar, aber Workflow spaeter, oder komplett spaeter. |
 

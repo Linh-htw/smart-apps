@@ -6,15 +6,61 @@ _Technische Wahrheit des Projekts. Aktualisieren, sobald Stack, Datenmodell, Mod
 
 ## Status
 
-Noch kein Code-Stack festgelegt. Diese Datei dokumentiert daher zunaechst fachliche Architekturannahmen aus `docs/spec.md` und offene technische Entscheidungen.
+Code-Stack fuer die erste Umsetzung ist festgelegt und im Repo eingerichtet:
+
+- **Framework:** Next.js mit React und TypeScript.
+- **Datenbankzugriff:** Prisma.
+- **Datenbank:** SQLite fuer die lokale Solo-Entwicklung und den initialen V1-Aufbau.
+
+Diese Entscheidung gilt fuer den aktuellen Projektstand und kann spaeter neu bewertet werden, wenn Hosting, Mehrbenutzerbetrieb oder externe Integrationen konkrete Anforderungen an Betrieb und Skalierung stellen.
+
+## Projektsetup
+
+- `package.json` definiert die Next.js-App mit TypeScript, React, ESLint, Prisma CLI und Prisma Client.
+- Runtime- und Build-Abhaengigkeiten sind exakt gepinnt, damit `npm install` keine unerwarteten Minor-/Patch-Upgrades in das lokale Geruest zieht.
+- `prisma/schema.prisma` nutzt SQLite ueber `DATABASE_URL`.
+- `.env.example` dokumentiert die lokale Standard-URL: `DATABASE_URL="file:./dev.db"`.
+- `src/lib/prisma.ts` stellt einen wiederverwendbaren Prisma Client bereit und verhindert in der lokalen Next.js-Entwicklung unnoetige Mehrfachinstanzen.
+- Prisma-Migrationen werden versioniert; die lokale SQLite-Datei `prisma/dev.db` bleibt ignoriert.
+
+Aktueller Framework-Stand:
+
+| Komponente | Version |
+|---|---|
+| Next.js | 15.5.19 |
+| React | 19.0.0 |
+| Prisma / Prisma Client | 6.11.1 |
+| TypeScript | 5.8.3 |
+| Node.js lokal | 22.23.1 |
+
+Wichtige Kommandos:
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run prisma:generate
+npm run prisma:migrate -- --name <name>
+```
+
+Zuletzt verifiziert:
+
+```bash
+npm run prisma:generate
+npm run lint
+npm run build
+```
+
+Hinweis fuer Windows: Generierte Artefakte wie `.next` und `node_modules/.prisma` koennen lokal durch Dateisperren blockiert werden. In diesem Fall muessen haengende Node-Prozesse beendet und die generierten Artefakte bereinigt werden, bevor erneut gebaut wird.
 
 ## Empfohlene Zielarchitektur
 
 | Bereich | Empfehlung | Begruendung |
 |---|---|---|
 | App-Typ | Web-App mit rollenbasierter Admin-/Mitarbeiteroberflaeche | Nina und Mitarbeitende brauchen zentrale, geraeteunabhaengige Arbeitsansichten. |
-| Datenbank | Relationale Datenbank | Die Spec enthaelt klare Entitaeten, Beziehungen, Status und Transaktionen. |
-| Backend | Server-seitige Validierung und Rechtepruefung | Rollen, Bestand, Reservierungen und Zahlungen duerfen nicht nur im Frontend geprueft werden. |
+| Framework | Next.js mit React und TypeScript | Erlaubt eine kompakte Full-Stack-Web-App mit serverseitiger Validierung und arbeitsorientierter UI in einem Projekt. |
+| Datenbank | SQLite ueber Prisma | Passt fuer lokale Solo-Entwicklung, relationale Entitaeten und schnelle Iteration ohne zusaetzlichen Datenbankbetrieb. |
+| Backend | Next.js-Serverlogik mit serverseitiger Validierung und Rechtepruefung | Rollen, Bestand, Reservierungen und Zahlungen duerfen nicht nur im Frontend geprueft werden. |
 | Frontend | Arbeitsorientiertes Dashboard statt Marketing-UI | Hauptnutzen ist schnelle Bearbeitung offener Aufgaben. |
 
 ## Fachliche Module
@@ -42,12 +88,14 @@ Noch kein Code-Stack festgelegt. Diese Datei dokumentiert daher zunaechst fachli
 
 ## Datenmodell
 
-Die Entitaeten und Beziehungen stehen in `docs/spec.md`. Bei Umsetzung sollten technische Tabellennamen und Enum-Werte hier ergaenzt werden, sobald der Stack feststeht.
+Die Entitaeten und Beziehungen stehen in `docs/spec.md`. Prisma ist die technische Modellierungsschicht fuer Tabellen, Relationen und spaetere Migrationen. Enum-Werte werden nicht frei erfunden, sondern aus `docs/spec.md` oder dokumentierten Entscheidungen abgeleitet.
+
+SQLite ist fuer den initialen V1-Aufbau ausreichend, weil das Projekt als Solo-Projekt startet und die fachlichen Regeln zuerst lokal korrekt modelliert werden muessen. Ein spaeterer Wechsel auf eine serverbasierte relationale Datenbank bleibt moeglich, wenn Hosting oder paralleler Zugriff das erfordern.
+
+Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur ein neutrales technisches Smoke-Test-Modell. Fachliche Tabellen werden erst nach der Enum-Klaerung modelliert.
 
 ## Offene technische Entscheidungen
 
-- Framework und Sprache
-- Datenbank
 - Authentifizierung und Rollenmodell
 - Hosting und Deployment
 - Versandlabel-/Tracking-Anbieter
