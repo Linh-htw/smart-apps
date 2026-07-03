@@ -161,3 +161,15 @@ Die App ergaenzt ein Prisma-Modell `Bestellung` mit Pflicht-Relation zu `Kunde`,
 - `NW-026` ist ebenfalls auf `done` gesetzt, weil jede Bestellung genau einem Kunden zugeordnet ist.
 - Die lokale Datenbank nutzt die Migration `20260703213251_add_bestellung`.
 - Die Startseite zeigt jetzt Kunden, Bestellungen und Produkte als erste Stammdaten- und Arbeitsbasis.
+
+## 2026-07-03 - NW-006 Zahlungsstatus steuert Verbindlichkeit
+
+**Kontext:** `GR-01` und `W-1` definieren, dass eine Bestellung erst nach Zahlungseingang verbindlich ist. Eine reine Zusage darf nicht versehentlich als verbindliche Bestellung angelegt werden.
+
+### Entscheidung
+Beim Anlegen einer Bestellung wird der Bestellstatus serverseitig aus dem Zahlungsstatus abgeleitet: `ausstehend` ergibt `Eingegangen`, `bezahlt` ergibt `verbindlich`. Der Status ist nicht mehr frei im Anlageformular waehlbar. Der definierte Status `storniert` bleibt fuer spaetere manuelle Statusaenderungen erhalten.
+
+### Konsequenzen
+- `NW-006` ist im Backlog auf `done` gesetzt.
+- `NW-028` ist ebenfalls auf `done` gesetzt, weil der eindeutige Bestellstatus in der Bestellliste sichtbar ist.
+- Bestellstatus und Zahlungsstatus koennen beim Anlegen nicht mehr in fachlich widerspruechliche Kombinationen geraten.

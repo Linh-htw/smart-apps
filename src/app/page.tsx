@@ -12,9 +12,8 @@ import {
 } from "@/lib/product-options";
 import {
   bestellkanaele,
-  bestellstatusWerte,
+  getBestellstatusForZahlung,
   isBestellkanal,
-  isBestellstatus,
   isZahlungsstatus,
   zahlungsstatusWerte,
 } from "@/lib/order-options";
@@ -156,14 +155,12 @@ async function createBestellung(formData: FormData) {
   const datum = requiredDate(formData.get("datum"));
   const kanal = formData.get("kanal")?.toString() ?? "";
   const zahlungsstatus = formData.get("zahlungsstatus")?.toString() ?? "";
-  const status = formData.get("status")?.toString() ?? "";
 
   if (
     !kundeId ||
     !datum ||
     !isBestellkanal(kanal) ||
-    !isZahlungsstatus(zahlungsstatus) ||
-    !isBestellstatus(status)
+    !isZahlungsstatus(zahlungsstatus)
   ) {
     return;
   }
@@ -184,7 +181,7 @@ async function createBestellung(formData: FormData) {
       kanal,
       lieferadresse: nullableText(formData.get("lieferadresse")),
       zahlungsstatus,
-      status,
+      status: getBestellstatusForZahlung(zahlungsstatus),
     },
   });
 
@@ -388,29 +385,16 @@ export default async function Home() {
                 </label>
               </div>
 
-              <div className="field-row">
-                <label>
-                  Zahlungsstatus
-                  <select name="zahlungsstatus" defaultValue="ausstehend" required>
-                    {zahlungsstatusWerte.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label>
-                  Bestellstatus
-                  <select name="status" defaultValue="Eingegangen" required>
-                    {bestellstatusWerte.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+              <label>
+                Zahlungsstatus
+                <select name="zahlungsstatus" defaultValue="ausstehend" required>
+                  {zahlungsstatusWerte.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
               <label>
                 Lieferadresse
@@ -439,9 +423,15 @@ export default async function Home() {
                   </div>
                   <dl>
                     <dt>Zahlung</dt>
-                    <dd>{bestellung.zahlungsstatus}</dd>
+                    <dd>
+                      <span className="status-pill">
+                        {bestellung.zahlungsstatus}
+                      </span>
+                    </dd>
                     <dt>Status</dt>
-                    <dd>{bestellung.status}</dd>
+                    <dd>
+                      <span className="status-pill">{bestellung.status}</span>
+                    </dd>
                     {bestellung.lieferadresse ? (
                       <>
                         <dt>Lieferadresse</dt>

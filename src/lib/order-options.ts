@@ -23,3 +23,9 @@ export function isZahlungsstatus(value: string): value is Zahlungsstatus {
 export function isBestellstatus(value: string): value is Bestellstatus {
   return bestellstatusWerte.includes(value as Bestellstatus);
 }
+
+export function getBestellstatusForZahlung(
+  zahlungsstatus: Zahlungsstatus,
+): Bestellstatus {
+  return zahlungsstatus === "bezahlt" ? "verbindlich" : "Eingegangen";
+}
