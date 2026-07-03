@@ -76,6 +76,21 @@ function formatDate(value: Date) {
   return new Intl.DateTimeFormat("de-DE").format(value);
 }
 
+function getNextBestellschritt(bestellung: {
+  zahlungsstatus: string;
+  status: string;
+}) {
+  if (bestellung.status === "storniert") {
+    return "Keine Aktion";
+  }
+
+  if (bestellung.zahlungsstatus === "ausstehend") {
+    return "Zahlung pruefen";
+  }
+
+  return "Zur weiteren Bearbeitung vormerken";
+}
+
 async function createKunde(formData: FormData) {
   "use server";
 
@@ -199,20 +214,81 @@ export default async function Home() {
     include: { kunde: true },
     orderBy: [{ datum: "desc" }, { id: "desc" }],
   });
+  const aktiveBestellungen = bestellungen.filter(
+    (bestellung) => bestellung.status !== "storniert",
+  );
+  const ausstehendeZahlungen = aktiveBestellungen.filter(
+    (bestellung) => bestellung.zahlungsstatus === "ausstehend",
+  );
+  const verbindlicheBestellungen = aktiveBestellungen.filter(
+    (bestellung) => bestellung.status === "verbindlich",
+  );
   const today = new Date().toISOString().slice(0, 10);
 
   return (
     <main className="workspace">
       <header className="workspace-header">
         <div>
-          <p className="eyebrow">NW-001 / NW-002 / NW-005</p>
-          <h1>Stammdatenverwaltung</h1>
+          <p className="eyebrow">NW-001 / NW-002 / NW-005 / NW-011</p>
+          <h1>Arbeitsansicht</h1>
         </div>
         <p className="summary">
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
           {bestellungen.length} Bestellungen
         </p>
       </header>
+
+      <section className="workspace-overview" aria-labelledby="arbeit-heading">
+        <div className="panel overview-panel">
+          <div className="overview-header">
+            <div>
+              <p className="eyebrow">Heute offen</p>
+              <h2 id="arbeit-heading">Aktive Arbeitsansicht</h2>
+            </div>
+            <p className="summary">{aktiveBestellungen.length} offene Aufgaben</p>
+          </div>
+
+          <div className="metric-grid">
+            <div className="metric-tile">
+              <span>Ausstehende Zahlungen</span>
+              <strong>{ausstehendeZahlungen.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Verbindliche Bestellungen</span>
+              <strong>{verbindlicheBestellungen.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Stornierte ausgeblendet</span>
+              <strong>{bestellungen.length - aktiveBestellungen.length}</strong>
+            </div>
+          </div>
+
+          {aktiveBestellungen.length === 0 ? (
+            <p className="empty-state">Keine offenen Aufgaben.</p>
+          ) : (
+            <div className="task-list">
+              {aktiveBestellungen.slice(0, 6).map((bestellung) => (
+                <article className="task-item" key={bestellung.id}>
+                  <div>
+                    <h3>Bestellung #{bestellung.id}</h3>
+                    <p>
+                      {bestellung.kunde.name} Â· {bestellung.kanal} Â·{" "}
+                      {formatDate(bestellung.datum)}
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">
+                      {bestellung.zahlungsstatus}
+                    </span>
+                    <span className="status-pill">{bestellung.status}</span>
+                    <strong>{getNextBestellschritt(bestellung)}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
       <section className="layout-grid">
         <form action={createKunde} className="panel form-panel">

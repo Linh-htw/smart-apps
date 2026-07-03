@@ -87,6 +87,11 @@ p {
   align-items: start;
 }
 
+.workspace-overview {
+  width: min(1180px, 100%);
+  margin: 0 auto 24px;
+}
+
 .feature-section {
   margin-top: 24px;
 }
@@ -101,6 +106,71 @@ p {
 .form-panel {
   display: grid;
   gap: 16px;
+}
+
+.overview-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.overview-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric-tile {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.metric-tile span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.metric-tile strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.task-list {
+  display: grid;
+  gap: 10px;
+}
+
+.task-item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-meta strong {
+  font-size: 14px;
 }
 
 .field-row {
@@ -237,7 +307,17 @@ button:hover {
   }
 
   .layout-grid,
-  .field-row {
+  .field-row,
+  .metric-grid,
+  .task-item {
     grid-template-columns: 1fr;
+  }
+
+  .overview-header {
+    display: grid;
+  }
+
+  .task-meta {
+    justify-content: flex-start;
   }
 }

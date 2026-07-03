@@ -173,3 +173,15 @@ Beim Anlegen einer Bestellung wird der Bestellstatus serverseitig aus dem Zahlun
 - `NW-006` ist im Backlog auf `done` gesetzt.
 - `NW-028` ist ebenfalls auf `done` gesetzt, weil der eindeutige Bestellstatus in der Bestellliste sichtbar ist.
 - Bestellstatus und Zahlungsstatus koennen beim Anlegen nicht mehr in fachlich widerspruechliche Kombinationen geraten.
+
+## 2026-07-03 - NW-011 Aktive Arbeitsansicht als Startbereich
+
+**Kontext:** Der Kernnutzen der App ist eine aktive Arbeitsansicht mit offenen Aufgaben, relevanten Warnungen und naechsten Schritten. Zum aktuellen Umsetzungsstand existieren Kunden, Produkte und Bestellungen, aber noch keine Chargen-, Lager- oder Packlistenmodelle.
+
+### Entscheidung
+Die Startseite zeigt zuerst eine aktive Arbeitsansicht auf Basis der vorhandenen Bestelldaten. Stornierte Bestellungen werden aus der Aufgabenliste ausgeblendet. Ausstehende Zahlungen, verbindliche Bestellungen und ausgeblendete Stornierungen werden als Kennzahlen angezeigt. Jede offene Bestellung zeigt Zahlungsstatus, Bestellstatus und einen naechsten Schritt.
+
+### Konsequenzen
+- `NW-011` ist im Backlog auf `done` gesetzt.
+- Die Arbeitsansicht wird spaeter um Lager-, Chargen- und Packlistenwarnungen erweitert, sobald die zugehoerigen Features umgesetzt sind.
+- `NW-029` bleibt validiert, wartet aber auf `NW-003 Chargenverwaltung`, weil Bestellpositionen laut Spec eine Charge enthalten.
