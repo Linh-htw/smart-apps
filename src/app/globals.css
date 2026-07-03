@@ -87,6 +87,10 @@ p {
   align-items: start;
 }
 
+.feature-section {
+  margin-top: 24px;
+}
+
 .panel {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -215,6 +219,11 @@ button:hover {
   font-size: 13px;
   font-weight: 700;
   padding: 5px 9px;
+}
+
+.note-text {
+  margin-top: 14px;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 840px) {

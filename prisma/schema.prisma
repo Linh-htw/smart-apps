@@ -34,3 +34,23 @@ model Kunde {
   @@index([typ])
   @@index([stammkunde])
 }
+
+model Produkt {
+  id                    Int      @id @default(autoincrement())
+  name                  String
+  kategorie             String
+  vegan                 Boolean  @default(false)
+  inhaltsstoffe         String?
+  allergene             String?
+  preisB2c              Decimal
+  preisB2b              Decimal
+  b2cPuffermenge        Decimal
+  standardMhdDauerMonate Int
+  inAboBoxEnthalten     Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([kategorie])
+  @@index([vegan])
+  @@index([inAboBoxEnthalten])
+}

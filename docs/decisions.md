@@ -114,3 +114,26 @@ Kundentyp nutzt die Werte `B2C` und `B2B`. Hauttyp nutzt `normale Haut`, `ölige
 - `NW-001` kann als erstes fachliches Modell umgesetzt werden.
 - Die App validiert Kundentyp und Hauttyp zentral gegen diese Werte.
 - Die uebrigen Enum-Werte aus `NW-039` bleiben offen.
+
+## 2026-07-03 - Produktkategorien fuer NW-002 geklaert
+
+**Kontext:** Fuer die Produktverwaltung braucht die App konkrete Werte fuer `Produkt.kategorie`. Dieser Wert war in `NW-039` noch offen.
+
+### Entscheidung
+Produktkategorien nutzen die Werte `Seifen`, `Öle`, `Balsam` und `Bodylotions`.
+
+### Konsequenzen
+- `NW-002` kann mit zentral validierten Produktkategorien umgesetzt werden.
+- Die uebrigen Enum-Werte aus `NW-039` bleiben offen.
+
+## 2026-07-03 - NW-002 Produktverwaltung umgesetzt
+
+**Kontext:** Nach `NW-001` ist `NW-002 Produktverwaltung` das naechste P1-Kernfeature. Produkte muessen als Stammdaten mit Kategorie, Vegan-Flag, Inhaltsstoffen, Preisen, B2C-Puffer, Standard-MHD und Abo-Box-Markierung verwaltet werden.
+
+### Entscheidung
+Die App ergaenzt ein Prisma-Modell `Produkt` und eine Produktverwaltung auf der bestehenden Stammdaten-Seite. Geldwerte werden als Prisma `Decimal` gespeichert. Produktkategorien werden zentral in `src/lib/product-options.ts` definiert und serverseitig validiert.
+
+### Konsequenzen
+- `NW-002` ist im Backlog auf `done` gesetzt.
+- Die lokale Datenbank nutzt die Migration `20260703210527_add_produkt`.
+- Die Startseite zeigt jetzt Kunden- und Produkt-Stammdaten gemeinsam.

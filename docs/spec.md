@@ -238,12 +238,18 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 
 ## 8. Offene Klaerungen
 
-- Konkrete Enum-Werte fuer Kundentyp, Produktkategorie, Chargenstatus, Lagerort, Bestellkanal, Zahlungsstatus, Bestellstatus, Paketstatus, Retourenstatus, Produktzustand, Erstattungsart und Rolle.
+- Konkrete Enum-Werte fuer Chargenstatus, Lagerort, Bestellkanal, Zahlungsstatus, Bestellstatus, Paketstatus, Retourenstatus, Produktzustand, Erstattungsart und Rolle.
 - Gewuenschter Tech-Stack und Hosting.
 - Ob Versandlabel und Tracking in V1 manuell, halbautomatisch oder ueber konkrete Anbieter-Integration laufen sollen.
 - Ob Allergene trotz "Kann warten" in V1 als Datenfeld sichtbar, aber nicht workflow-blockierend umgesetzt werden.
 
 ## 9. Geklaerte Enum-Werte
+
+### Produkt
+
+| Feld | Werte |
+|---|---|
+| Produktkategorie | Seifen, Öle, Balsam, Bodylotions |
 
 ### Kunde
 

@@ -6,6 +6,10 @@ import {
   isKundentyp,
   kundentypen,
 } from "@/lib/customer-options";
+import {
+  isProduktkategorie,
+  produktkategorien,
+} from "@/lib/product-options";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +26,33 @@ function nullableNumber(value: FormDataEntryValue | null) {
 
   const number = Number.parseInt(text, 10);
   return Number.isNaN(number) ? null : number;
+}
+
+function requiredInt(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim();
+  if (!text) {
+    return null;
+  }
+
+  const number = Number.parseInt(text, 10);
+  return Number.isNaN(number) ? null : number;
+}
+
+function requiredDecimal(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim().replace(",", ".");
+  if (!text) {
+    return null;
+  }
+
+  const number = Number(text);
+  return Number.isFinite(number) && number >= 0 ? text : null;
+}
+
+function formatCurrency(value: unknown) {
+  return new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: "EUR",
+  }).format(Number(value));
 }
 
 async function createKunde(formData: FormData) {
@@ -54,19 +85,66 @@ async function createKunde(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createProdukt(formData: FormData) {
+  "use server";
+
+  const name = formData.get("produktName")?.toString().trim() ?? "";
+  const kategorie = formData.get("kategorie")?.toString() ?? "";
+  const preisB2c = requiredDecimal(formData.get("preisB2c"));
+  const preisB2b = requiredDecimal(formData.get("preisB2b"));
+  const b2cPuffermenge = requiredDecimal(formData.get("b2cPuffermenge"));
+  const standardMhdDauerMonate = requiredInt(
+    formData.get("standardMhdDauerMonate"),
+  );
+
+  if (
+    !name ||
+    !isProduktkategorie(kategorie) ||
+    !preisB2c ||
+    !preisB2b ||
+    !b2cPuffermenge ||
+    !standardMhdDauerMonate ||
+    standardMhdDauerMonate < 1
+  ) {
+    return;
+  }
+
+  await prisma.produkt.create({
+    data: {
+      name,
+      kategorie,
+      vegan: formData.get("vegan") === "on",
+      inhaltsstoffe: nullableText(formData.get("inhaltsstoffe")),
+      allergene: nullableText(formData.get("allergene")),
+      preisB2c,
+      preisB2b,
+      b2cPuffermenge,
+      standardMhdDauerMonate,
+      inAboBoxEnthalten: formData.get("inAboBoxEnthalten") === "on",
+    },
+  });
+
+  revalidatePath("/");
+}
+
 export default async function Home() {
   const kunden = await prisma.kunde.findMany({
     orderBy: [{ stammkunde: "desc" }, { name: "asc" }],
+  });
+  const produkte = await prisma.produkt.findMany({
+    orderBy: [{ kategorie: "asc" }, { name: "asc" }],
   });
 
   return (
     <main className="workspace">
       <header className="workspace-header">
         <div>
-          <p className="eyebrow">NW-001</p>
-          <h1>Kundenverwaltung</h1>
+          <p className="eyebrow">NW-001 / NW-002</p>
+          <h1>Stammdatenverwaltung</h1>
         </div>
-        <p className="summary">{kunden.length} Kunden erfasst</p>
+        <p className="summary">
+          {kunden.length} Kunden · {produkte.length} Produkte
+        </p>
       </header>
 
       <section className="layout-grid">
@@ -195,6 +273,128 @@ export default async function Home() {
                   </dl>
                   {kunde.stammkunde ? (
                     <span className="status-pill">Stammkunde</span>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </section>
+
+      <section className="layout-grid feature-section">
+        <form action={createProdukt} className="panel form-panel">
+          <h2>Produkt anlegen</h2>
+
+          <label>
+            Name
+            <input name="produktName" required />
+          </label>
+
+          <div className="field-row">
+            <label>
+              Kategorie
+              <select name="kategorie" defaultValue="Seifen" required>
+                {produktkategorien.map((kategorie) => (
+                  <option key={kategorie} value={kategorie}>
+                    {kategorie}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Standard-MHD in Monaten
+              <input
+                min="1"
+                name="standardMhdDauerMonate"
+                required
+                type="number"
+              />
+            </label>
+          </div>
+
+          <div className="field-row">
+            <label>
+              Preis B2C
+              <input min="0" name="preisB2c" required step="0.01" type="number" />
+            </label>
+
+            <label>
+              Preis B2B
+              <input min="0" name="preisB2b" required step="0.01" type="number" />
+            </label>
+          </div>
+
+          <label>
+            B2C-Puffermenge
+            <input
+              min="0"
+              name="b2cPuffermenge"
+              required
+              step="0.01"
+              type="number"
+            />
+          </label>
+
+          <label>
+            Inhaltsstoffe
+            <textarea name="inhaltsstoffe" rows={3} />
+          </label>
+
+          <label>
+            Allergene
+            <input name="allergene" />
+          </label>
+
+          <div className="field-row">
+            <label className="checkbox-label">
+              <input name="vegan" type="checkbox" />
+              Vegan
+            </label>
+
+            <label className="checkbox-label">
+              <input name="inAboBoxEnthalten" type="checkbox" />
+              In Abo-Box enthalten
+            </label>
+          </div>
+
+          <button type="submit">Produkt speichern</button>
+        </form>
+
+        <section className="panel list-panel" aria-labelledby="produkte-heading">
+          <h2 id="produkte-heading">Produkte</h2>
+          {produkte.length === 0 ? (
+            <p className="empty-state">Noch keine Produkte erfasst.</p>
+          ) : (
+            <div className="customer-list">
+              {produkte.map((produkt) => (
+                <article className="customer-card" key={produkt.id}>
+                  <div>
+                    <h3>{produkt.name}</h3>
+                    <p>
+                      {produkt.kategorie}
+                      {produkt.vegan ? " · vegan" : ""}
+                      {produkt.inAboBoxEnthalten ? " · Abo-Box" : ""}
+                    </p>
+                  </div>
+                  <dl>
+                    <dt>Preis B2C</dt>
+                    <dd>{formatCurrency(produkt.preisB2c)}</dd>
+                    <dt>Preis B2B</dt>
+                    <dd>{formatCurrency(produkt.preisB2b)}</dd>
+                    <dt>B2C-Puffer</dt>
+                    <dd>{produkt.b2cPuffermenge.toString()}</dd>
+                    <dt>Standard-MHD</dt>
+                    <dd>{produkt.standardMhdDauerMonate} Monate</dd>
+                    {produkt.allergene ? (
+                      <>
+                        <dt>Allergene</dt>
+                        <dd>{produkt.allergene}</dd>
+                      </>
+                    ) : null}
+                  </dl>
+                  {produkt.inhaltsstoffe ? (
+                    <p className="note-text">{produkt.inhaltsstoffe}</p>
                   ) : null}
                 </article>
               ))}
