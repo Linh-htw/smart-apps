@@ -31,26 +31,48 @@ model Kunde {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  bestellungen Bestellung[]
+
   @@index([typ])
   @@index([stammkunde])
 }
 
 model Produkt {
-  id                    Int      @id @default(autoincrement())
-  name                  String
-  kategorie             String
-  vegan                 Boolean  @default(false)
-  inhaltsstoffe         String?
-  allergene             String?
-  preisB2c              Decimal
-  preisB2b              Decimal
-  b2cPuffermenge        Decimal
+  id                     Int      @id @default(autoincrement())
+  name                   String
+  kategorie              String
+  vegan                  Boolean  @default(false)
+  inhaltsstoffe          String?
+  allergene              String?
+  preisB2c               Decimal
+  preisB2b               Decimal
+  b2cPuffermenge         Decimal
   standardMhdDauerMonate Int
-  inAboBoxEnthalten     Boolean  @default(false)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  inAboBoxEnthalten      Boolean  @default(false)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 
   @@index([kategorie])
   @@index([vegan])
   @@index([inAboBoxEnthalten])
+}
+
+model Bestellung {
+  id             Int      @id @default(autoincrement())
+  kundeId        Int
+  datum          DateTime
+  kanal          String
+  lieferadresse  String?
+  zahlungsstatus String
+  status         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  kunde Kunde @relation(fields: [kundeId], references: [id])
+
+  @@index([kundeId])
+  @@index([kanal])
+  @@index([zahlungsstatus])
+  @@index([status])
+  @@index([datum])
 }

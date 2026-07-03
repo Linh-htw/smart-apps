@@ -10,6 +10,14 @@ import {
   isProduktkategorie,
   produktkategorien,
 } from "@/lib/product-options";
+import {
+  bestellkanaele,
+  bestellstatusWerte,
+  isBestellkanal,
+  isBestellstatus,
+  isZahlungsstatus,
+  zahlungsstatusWerte,
+} from "@/lib/order-options";
 
 export const dynamic = "force-dynamic";
 
@@ -48,11 +56,25 @@ function requiredDecimal(value: FormDataEntryValue | null) {
   return Number.isFinite(number) && number >= 0 ? text : null;
 }
 
+function requiredDate(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim();
+  if (!text) {
+    return null;
+  }
+
+  const date = new Date(`${text}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function formatCurrency(value: unknown) {
   return new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
   }).format(Number(value));
+}
+
+function formatDate(value: Date) {
+  return new Intl.DateTimeFormat("de-DE").format(value);
 }
 
 async function createKunde(formData: FormData) {
@@ -127,6 +149,48 @@ async function createProdukt(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createBestellung(formData: FormData) {
+  "use server";
+
+  const kundeId = requiredInt(formData.get("kundeId"));
+  const datum = requiredDate(formData.get("datum"));
+  const kanal = formData.get("kanal")?.toString() ?? "";
+  const zahlungsstatus = formData.get("zahlungsstatus")?.toString() ?? "";
+  const status = formData.get("status")?.toString() ?? "";
+
+  if (
+    !kundeId ||
+    !datum ||
+    !isBestellkanal(kanal) ||
+    !isZahlungsstatus(zahlungsstatus) ||
+    !isBestellstatus(status)
+  ) {
+    return;
+  }
+
+  const kunde = await prisma.kunde.findUnique({
+    where: { id: kundeId },
+    select: { id: true },
+  });
+
+  if (!kunde) {
+    return;
+  }
+
+  await prisma.bestellung.create({
+    data: {
+      kundeId,
+      datum,
+      kanal,
+      lieferadresse: nullableText(formData.get("lieferadresse")),
+      zahlungsstatus,
+      status,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 export default async function Home() {
   const kunden = await prisma.kunde.findMany({
     orderBy: [{ stammkunde: "desc" }, { name: "asc" }],
@@ -134,16 +198,22 @@ export default async function Home() {
   const produkte = await prisma.produkt.findMany({
     orderBy: [{ kategorie: "asc" }, { name: "asc" }],
   });
+  const bestellungen = await prisma.bestellung.findMany({
+    include: { kunde: true },
+    orderBy: [{ datum: "desc" }, { id: "desc" }],
+  });
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <main className="workspace">
       <header className="workspace-header">
         <div>
-          <p className="eyebrow">NW-001 / NW-002</p>
+          <p className="eyebrow">NW-001 / NW-002 / NW-005</p>
           <h1>Stammdatenverwaltung</h1>
         </div>
         <p className="summary">
-          {kunden.length} Kunden · {produkte.length} Produkte
+          {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
+          {bestellungen.length} Bestellungen
         </p>
       </header>
 
@@ -274,6 +344,111 @@ export default async function Home() {
                   {kunde.stammkunde ? (
                     <span className="status-pill">Stammkunde</span>
                   ) : null}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </section>
+
+      <section className="layout-grid feature-section">
+        <form action={createBestellung} className="panel form-panel">
+          <h2>Bestellung anlegen</h2>
+
+          {kunden.length === 0 ? (
+            <p className="empty-state">Zuerst einen Kunden anlegen.</p>
+          ) : (
+            <>
+              <label>
+                Kunde
+                <select name="kundeId" required>
+                  {kunden.map((kunde) => (
+                    <option key={kunde.id} value={kunde.id}>
+                      {kunde.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="field-row">
+                <label>
+                  Datum
+                  <input defaultValue={today} name="datum" required type="date" />
+                </label>
+
+                <label>
+                  Kanal
+                  <select name="kanal" defaultValue="Instagram" required>
+                    {bestellkanaele.map((kanal) => (
+                      <option key={kanal} value={kanal}>
+                        {kanal}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <div className="field-row">
+                <label>
+                  Zahlungsstatus
+                  <select name="zahlungsstatus" defaultValue="ausstehend" required>
+                    {zahlungsstatusWerte.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Bestellstatus
+                  <select name="status" defaultValue="Eingegangen" required>
+                    {bestellstatusWerte.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                Lieferadresse
+                <textarea name="lieferadresse" rows={3} />
+              </label>
+
+              <button type="submit">Bestellung speichern</button>
+            </>
+          )}
+        </form>
+
+        <section className="panel list-panel" aria-labelledby="bestellungen-heading">
+          <h2 id="bestellungen-heading">Bestellungen</h2>
+          {bestellungen.length === 0 ? (
+            <p className="empty-state">Noch keine Bestellungen erfasst.</p>
+          ) : (
+            <div className="customer-list">
+              {bestellungen.map((bestellung) => (
+                <article className="customer-card" key={bestellung.id}>
+                  <div>
+                    <h3>Bestellung #{bestellung.id}</h3>
+                    <p>
+                      {bestellung.kunde.name} · {bestellung.kanal} ·{" "}
+                      {formatDate(bestellung.datum)}
+                    </p>
+                  </div>
+                  <dl>
+                    <dt>Zahlung</dt>
+                    <dd>{bestellung.zahlungsstatus}</dd>
+                    <dt>Status</dt>
+                    <dd>{bestellung.status}</dd>
+                    {bestellung.lieferadresse ? (
+                      <>
+                        <dt>Lieferadresse</dt>
+                        <dd>{bestellung.lieferadresse}</dd>
+                      </>
+                    ) : null}
+                  </dl>
                 </article>
               ))}
             </div>

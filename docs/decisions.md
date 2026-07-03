@@ -137,3 +137,27 @@ Die App ergaenzt ein Prisma-Modell `Produkt` und eine Produktverwaltung auf der 
 - `NW-002` ist im Backlog auf `done` gesetzt.
 - Die lokale Datenbank nutzt die Migration `20260703210527_add_produkt`.
 - Die Startseite zeigt jetzt Kunden- und Produkt-Stammdaten gemeinsam.
+
+## 2026-07-03 - Bestell-Enums fuer NW-005 geklaert
+
+**Kontext:** Fuer die kanaluebergreifende Bestellverwaltung braucht die App konkrete Werte fuer Bestellkanal, Zahlungsstatus und Bestellstatus. Diese Werte waren in `NW-039` noch offen.
+
+### Entscheidung
+Bestellkanal nutzt `Instagram`, `Email` und `Abo`. Zahlungsstatus nutzt `ausstehend` und `bezahlt`. Bestellstatus nutzt `Eingegangen`, `verbindlich` und `storniert`.
+
+### Konsequenzen
+- `NW-005` kann mit zentral validierten Bestellwerten umgesetzt werden.
+- Die uebrigen Enum-Werte aus `NW-039` bleiben offen.
+
+## 2026-07-03 - NW-005 Bestellverwaltung umgesetzt
+
+**Kontext:** Nach Produkt- und Kundenverwaltung ist die kanaluebergreifende Bestellverwaltung das naechste P1-Kernfeature. Bestellungen sollen zentral erfasst und nach Kanal, Zahlung und Status sichtbar sein.
+
+### Entscheidung
+Die App ergaenzt ein Prisma-Modell `Bestellung` mit Pflicht-Relation zu `Kunde`, Datum, Kanal, Lieferadresse, Zahlungsstatus und Bestellstatus. Die Werte werden zentral in `src/lib/order-options.ts` definiert und serverseitig validiert. Bestellpositionen bleiben bewusst ausserhalb dieser Umsetzung, weil sie als `NW-029` separat gefuehrt werden.
+
+### Konsequenzen
+- `NW-005` ist im Backlog auf `done` gesetzt.
+- `NW-026` ist ebenfalls auf `done` gesetzt, weil jede Bestellung genau einem Kunden zugeordnet ist.
+- Die lokale Datenbank nutzt die Migration `20260703213251_add_bestellung`.
+- Die Startseite zeigt jetzt Kunden, Bestellungen und Produkte als erste Stammdaten- und Arbeitsbasis.
