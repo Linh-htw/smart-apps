@@ -324,6 +324,40 @@ button:hover {
   color: #9f1d1d;
 }
 
+.packlist {
+  display: grid;
+  gap: 14px;
+}
+
+.packlist-order {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.packlist-header,
+.packlist-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.packlist-items {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.packlist-item {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.packlist-item span {
+  font-weight: 700;
+}
+
 @media (max-width: 840px) {
   .workspace {
     padding: 20px;
@@ -338,6 +372,8 @@ button:hover {
   .field-row,
   .metric-grid,
   .task-item,
+  .packlist-header,
+  .packlist-item,
   .role-panel {
     grid-template-columns: 1fr;
   }

@@ -580,6 +580,14 @@ export default async function Home({ searchParams }: HomeProps) {
         : null;
     })
     .filter((vorschlag) => vorschlag !== null);
+  const packlistenBestellungen = verbindlicheBestellungen
+    .map((bestellung) => ({
+      bestellung,
+      positionen: bestellpositionen.filter(
+        (position) => position.bestellungId === bestellung.id,
+      ),
+    }))
+    .filter((eintrag) => eintrag.positionen.length > 0);
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -587,7 +595,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-010 / NW-011 / NW-029 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-029 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -844,15 +852,48 @@ export default async function Home({ searchParams }: HomeProps) {
       {canViewPacklists && !canManageOrders ? (
         <section className="workspace-overview" aria-labelledby="packliste-heading">
           <div className="panel overview-panel">
-            <div>
-              <p className="eyebrow">Packer</p>
-              <h2 id="packliste-heading">Tages-Packliste</h2>
+            <div className="overview-header">
+              <div>
+                <p className="eyebrow">Packer</p>
+                <h2 id="packliste-heading">Tages-Packliste</h2>
+              </div>
+              <p className="summary">
+                {packlistenBestellungen.length} Bestellungen
+              </p>
             </div>
-            <p className="empty-state">
-              Packlisten sind noch nicht umgesetzt. Diese Rolle sieht hier
-              spaeter nur Name, Lieferadresse, Produkte, zugewiesene Charge und
-              Paketstatus.
-            </p>
+
+            {packlistenBestellungen.length === 0 ? (
+              <p className="empty-state">Keine Packaufgaben vorhanden.</p>
+            ) : (
+              <div className="packlist">
+                {packlistenBestellungen.map(({ bestellung, positionen }) => (
+                  <article className="packlist-order" key={bestellung.id}>
+                    <div className="packlist-header">
+                      <div>
+                        <h3>{bestellung.kunde.name}</h3>
+                        <p>{bestellung.lieferadresse ?? "Keine Lieferadresse erfasst"}</p>
+                      </div>
+                      <span className="status-pill">Bestellung #{bestellung.id}</span>
+                    </div>
+
+                    <div className="packlist-items">
+                      {positionen.map((position) => (
+                        <div className="packlist-item" key={position.id}>
+                          <div>
+                            <strong>{position.produkt.name}</strong>
+                            <p>
+                              Charge #{position.charge.id} · MHD{" "}
+                              {formatDate(position.charge.mhd)}
+                            </p>
+                          </div>
+                          <span>{position.menge}x</span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       ) : null}

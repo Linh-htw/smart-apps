@@ -271,3 +271,15 @@ Die aktive Arbeitsansicht markiert ausstehende Zahlungen nach Alter der Bestellu
 - `NW-007` ist im Backlog auf `done` gesetzt.
 - Die App zeigt Warnungen und Kennzahlen, nimmt aber keine automatische Stornierung vor.
 - Die Warnlogik nutzt lokale Kalendertage auf Basis des Bestelldatums.
+
+## 2026-07-06 - NW-009 Packlisten fuer Packer umgesetzt
+
+**Kontext:** Nach Bestellpositionen und FIFO-Zuteilung liegen Produkt, Menge und zugewiesene Charge fuer verbindliche Bestellungen vor. Packer duerfen nur die fuer das Packen noetigen Daten sehen.
+
+### Entscheidung
+Die Packer-Ansicht zeigt eine Tages-Packliste aus verbindlichen Bestellungen mit Bestellpositionen. Sichtbar sind Name, Lieferadresse, Produkte, Mengen und zugewiesene Chargen inklusive MHD. Preise, Zahlungsstatus und vollstaendige Kundendaten werden in dieser Rolle nicht angezeigt.
+
+### Konsequenzen
+- `NW-009` ist im Backlog auf `done` gesetzt.
+- Paketstatus wird noch nicht angezeigt, weil Paketverwaltung und Paketstatus separat in `NW-030` und `NW-016` umgesetzt werden.
+- Die Umsetzung stuetzt die Datensparsamkeit aus `GR-09`; `NW-035` bleibt offen, bis auch Paketstatus abgedeckt ist.

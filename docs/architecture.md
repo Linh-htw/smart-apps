@@ -114,6 +114,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-007` ergaenzt manuelle Reservierungswarnungen in der aktiven Arbeitsansicht. Ausstehende B2C-Neukunden werden ab Tag 3 gewarnt und ab Tag 5 zur manuellen Stornierungspruefung markiert; Stammkunden ab Tag 7 beziehungsweise Tag 10. Es erfolgt keine automatische Stornierung.
 
+`NW-009` ergaenzt eine Packer-spezifische Tages-Packliste fuer verbindliche Bestellungen mit Bestellpositionen. Die Ansicht zeigt nur Name, Lieferadresse, Produkt, Menge und zugewiesene Charge mit MHD. Preise, Zahlungsstatus und weitere Kundendaten bleiben fuer Packer ausgeblendet; Paketstatus folgt mit der Paketverwaltung.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

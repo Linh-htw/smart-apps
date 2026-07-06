@@ -50,7 +50,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-027 | Synchroner Lagerabzug ueber alle Kanaele | P2 - Lager & Fulfillment | validated | docs/spec.md V1-Scope | Bestand muss bei Bestellungen, Events, Abo-Abwicklung und Retouren konsistent bleiben. |
 | NW-007 | Manuelle Reservierungswarnungen | P2 - Lager & Fulfillment | done | docs/spec.md GR-02, W-2 | Warnfristen fuer Neukunden und Stammkunden in der Arbeitsansicht, keine automatische Stornierung. |
 | NW-008 | FIFO-Bestandszuteilung | P2 - Lager & Fulfillment | done | docs/spec.md GR-03 | Automatischer Vorschlag und Zuweisung der freigegebenen Charge mit fruehestem MHD bei Bestellpositionen. |
-| NW-009 | Packlisten fuer Packer | P2 - Lager & Fulfillment | validated | docs/spec.md V1-Scope, GR-03, GR-09 | Tages-Packliste mit zugewiesener Charge und minimal noetigen Kundendaten. |
+| NW-009 | Packlisten fuer Packer | P2 - Lager & Fulfillment | done | docs/spec.md V1-Scope, GR-03, GR-09 | Tages-Packliste fuer verbindliche Bestellungen mit Name, Lieferadresse, Produkt, Menge und zugewiesener Charge. |
 | NW-030 | Paketverwaltung | P2 - Lager & Fulfillment | validated | docs/spec.md Entitaet Paket, Beziehung 7, 13 | Paket mit Bestellung, Packer, Versandoption, Versandkosten, Status, Tracking und Zustellung. |
 | NW-016 | Paket- und Trackingstatus | P2 - Lager & Fulfillment | validated | docs/spec.md GR-11 | Bestellung automatisch abschliessen, wenn Tracking Zustellung bestaetigt. |
 | NW-020 | Verkaufsevent-Verwaltung | P2 - Lager & Fulfillment | validated | docs/spec.md Entitaeten Verkaufsevent, Verkaufsevent-Position | Mitgenommene und verkaufte Chargenmengen erfassen. |
