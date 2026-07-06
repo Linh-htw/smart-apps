@@ -107,9 +107,26 @@ model Charge {
 
   produkt     Produkt     @relation(fields: [produktId], references: [id])
   mitarbeiter Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
+  lagerbestaende Lagerbestand[]
 
   @@index([produktId])
   @@index([mitarbeiterId])
   @@index([mhd])
   @@index([status])
+}
+
+model Lagerbestand {
+  id                              Int      @id @default(autoincrement())
+  chargeId                        Int
+  lagerort                        String
+  mengeVoruebergehendReserviert   Int      @default(0)
+  mengeVerbindlichReserviert      Int      @default(0)
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+
+  charge Charge @relation(fields: [chargeId], references: [id])
+
+  @@unique([chargeId, lagerort])
+  @@index([chargeId])
+  @@index([lagerort])
 }

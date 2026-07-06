@@ -106,6 +106,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-003` ergaenzt `Charge` mit Produkt-Relation, verantwortlicher Werkstatt-Hilfe, Herstellungsdatum, MHD, produzierter Menge und Status. Chargenstatus wird zentral gegen `freigegeben` und `gesperrt` validiert. Lagerbestand und Bestandsmengen werden erst mit `NW-004` modelliert.
 
+`NW-004` ergaenzt `Lagerbestand` je Charge und Lagerort mit voruebergehend und verbindlich reservierten Mengen. Lagerorte werden zentral gegen `Werkstatt`, `Versandbereit` und `Restposten` validiert. Die produzierte Gesamtmenge bleibt an der Charge; freie Mengen werden spaeter aus Charge und Reservierungen abgeleitet.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

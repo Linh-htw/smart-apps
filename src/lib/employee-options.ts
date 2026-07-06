@@ -5,6 +5,7 @@ export type Rolle = (typeof rollen)[number];
 export type Permission =
   | "manageCustomers"
   | "manageEmployees"
+  | "manageInventory"
   | "manageOrders"
   | "manageProducts"
   | "createBatches"
@@ -19,6 +20,7 @@ export function getPermissionsForRolle(rolle: Rolle): Permission[] {
     return [
       "manageCustomers",
       "manageEmployees",
+      "manageInventory",
       "manageOrders",
       "manageProducts",
       "createBatches",

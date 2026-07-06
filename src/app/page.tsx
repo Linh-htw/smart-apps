@@ -27,6 +27,7 @@ import {
   chargenstatusWerte,
   isChargenstatus,
 } from "@/lib/batch-options";
+import { isLagerort, lagerorte } from "@/lib/inventory-options";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,11 @@ function requiredInt(value: FormDataEntryValue | null) {
 
   const number = Number.parseInt(text, 10);
   return Number.isNaN(number) ? null : number;
+}
+
+function requiredNonNegativeInt(value: FormDataEntryValue | null) {
+  const number = requiredInt(value);
+  return number !== null && number >= 0 ? number : null;
 }
 
 function requiredDecimal(value: FormDataEntryValue | null) {
@@ -291,6 +297,58 @@ async function createCharge(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createLagerbestand(formData: FormData) {
+  "use server";
+
+  const chargeId = requiredInt(formData.get("lagerbestandChargeId"));
+  const lagerort = formData.get("lagerort")?.toString() ?? "";
+  const mengeVoruebergehendReserviert = requiredNonNegativeInt(
+    formData.get("mengeVoruebergehendReserviert"),
+  );
+  const mengeVerbindlichReserviert = requiredNonNegativeInt(
+    formData.get("mengeVerbindlichReserviert"),
+  );
+
+  if (
+    !chargeId ||
+    !isLagerort(lagerort) ||
+    mengeVoruebergehendReserviert === null ||
+    mengeVerbindlichReserviert === null
+  ) {
+    return;
+  }
+
+  const charge = await prisma.charge.findUnique({
+    where: { id: chargeId },
+    select: { id: true },
+  });
+
+  if (!charge) {
+    return;
+  }
+
+  await prisma.lagerbestand.upsert({
+    where: {
+      chargeId_lagerort: {
+        chargeId,
+        lagerort,
+      },
+    },
+    create: {
+      chargeId,
+      lagerort,
+      mengeVoruebergehendReserviert,
+      mengeVerbindlichReserviert,
+    },
+    update: {
+      mengeVoruebergehendReserviert,
+      mengeVerbindlichReserviert,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -313,6 +371,10 @@ export default async function Home({ searchParams }: HomeProps) {
     include: { produkt: true, mitarbeiter: true },
     orderBy: [{ mhd: "asc" }, { id: "desc" }],
   });
+  const lagerbestaende = await prisma.lagerbestand.findMany({
+    include: { charge: { include: { produkt: true } } },
+    orderBy: [{ lagerort: "asc" }, { id: "desc" }],
+  });
   const params = searchParams ? await searchParams : {};
   const selectedMitarbeiterId = requiredInt(
     getQueryValue(params.mitarbeiterId) ?? null,
@@ -330,6 +392,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const canManageEmployees = canAccess(activeRolle, "manageEmployees");
   const canManageOrders = canAccess(activeRolle, "manageOrders");
   const canManageProducts = canAccess(activeRolle, "manageProducts");
+  const canManageInventory = canAccess(activeRolle, "manageInventory");
   const canCreateBatches = canAccess(activeRolle, "createBatches");
   const canViewPacklists = canAccess(activeRolle, "viewPacklists");
   const aktiveBestellungen = bestellungen.filter(
@@ -351,14 +414,14 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-005 / NW-010 / NW-011 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-010 / NW-011 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
         <p className="summary">
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
           {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
-          {mitarbeiter.length} Mitarbeitende
+          {lagerbestaende.length} Lagerbestaende · {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -503,6 +566,99 @@ export default async function Home({ searchParams }: HomeProps) {
                       <dd>{charge.mitarbeiter.name}</dd>
                     </dl>
                     <span className="status-pill">{charge.status}</span>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {canManageInventory ? (
+        <section className="layout-grid feature-section">
+          <form action={createLagerbestand} className="panel form-panel">
+            <h2>Lagerbestand erfassen</h2>
+
+            {chargen.length === 0 ? (
+              <p className="empty-state">Zuerst eine Charge anlegen.</p>
+            ) : (
+              <>
+                <label>
+                  Charge
+                  <select name="lagerbestandChargeId" required>
+                    {chargen.map((charge) => (
+                      <option key={charge.id} value={charge.id}>
+                        #{charge.id} · {charge.produkt.name} · MHD{" "}
+                        {formatDate(charge.mhd)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Lagerort
+                  <select name="lagerort" defaultValue="Werkstatt" required>
+                    {lagerorte.map((lagerort) => (
+                      <option key={lagerort} value={lagerort}>
+                        {lagerort}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Voruebergehend reserviert
+                    <input
+                      defaultValue="0"
+                      min="0"
+                      name="mengeVoruebergehendReserviert"
+                      required
+                      type="number"
+                    />
+                  </label>
+
+                  <label>
+                    Verbindlich reserviert
+                    <input
+                      defaultValue="0"
+                      min="0"
+                      name="mengeVerbindlichReserviert"
+                      required
+                      type="number"
+                    />
+                  </label>
+                </div>
+
+                <button type="submit">Lagerbestand speichern</button>
+              </>
+            )}
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="lagerbestand-heading">
+            <h2 id="lagerbestand-heading">Lagerbestand</h2>
+            {lagerbestaende.length === 0 ? (
+              <p className="empty-state">Noch kein Lagerbestand erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {lagerbestaende.map((bestand) => (
+                  <article className="customer-card" key={bestand.id}>
+                    <div>
+                      <h3>{bestand.lagerort}</h3>
+                      <p>
+                        Charge #{bestand.charge.id} ·{" "}
+                        {bestand.charge.produkt.name} · MHD{" "}
+                        {formatDate(bestand.charge.mhd)}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Produziert</dt>
+                      <dd>{bestand.charge.produzierteMenge}</dd>
+                      <dt>Voruebergehend</dt>
+                      <dd>{bestand.mengeVoruebergehendReserviert}</dd>
+                      <dt>Verbindlich</dt>
+                      <dd>{bestand.mengeVerbindlichReserviert}</dd>
+                    </dl>
                   </article>
                 ))}
               </div>

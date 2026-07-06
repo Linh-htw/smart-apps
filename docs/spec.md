@@ -238,7 +238,7 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 
 ## 8. Offene Klaerungen
 
-- Konkrete Enum-Werte fuer Lagerort, Paketstatus, Retourenstatus, Produktzustand und Erstattungsart.
+- Konkrete Enum-Werte fuer Paketstatus, Retourenstatus, Produktzustand und Erstattungsart.
 - Gewuenschter Tech-Stack und Hosting.
 - Ob Versandlabel und Tracking in V1 manuell, halbautomatisch oder ueber konkrete Anbieter-Integration laufen sollen.
 - Ob Allergene trotz "Kann warten" in V1 als Datenfeld sichtbar, aber nicht workflow-blockierend umgesetzt werden.
@@ -258,6 +258,12 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 | Feld | Werte |
 |---|---|
 | Produktkategorie | Seifen, Öle, Balsam, Bodylotions |
+
+### Lagerbestand
+
+| Feld | Werte |
+|---|---|
+| Lagerort | Werkstatt, Versandbereit, Restposten |
 
 ### Charge
 

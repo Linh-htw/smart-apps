@@ -221,5 +221,17 @@ Chargenstatus nutzt fuer V1 die Werte `freigegeben` und `gesperrt`. `aufgebrauch
 
 ### Konsequenzen
 - `NW-003` ist im Backlog auf `done` gesetzt.
-- `NW-039` bleibt `in-progress`, weil Lagerort, Paketstatus, Retourenstatus, Produktzustand und Erstattungsart noch offen sind.
+- `NW-039` bleibt `in-progress`, weil Paketstatus, Retourenstatus, Produktzustand und Erstattungsart noch offen sind.
 - `NW-004` kann als naechstes Lagerfeature den Bestand je Charge modellieren.
+
+## 2026-07-06 - NW-004 Lagerbestand mit Reservierungen umgesetzt
+
+**Kontext:** Nach der Chargenverwaltung braucht die App Lagerorte und getrennte Reservierungsmengen je Charge. Der Lagerort war bisher in `NW-039` offen.
+
+### Entscheidung
+Lagerorte nutzen fuer V1 die Werte `Werkstatt`, `Versandbereit` und `Restposten`. Die App ergaenzt ein Prisma-Modell `Lagerbestand` je Charge und Lagerort mit `mengeVoruebergehendReserviert` und `mengeVerbindlichReserviert`. Pro Charge und Lagerort gibt es genau einen Datensatz; erneutes Speichern aktualisiert die Reservierungsmengen.
+
+### Konsequenzen
+- `NW-004` ist im Backlog auf `done` gesetzt.
+- `NW-039` bleibt `in-progress`, weil Paketstatus, Retourenstatus, Produktzustand und Erstattungsart noch offen sind.
+- Freie Mengen werden noch nicht als eigenes Feld gespeichert, sondern koennen spaeter aus produzierter Chargenmenge und Reservierungen abgeleitet werden.

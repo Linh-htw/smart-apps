@@ -46,7 +46,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
 | NW-003 | Chargenverwaltung | P2 - Lager & Fulfillment | done | docs/spec.md Entitaet Charge | Chargen mit Produkt, Werkstatt-Hilfe, Herstellungsdatum, MHD, Menge und Status. |
-| NW-004 | Lagerbestand mit Reservierungen | P2 - Lager & Fulfillment | validated | docs/spec.md Entitaet Lagerbestand | Lagerorte, voruebergehend reservierte und verbindlich reservierte Mengen. |
+| NW-004 | Lagerbestand mit Reservierungen | P2 - Lager & Fulfillment | done | docs/spec.md Entitaet Lagerbestand | Lagerorte, voruebergehend reservierte und verbindlich reservierte Mengen je Charge. |
 | NW-027 | Synchroner Lagerabzug ueber alle Kanaele | P2 - Lager & Fulfillment | validated | docs/spec.md V1-Scope | Bestand muss bei Bestellungen, Events, Abo-Abwicklung und Retouren konsistent bleiben. |
 | NW-007 | Manuelle Reservierungswarnungen | P2 - Lager & Fulfillment | validated | docs/spec.md GR-02, W-2 | Warnfristen fuer Neukunden und Stammkunden, keine automatische Stornierung. |
 | NW-008 | FIFO-Bestandszuteilung | P2 - Lager & Fulfillment | validated | docs/spec.md GR-03 | Automatischer Vorschlag der Charge mit fruehestem MHD fuer Packen und Zuteilung. |
@@ -85,7 +85,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
-| NW-039 | Enum-Werte definieren | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle und Chargenstatus sind geklaert; Lagerort, Paketstatus, Retourenstatus, Produktzustand und Erstattungsart bleiben offen. |
+| NW-039 | Enum-Werte definieren | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus und Lagerort sind geklaert; Paketstatus, Retourenstatus, Produktzustand und Erstattungsart bleiben offen. |
 | NW-040 | Tech-Stack entscheiden | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment bleiben offen. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Manuell, halbautomatisch oder Anbieter-Integration fuer V1 entscheiden. |
 | NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Datenfeld sichtbar, aber Workflow spaeter, oder komplett spaeter. |
