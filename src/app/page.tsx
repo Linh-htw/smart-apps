@@ -92,10 +92,66 @@ function formatDate(value: Date) {
   return new Intl.DateTimeFormat("de-DE").format(value);
 }
 
-function getNextBestellschritt(bestellung: {
+function getDaysSince(value: Date, now = new Date()) {
+  const start = new Date(value);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(now);
+  end.setHours(0, 0, 0, 0);
+
+  return Math.max(
+    0,
+    Math.floor((end.getTime() - start.getTime()) / 86_400_000),
+  );
+}
+
+function getReservierungswarnung(bestellung: {
+  datum: Date;
   zahlungsstatus: string;
   status: string;
+  kunde: { stammkunde: boolean };
 }) {
+  if (bestellung.status === "storniert") {
+    return null;
+  }
+
+  if (bestellung.zahlungsstatus !== "ausstehend") {
+    return null;
+  }
+
+  const alterInTagen = getDaysSince(bestellung.datum);
+  const warnAbTag = bestellung.kunde.stammkunde ? 7 : 3;
+  const stornierbarAbTag = bestellung.kunde.stammkunde ? 10 : 5;
+
+  if (alterInTagen >= stornierbarAbTag) {
+    return {
+      level: "critical",
+      text: `Seit ${alterInTagen} Tagen unbezahlt, manuelle Stornierung pruefen`,
+    };
+  }
+
+  if (alterInTagen >= warnAbTag) {
+    return {
+      level: "warning",
+      text: `Seit ${alterInTagen} Tagen unbezahlt, Zahlung nachfassen`,
+    };
+  }
+
+  return null;
+}
+
+function getNextBestellschritt(bestellung: {
+  datum: Date;
+  zahlungsstatus: string;
+  status: string;
+  kunde: { stammkunde: boolean };
+}) {
+  const warnung = getReservierungswarnung(bestellung);
+
+  if (warnung) {
+    return warnung.text;
+  }
+
   if (bestellung.status === "storniert") {
     return "Keine Aktion";
   }
@@ -491,6 +547,15 @@ export default async function Home({ searchParams }: HomeProps) {
   const ausstehendeZahlungen = aktiveBestellungen.filter(
     (bestellung) => bestellung.zahlungsstatus === "ausstehend",
   );
+  const reservierungswarnungen = ausstehendeZahlungen
+    .map((bestellung) => ({
+      bestellung,
+      warnung: getReservierungswarnung(bestellung),
+    }))
+    .filter((eintrag) => eintrag.warnung !== null);
+  const stornierpruefungen = reservierungswarnungen.filter(
+    (eintrag) => eintrag.warnung?.level === "critical",
+  );
   const verbindlicheBestellungen = aktiveBestellungen.filter(
     (bestellung) => bestellung.status === "verbindlich",
   );
@@ -522,7 +587,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-008 / NW-010 / NW-011 / NW-029 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-010 / NW-011 / NW-029 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -809,6 +874,14 @@ export default async function Home({ searchParams }: HomeProps) {
               <strong>{ausstehendeZahlungen.length}</strong>
             </div>
             <div className="metric-tile">
+              <span>Reservierungswarnungen</span>
+              <strong>{reservierungswarnungen.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Stornierung pruefen</span>
+              <strong>{stornierpruefungen.length}</strong>
+            </div>
+            <div className="metric-tile">
               <span>Verbindliche Bestellungen</span>
               <strong>{verbindlicheBestellungen.length}</strong>
             </div>
@@ -830,6 +903,18 @@ export default async function Home({ searchParams }: HomeProps) {
                       {bestellung.kunde.name} Â· {bestellung.kanal} Â·{" "}
                       {formatDate(bestellung.datum)}
                     </p>
+                    {getReservierungswarnung(bestellung) ? (
+                      <p
+                        className={`warning-text ${
+                          getReservierungswarnung(bestellung)?.level ===
+                          "critical"
+                            ? "critical"
+                            : ""
+                        }`}
+                      >
+                        {getReservierungswarnung(bestellung)?.text}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="task-meta">
                     <span className="status-pill">

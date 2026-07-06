@@ -112,6 +112,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-008` weist Bestellpositionen serverseitig per FIFO der freigegebenen Charge mit fruehestem MHD zu, sofern genuegend verfuegbare Menge vorhanden ist. Verfuegbarkeit wird konservativ aus produzierter Chargenmenge minus Lagerreservierungen und bereits angelegten Bestellpositionen berechnet. Ein Lagerabzug oder eine automatische Reservierungsbuchung erfolgt noch nicht; das folgt mit `NW-027`.
 
+`NW-007` ergaenzt manuelle Reservierungswarnungen in der aktiven Arbeitsansicht. Ausstehende B2C-Neukunden werden ab Tag 3 gewarnt und ab Tag 5 zur manuellen Stornierungspruefung markiert; Stammkunden ab Tag 7 beziehungsweise Tag 10. Es erfolgt keine automatische Stornierung.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

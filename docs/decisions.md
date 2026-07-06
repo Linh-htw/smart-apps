@@ -259,3 +259,15 @@ Beim Anlegen einer Bestellposition waehlt die App serverseitig die freigegebene 
 - `NW-008` ist im Backlog auf `done` gesetzt.
 - Die manuelle Chargenauswahl fuer Bestellpositionen entfaellt.
 - Lagerabzug und kanalweite Bestandsbuchung bleiben Teil von `NW-027`.
+
+## 2026-07-06 - NW-007 Manuelle Reservierungswarnungen umgesetzt
+
+**Kontext:** `GR-02` legt unterschiedliche Warn- und Prueffristen fuer unbezahlte Reservierungen fest. Gleichzeitig darf die App unbezahlte Reservierungen nicht automatisch stornieren.
+
+### Entscheidung
+Die aktive Arbeitsansicht markiert ausstehende Zahlungen nach Alter der Bestellung. B2C-Neukunden werden ab Tag 3 gewarnt und ab Tag 5 zur manuellen Stornierungspruefung markiert. Stammkunden werden ab Tag 7 gewarnt und ab Tag 10 zur manuellen Pruefung markiert.
+
+### Konsequenzen
+- `NW-007` ist im Backlog auf `done` gesetzt.
+- Die App zeigt Warnungen und Kennzahlen, nimmt aber keine automatische Stornierung vor.
+- Die Warnlogik nutzt lokale Kalendertage auf Basis des Bestelldatums.

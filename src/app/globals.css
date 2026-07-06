@@ -314,6 +314,16 @@ button:hover {
   overflow-wrap: anywhere;
 }
 
+.warning-text {
+  margin-top: 8px;
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.warning-text.critical {
+  color: #9f1d1d;
+}
+
 @media (max-width: 840px) {
   .workspace {
     padding: 20px;
