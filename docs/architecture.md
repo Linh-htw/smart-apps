@@ -112,11 +112,13 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-008` weist Bestellpositionen serverseitig per FIFO der freigegebenen Charge mit fruehestem MHD zu, sofern genuegend verfuegbare Menge vorhanden ist. Verfuegbarkeit wird aus produzierter Chargenmenge minus gebuchten Lagerreservierungen berechnet.
 
-`NW-027` bucht beim Anlegen einer Bestellposition im selben Transaktionsschritt auch den Lagerbestand: ausstehende Bestellungen erhoehen `mengeVoruebergehendReserviert`, bezahlte Bestellungen erhoehen `mengeVerbindlichReserviert`. Die Buchung erfolgt bevorzugt am Lagerort `Versandbereit`, sonst am vorhandenen Lagerort der Charge. Falls noch kein Lagerbestand existiert, wird fuer die Charge ein Datensatz in `Versandbereit` angelegt. Verkaufsevents, Abo-Abwicklung und Retouren werden erst angebunden, sobald ihre Fachmodelle existieren.
+`NW-027` bucht beim Anlegen einer Bestellposition im selben Transaktionsschritt auch den Lagerbestand: ausstehende Bestellungen erhoehen `mengeVoruebergehendReserviert`, bezahlte Bestellungen erhoehen `mengeVerbindlichReserviert`. Die Buchung erfolgt bevorzugt am Lagerort `Versandbereit`, sonst am vorhandenen Lagerort der Charge. Falls noch kein Lagerbestand existiert, wird fuer die Charge ein Datensatz in `Versandbereit` angelegt. Verkaufsevent-Positionen reduzieren die freie Chargenmenge ueber `mengeMitgenommen`. Abo-Abwicklung und Retouren werden erst angebunden, sobald ihre Fachmodelle existieren.
 
 `NW-007` ergaenzt manuelle Reservierungswarnungen in der aktiven Arbeitsansicht. Ausstehende B2C-Neukunden werden ab Tag 3 gewarnt und ab Tag 5 zur manuellen Stornierungspruefung markiert; Stammkunden ab Tag 7 beziehungsweise Tag 10. Es erfolgt keine automatische Stornierung.
 
 `NW-009` ergaenzt eine Packer-spezifische Tages-Packliste fuer verbindliche Bestellungen mit Bestellpositionen. Die Ansicht zeigt nur Name, Lieferadresse, Produkt, Menge und zugewiesene Charge mit MHD. Preise, Zahlungsstatus und weitere Kundendaten bleiben fuer Packer ausgeblendet; Paketstatus folgt mit der Paketverwaltung.
+
+`NW-020` und `NW-036` ergaenzen `Verkaufsevent` und `VerkaufseventPosition`. Ein Verkaufsevent hat Datum und Ort. Positionen verbinden ein Event mit einer Charge und speichern `mengeMitgenommen` sowie `mengeVerkauft`; `mengeVerkauft` darf nicht groesser sein als `mengeMitgenommen`. Pro Event und Charge gibt es maximal eine Position. Nicht verkaufte Event-Mengen bleiben bis zu einer spaeteren Rueckbuchungsfunktion blockiert.
 
 ## Offene technische Entscheidungen
 

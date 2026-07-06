@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { Fragment } from "react";
 import { prisma } from "@/lib/prisma";
 import {
   hauttypen,
@@ -168,14 +169,22 @@ function getReservierteMenge(charge: {
     mengeVoruebergehendReserviert: number;
     mengeVerbindlichReserviert: number;
   }>;
+  verkaufseventPositionen?: Array<{ mengeMitgenommen: number }>;
 }) {
-  return charge.lagerbestaende.reduce(
+  const lagerReserviert = charge.lagerbestaende.reduce(
     (summe, bestand) =>
       summe +
       bestand.mengeVoruebergehendReserviert +
       bestand.mengeVerbindlichReserviert,
     0,
   );
+  const eventMengen =
+    charge.verkaufseventPositionen?.reduce(
+      (summe, position) => summe + position.mengeMitgenommen,
+      0,
+    ) ?? 0;
+
+  return lagerReserviert + eventMengen;
 }
 
 function getReservierungsLagerort(charge: {
@@ -195,6 +204,7 @@ function getFreieMenge(charge: {
     mengeVoruebergehendReserviert: number;
     mengeVerbindlichReserviert: number;
   }>;
+  verkaufseventPositionen?: Array<{ mengeMitgenommen: number }>;
 }) {
   return charge.produzierteMenge - getReservierteMenge(charge);
 }
@@ -515,6 +525,89 @@ async function createLagerbestand(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createVerkaufsevent(formData: FormData) {
+  "use server";
+
+  const datum = requiredDate(formData.get("verkaufseventDatum"));
+  const ort = formData.get("verkaufseventOrt")?.toString().trim() ?? "";
+
+  if (!datum || !ort) {
+    return;
+  }
+
+  await prisma.verkaufsevent.create({
+    data: {
+      datum,
+      ort,
+    },
+  });
+
+  revalidatePath("/");
+}
+
+async function createVerkaufseventPosition(formData: FormData) {
+  "use server";
+
+  const verkaufseventId = requiredInt(formData.get("verkaufseventId"));
+  const chargeId = requiredInt(formData.get("verkaufseventChargeId"));
+  const mengeMitgenommen = requiredInt(formData.get("mengeMitgenommen"));
+  const mengeVerkauft = requiredNonNegativeInt(formData.get("mengeVerkauft"));
+
+  if (
+    !verkaufseventId ||
+    !chargeId ||
+    !mengeMitgenommen ||
+    mengeMitgenommen < 1 ||
+    mengeVerkauft === null ||
+    mengeVerkauft > mengeMitgenommen
+  ) {
+    return;
+  }
+
+  const [verkaufsevent, charge, bestehendePosition] = await Promise.all([
+    prisma.verkaufsevent.findUnique({
+      where: { id: verkaufseventId },
+      select: { id: true },
+    }),
+    prisma.charge.findUnique({
+      where: { id: chargeId },
+      include: {
+        lagerbestaende: true,
+        verkaufseventPositionen: { select: { mengeMitgenommen: true } },
+      },
+    }),
+    prisma.verkaufseventPosition.findUnique({
+      where: {
+        verkaufseventId_chargeId: {
+          verkaufseventId,
+          chargeId,
+        },
+      },
+      select: { id: true },
+    }),
+  ]);
+
+  if (
+    !verkaufsevent ||
+    !charge ||
+    bestehendePosition ||
+    getFreieMenge(charge) < mengeMitgenommen
+  ) {
+    return;
+  }
+
+  await prisma.verkaufseventPosition.create({
+    data: {
+      verkaufseventId,
+      chargeId,
+      mengeMitgenommen,
+      mengeVerkauft,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -547,12 +640,29 @@ export default async function Home({ searchParams }: HomeProps) {
       mitarbeiter: true,
       lagerbestaende: true,
       bestellpositionen: { select: { menge: true } },
+      verkaufseventPositionen: { select: { mengeMitgenommen: true } },
     },
     orderBy: [{ mhd: "asc" }, { id: "desc" }],
   });
   const lagerbestaende = await prisma.lagerbestand.findMany({
     include: { charge: { include: { produkt: true } } },
     orderBy: [{ lagerort: "asc" }, { id: "desc" }],
+  });
+  const verkaufsevents = await prisma.verkaufsevent.findMany({
+    include: {
+      positionen: {
+        include: { charge: { include: { produkt: true } } },
+        orderBy: [{ id: "desc" }],
+      },
+    },
+    orderBy: [{ datum: "desc" }, { id: "desc" }],
+  });
+  const verkaufseventPositionen = await prisma.verkaufseventPosition.findMany({
+    include: {
+      verkaufsevent: true,
+      charge: { include: { produkt: true } },
+    },
+    orderBy: [{ id: "desc" }],
   });
   const params = searchParams ? await searchParams : {};
   const selectedMitarbeiterId = requiredInt(
@@ -613,6 +723,12 @@ export default async function Home({ searchParams }: HomeProps) {
         : null;
     })
     .filter((vorschlag) => vorschlag !== null);
+  const chargenMitFreierMenge = chargen
+    .map((charge) => ({
+      charge,
+      frei: getFreieMenge(charge),
+    }))
+    .filter((eintrag) => eintrag.frei > 0);
   const packlistenBestellungen = verbindlicheBestellungen
     .map((bestellung) => ({
       bestellung,
@@ -628,7 +744,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-027 / NW-029 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-020 / NW-027 / NW-029 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -636,7 +752,7 @@ export default async function Home({ searchParams }: HomeProps) {
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
           {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
           {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
-          {mitarbeiter.length} Mitarbeitende
+          {verkaufsevents.length} Verkaufsevents - {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -873,6 +989,157 @@ export default async function Home({ searchParams }: HomeProps) {
                       <dd>{bestand.mengeVoruebergehendReserviert}</dd>
                       <dt>Verbindlich</dt>
                       <dd>{bestand.mengeVerbindlichReserviert}</dd>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {canManageInventory ? (
+        <section className="layout-grid feature-section">
+          <form action={createVerkaufsevent} className="panel form-panel">
+            <h2>Verkaufsevent anlegen</h2>
+
+            <label>
+              Datum
+              <input
+                defaultValue={today}
+                name="verkaufseventDatum"
+                required
+                type="date"
+              />
+            </label>
+
+            <label>
+              Ort
+              <input name="verkaufseventOrt" required />
+            </label>
+
+            <button type="submit">Event speichern</button>
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="events-heading">
+            <h2 id="events-heading">Verkaufsevents</h2>
+            {verkaufsevents.length === 0 ? (
+              <p className="empty-state">Noch keine Verkaufsevents erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {verkaufsevents.map((event) => (
+                  <article className="customer-card" key={event.id}>
+                    <div>
+                      <h3>{event.ort}</h3>
+                      <p>
+                        Event #{event.id} - {formatDate(event.datum)}
+                      </p>
+                    </div>
+                    {event.positionen.length === 0 ? (
+                      <p className="note-text">Noch keine Chargen erfasst.</p>
+                    ) : (
+                      <dl>
+                        {event.positionen.map((position) => (
+                          <Fragment key={position.id}>
+                            <dt>{position.charge.produkt.name}</dt>
+                            <dd>
+                              Charge #{position.charge.id}:{" "}
+                              {position.mengeMitgenommen} mitgenommen,{" "}
+                              {position.mengeVerkauft} verkauft
+                            </dd>
+                          </Fragment>
+                        ))}
+                      </dl>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {canManageInventory ? (
+        <section className="layout-grid feature-section">
+          <form action={createVerkaufseventPosition} className="panel form-panel">
+            <h2>Event-Position erfassen</h2>
+
+            {verkaufsevents.length === 0 || chargenMitFreierMenge.length === 0 ? (
+              <p className="empty-state">
+                Zuerst Verkaufsevent und freie Charge anlegen.
+              </p>
+            ) : (
+              <>
+                <label>
+                  Verkaufsevent
+                  <select name="verkaufseventId" required>
+                    {verkaufsevents.map((event) => (
+                      <option key={event.id} value={event.id}>
+                        #{event.id} - {event.ort} - {formatDate(event.datum)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Charge
+                  <select name="verkaufseventChargeId" required>
+                    {chargenMitFreierMenge.map(({ charge, frei }) => (
+                      <option key={charge.id} value={charge.id}>
+                        #{charge.id} - {charge.produkt.name} - {frei} frei
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Mitgenommen
+                    <input min="1" name="mengeMitgenommen" required type="number" />
+                  </label>
+
+                  <label>
+                    Verkauft
+                    <input
+                      defaultValue="0"
+                      min="0"
+                      name="mengeVerkauft"
+                      required
+                      type="number"
+                    />
+                  </label>
+                </div>
+
+                <button type="submit">Position speichern</button>
+              </>
+            )}
+          </form>
+
+          <section
+            className="panel list-panel"
+            aria-labelledby="event-positionen-heading"
+          >
+            <h2 id="event-positionen-heading">Event-Positionen</h2>
+            {verkaufseventPositionen.length === 0 ? (
+              <p className="empty-state">Noch keine Event-Positionen erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {verkaufseventPositionen.map((position) => (
+                  <article className="customer-card" key={position.id}>
+                    <div>
+                      <h3>{position.verkaufsevent.ort}</h3>
+                      <p>
+                        {formatDate(position.verkaufsevent.datum)} -{" "}
+                        {position.charge.produkt.name}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Charge</dt>
+                      <dd>#{position.charge.id}</dd>
+                      <dt>Mitgenommen</dt>
+                      <dd>{position.mengeMitgenommen}</dd>
+                      <dt>Verkauft</dt>
+                      <dd>{position.mengeVerkauft}</dd>
                     </dl>
                   </article>
                 ))}

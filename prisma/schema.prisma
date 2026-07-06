@@ -111,11 +111,41 @@ model Charge {
   mitarbeiter Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
   lagerbestaende Lagerbestand[]
   bestellpositionen Bestellposition[]
+  verkaufseventPositionen VerkaufseventPosition[]
 
   @@index([produktId])
   @@index([mitarbeiterId])
   @@index([mhd])
   @@index([status])
+}
+
+model Verkaufsevent {
+  id        Int      @id @default(autoincrement())
+  datum     DateTime
+  ort       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  positionen VerkaufseventPosition[]
+
+  @@index([datum])
+}
+
+model VerkaufseventPosition {
+  id                 Int      @id @default(autoincrement())
+  verkaufseventId    Int
+  chargeId           Int
+  mengeMitgenommen   Int
+  mengeVerkauft      Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  verkaufsevent Verkaufsevent @relation(fields: [verkaufseventId], references: [id])
+  charge        Charge        @relation(fields: [chargeId], references: [id])
+
+  @@unique([verkaufseventId, chargeId])
+  @@index([verkaufseventId])
+  @@index([chargeId])
 }
 
 model Bestellposition {

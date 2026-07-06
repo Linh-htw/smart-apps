@@ -294,5 +294,17 @@ Beim Anlegen einer Bestellposition bucht die App die zugewiesene FIFO-Charge in 
 ### Konsequenzen
 - `NW-027` ist im Backlog auf `done` gesetzt.
 - Die Lagerreservierung ist fuer den bestehenden Bestellkanal synchron zur Bestellposition.
-- Verkaufsevents, Abo-Abwicklung und Retouren werden spaeter an dieselbe Bestandslogik angeschlossen, sobald ihre Modelle umgesetzt sind.
+- Verkaufsevents werden ueber `mengeMitgenommen` in die freie Chargenmenge einbezogen; Abo-Abwicklung und Retouren werden spaeter angeschlossen, sobald ihre Modelle umgesetzt sind.
 - Statuswechsel von ausstehend zu bezahlt braucht spaeter eine Umbuchung von voruebergehender zu verbindlicher Reservierung.
+
+## 2026-07-06 - NW-020 Verkaufsevent-Verwaltung umgesetzt
+
+**Kontext:** Die Spec beschreibt Verkaufsevents mit Datum, Ort und Positionen fuer mitgenommene und verkaufte Chargenmengen. Nach Chargen und Lagerlogik kann dieser Verkaufskanal als naechster Fulfillment-Baustein modelliert werden.
+
+### Entscheidung
+Die App ergaenzt `Verkaufsevent` und `VerkaufseventPosition`. Positionen verbinden Events mit Chargen und speichern `mengeMitgenommen` und `mengeVerkauft`. Serverseitig wird geprueft, dass verkaufte Mengen nicht groesser als mitgenommene Mengen sind und dass fuer die mitgenommene Menge noch freie Chargenmenge vorhanden ist.
+
+### Konsequenzen
+- `NW-020` und `NW-036` sind im Backlog auf `done` gesetzt.
+- Mitgenommene Event-Mengen reduzieren die freie Chargenmenge, damit diese Ware nicht parallel fuer Bestellungen verplant wird.
+- Nicht verkaufte Event-Mengen werden noch nicht automatisch zurueckgebucht; dafuer braucht es spaeter eine eigene fachliche Rueckbuchungsfunktion.
