@@ -247,3 +247,15 @@ Die App ergaenzt ein Prisma-Modell `Bestellposition` mit Pflicht-Relationen zu `
 - `NW-029` ist im Backlog auf `done` gesetzt.
 - Automatische FIFO-Zuteilung wird nicht in `NW-029` umgesetzt, sondern bleibt Teil von `NW-008`.
 - Automatische Reservierungs- oder Lagerabbuchung folgt in den Lagerfeatures, insbesondere `NW-027`.
+
+## 2026-07-06 - NW-008 FIFO-Bestandszuteilung umgesetzt
+
+**Kontext:** Nach Chargen, Lagerbestand und Bestellpositionen kann die App eine Charge automatisch nach fruehestem MHD vorschlagen und zuweisen.
+
+### Entscheidung
+Beim Anlegen einer Bestellposition waehlt die App serverseitig die freigegebene Charge des Produkts mit dem fruehesten MHD, sofern die verfuegbare Menge fuer die gewuenschte Menge reicht. Verfuegbare Menge wird aus produzierter Chargenmenge minus Lagerreservierungen und bereits angelegten Bestellpositionen berechnet.
+
+### Konsequenzen
+- `NW-008` ist im Backlog auf `done` gesetzt.
+- Die manuelle Chargenauswahl fuer Bestellpositionen entfaellt.
+- Lagerabzug und kanalweite Bestandsbuchung bleiben Teil von `NW-027`.

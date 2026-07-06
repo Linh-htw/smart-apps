@@ -125,6 +125,12 @@ p {
   gap: 12px;
 }
 
+.fifo-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
 .overview-header {
   display: flex;
   align-items: flex-start;

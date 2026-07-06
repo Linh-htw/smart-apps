@@ -107,6 +107,28 @@ function getNextBestellschritt(bestellung: {
   return "Zur weiteren Bearbeitung vormerken";
 }
 
+function getReservierteMenge(charge: {
+  lagerbestaende: Array<{
+    mengeVoruebergehendReserviert: number;
+    mengeVerbindlichReserviert: number;
+  }>;
+  bestellpositionen: Array<{ menge: number }>;
+}) {
+  const lagerReserviert = charge.lagerbestaende.reduce(
+    (summe, bestand) =>
+      summe +
+      bestand.mengeVoruebergehendReserviert +
+      bestand.mengeVerbindlichReserviert,
+    0,
+  );
+  const positionenReserviert = charge.bestellpositionen.reduce(
+    (summe, position) => summe + position.menge,
+    0,
+  );
+
+  return lagerReserviert + positionenReserviert;
+}
+
 function getQueryValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -228,14 +250,13 @@ async function createBestellposition(formData: FormData) {
 
   const bestellungId = requiredInt(formData.get("positionBestellungId"));
   const produktId = requiredInt(formData.get("positionProduktId"));
-  const chargeId = requiredInt(formData.get("positionChargeId"));
   const menge = requiredInt(formData.get("positionMenge"));
 
-  if (!bestellungId || !produktId || !chargeId || !menge || menge < 1) {
+  if (!bestellungId || !produktId || !menge || menge < 1) {
     return;
   }
 
-  const [bestellung, produkt, charge] = await Promise.all([
+  const [bestellung, produkt, chargenFuerProdukt] = await Promise.all([
     prisma.bestellung.findUnique({
       where: { id: bestellungId },
       select: { id: true },
@@ -244,13 +265,26 @@ async function createBestellposition(formData: FormData) {
       where: { id: produktId },
       select: { id: true },
     }),
-    prisma.charge.findUnique({
-      where: { id: chargeId },
-      select: { id: true, produktId: true },
+    prisma.charge.findMany({
+      where: { produktId, status: "freigegeben" },
+      include: {
+        lagerbestaende: true,
+        bestellpositionen: { select: { menge: true } },
+      },
+      orderBy: [{ mhd: "asc" }, { id: "asc" }],
     }),
   ]);
 
-  if (!bestellung || !produkt || !charge || charge.produktId !== produktId) {
+  if (!bestellung || !produkt) {
+    return;
+  }
+
+  const vorgeschlageneCharge = chargenFuerProdukt.find(
+    (charge) =>
+      charge.produzierteMenge - getReservierteMenge(charge) >= menge,
+  );
+
+  if (!vorgeschlageneCharge) {
     return;
   }
 
@@ -258,7 +292,7 @@ async function createBestellposition(formData: FormData) {
     data: {
       bestellungId,
       produktId,
-      chargeId,
+      chargeId: vorgeschlageneCharge.id,
       menge,
     },
   });
@@ -419,7 +453,12 @@ export default async function Home({ searchParams }: HomeProps) {
     orderBy: [{ rolle: "asc" }, { name: "asc" }],
   });
   const chargen = await prisma.charge.findMany({
-    include: { produkt: true, mitarbeiter: true },
+    include: {
+      produkt: true,
+      mitarbeiter: true,
+      lagerbestaende: true,
+      bestellpositionen: { select: { menge: true } },
+    },
     orderBy: [{ mhd: "asc" }, { id: "desc" }],
   });
   const lagerbestaende = await prisma.lagerbestand.findMany({
@@ -458,6 +497,24 @@ export default async function Home({ searchParams }: HomeProps) {
   const werkstattMitarbeiter = mitarbeiter.filter(
     (person) => person.rolle === "Werkstatt-Hilfe",
   );
+  const fifoVorschlaege = produkte
+    .map((produkt) => {
+      const charge = chargen.find(
+        (charge) =>
+          charge.produktId === produkt.id &&
+          charge.status === "freigegeben" &&
+          charge.produzierteMenge - getReservierteMenge(charge) > 0,
+      );
+
+      return charge
+        ? {
+            produkt,
+            charge,
+            verfuegbar: charge.produzierteMenge - getReservierteMenge(charge),
+          }
+        : null;
+    })
+    .filter((vorschlag) => vorschlag !== null);
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -465,7 +522,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-010 / NW-011 / NW-029 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-008 / NW-010 / NW-011 / NW-029 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1112,9 +1169,9 @@ export default async function Home({ searchParams }: HomeProps) {
           <form action={createBestellposition} className="panel form-panel">
             <h2>Bestellposition anlegen</h2>
 
-            {bestellungen.length === 0 || chargen.length === 0 ? (
+            {bestellungen.length === 0 || fifoVorschlaege.length === 0 ? (
               <p className="empty-state">
-                Zuerst Bestellung und Charge anlegen.
+                Zuerst Bestellung und freigegebene Charge mit Bestand anlegen.
               </p>
             ) : (
               <>
@@ -1133,31 +1190,42 @@ export default async function Home({ searchParams }: HomeProps) {
                 <label>
                   Produkt
                   <select name="positionProduktId" required>
-                    {produkte.map((produkt) => (
-                      <option key={produkt.id} value={produkt.id}>
-                        {produkt.name}
+                    {fifoVorschlaege.map((vorschlag) => (
+                      <option
+                        key={vorschlag.produkt.id}
+                        value={vorschlag.produkt.id}
+                      >
+                        {vorschlag.produkt.name}
                       </option>
                     ))}
                   </select>
                 </label>
 
-                <div className="field-row">
-                  <label>
-                    Charge
-                    <select name="positionChargeId" required>
-                      {chargen.map((charge) => (
-                        <option key={charge.id} value={charge.id}>
-                          #{charge.id} · {charge.produkt.name} · MHD{" "}
-                          {formatDate(charge.mhd)}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                <label>
+                  Menge
+                  <input min="1" name="positionMenge" required type="number" />
+                </label>
 
-                  <label>
-                    Menge
-                    <input min="1" name="positionMenge" required type="number" />
-                  </label>
+                <div className="fifo-box">
+                  <p className="eyebrow">FIFO-Vorschlag</p>
+                  <div className="customer-list">
+                    {fifoVorschlaege.map((vorschlag) => (
+                      <article className="task-item" key={vorschlag.produkt.id}>
+                        <div>
+                          <h3>{vorschlag.produkt.name}</h3>
+                          <p>
+                            Charge #{vorschlag.charge.id} · MHD{" "}
+                            {formatDate(vorschlag.charge.mhd)}
+                          </p>
+                        </div>
+                        <div className="task-meta">
+                          <span className="status-pill">
+                            {vorschlag.verfuegbar} verfuegbar
+                          </span>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
                 </div>
 
                 <button type="submit">Position speichern</button>
