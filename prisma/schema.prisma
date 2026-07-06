@@ -52,6 +52,8 @@ model Produkt {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
+  chargen Charge[]
+
   @@index([kategorie])
   @@index([vegan])
   @@index([inAboBoxEnthalten])
@@ -87,5 +89,27 @@ model Mitarbeiter {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  chargen Charge[]
+
   @@index([rolle])
+}
+
+model Charge {
+  id                  Int      @id @default(autoincrement())
+  produktId           Int
+  mitarbeiterId       Int
+  herstellungsdatum   DateTime
+  mhd                 DateTime
+  produzierteMenge    Int
+  status              String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  produkt     Produkt     @relation(fields: [produktId], references: [id])
+  mitarbeiter Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
+
+  @@index([produktId])
+  @@index([mitarbeiterId])
+  @@index([mhd])
+  @@index([status])
 }

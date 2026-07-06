@@ -211,3 +211,15 @@ Die App nutzt vorerst eine serverseitig ausgewertete Mitarbeiter-Auswahl als akt
 - Diese Umsetzung ist keine Authentifizierung und ersetzt keine spaetere Identitaetspruefung.
 - Authentifizierung bleibt eine offene technische Entscheidung.
 - Werkstatt-Hilfe und Packer erhalten bis zur Umsetzung von Chargen und Packlisten nur ihre jeweiligen Arbeitsbereich-Platzhalter.
+
+## 2026-07-06 - NW-003 Chargenverwaltung umgesetzt
+
+**Kontext:** Fuer die Lager- und Fulfillment-Features braucht die App Chargen mit Produkt, verantwortlicher Werkstatt-Hilfe, Herstellungsdatum, MHD, produzierter Menge und Status. Der Chargenstatus war bisher in `NW-039` offen.
+
+### Entscheidung
+Chargenstatus nutzt fuer V1 die Werte `freigegeben` und `gesperrt`. `aufgebraucht` wird nicht als manueller Chargenstatus eingefuehrt, weil dieser Zustand spaeter aus Lagerbestand und Reservierungen ableitbar ist. Die App ergaenzt ein Prisma-Modell `Charge` und eine Chargenverwaltung fuer Admin und Werkstatt-Hilfe.
+
+### Konsequenzen
+- `NW-003` ist im Backlog auf `done` gesetzt.
+- `NW-039` bleibt `in-progress`, weil Lagerort, Paketstatus, Retourenstatus, Produktzustand und Erstattungsart noch offen sind.
+- `NW-004` kann als naechstes Lagerfeature den Bestand je Charge modellieren.

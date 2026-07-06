@@ -23,6 +23,10 @@ import {
   type Rolle,
   rollen,
 } from "@/lib/employee-options";
+import {
+  chargenstatusWerte,
+  isChargenstatus,
+} from "@/lib/batch-options";
 
 export const dynamic = "force-dynamic";
 
@@ -236,6 +240,57 @@ async function createMitarbeiter(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createCharge(formData: FormData) {
+  "use server";
+
+  const produktId = requiredInt(formData.get("chargenProduktId"));
+  const mitarbeiterId = requiredInt(formData.get("chargenMitarbeiterId"));
+  const herstellungsdatum = requiredDate(formData.get("herstellungsdatum"));
+  const mhd = requiredDate(formData.get("mhd"));
+  const produzierteMenge = requiredInt(formData.get("produzierteMenge"));
+  const status = formData.get("chargenStatus")?.toString() ?? "";
+
+  if (
+    !produktId ||
+    !mitarbeiterId ||
+    !herstellungsdatum ||
+    !mhd ||
+    !produzierteMenge ||
+    produzierteMenge < 1 ||
+    !isChargenstatus(status)
+  ) {
+    return;
+  }
+
+  const [produkt, mitarbeiter] = await Promise.all([
+    prisma.produkt.findUnique({
+      where: { id: produktId },
+      select: { id: true },
+    }),
+    prisma.mitarbeiter.findUnique({
+      where: { id: mitarbeiterId },
+      select: { id: true, rolle: true },
+    }),
+  ]);
+
+  if (!produkt || !mitarbeiter || mitarbeiter.rolle !== "Werkstatt-Hilfe") {
+    return;
+  }
+
+  await prisma.charge.create({
+    data: {
+      produktId,
+      mitarbeiterId,
+      herstellungsdatum,
+      mhd,
+      produzierteMenge,
+      status,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -253,6 +308,10 @@ export default async function Home({ searchParams }: HomeProps) {
   });
   const mitarbeiter = await prisma.mitarbeiter.findMany({
     orderBy: [{ rolle: "asc" }, { name: "asc" }],
+  });
+  const chargen = await prisma.charge.findMany({
+    include: { produkt: true, mitarbeiter: true },
+    orderBy: [{ mhd: "asc" }, { id: "desc" }],
   });
   const params = searchParams ? await searchParams : {};
   const selectedMitarbeiterId = requiredInt(
@@ -282,6 +341,9 @@ export default async function Home({ searchParams }: HomeProps) {
   const verbindlicheBestellungen = aktiveBestellungen.filter(
     (bestellung) => bestellung.status === "verbindlich",
   );
+  const werkstattMitarbeiter = mitarbeiter.filter(
+    (person) => person.rolle === "Werkstatt-Hilfe",
+  );
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -289,13 +351,14 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-005 / NW-010 / NW-011 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-005 / NW-010 / NW-011 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
         <p className="summary">
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
-          {bestellungen.length} Bestellungen · {mitarbeiter.length} Mitarbeitende
+          {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
+          {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -340,19 +403,111 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
       </section>
 
-      {canCreateBatches && !canManageProducts ? (
-        <section className="workspace-overview" aria-labelledby="chargen-heading">
-          <div className="panel overview-panel">
-            <div>
-              <p className="eyebrow">Werkstatt-Hilfe</p>
-              <h2 id="chargen-heading">Chargenanlage</h2>
-            </div>
-            <p className="empty-state">
-              Die Chargenverwaltung ist noch nicht umgesetzt. Diese Rolle
-              erhaelt hier ausschliesslich die Chargenanlage, sobald der
-              Chargenbereich verfuegbar ist.
-            </p>
-          </div>
+      {canCreateBatches ? (
+        <section className="layout-grid feature-section">
+          <form action={createCharge} className="panel form-panel">
+            <h2>Charge anlegen</h2>
+
+            {produkte.length === 0 || werkstattMitarbeiter.length === 0 ? (
+              <p className="empty-state">
+                Zuerst Produkt und Werkstatt-Hilfe anlegen.
+              </p>
+            ) : (
+              <>
+                <label>
+                  Produkt
+                  <select name="chargenProduktId" required>
+                    {produkte.map((produkt) => (
+                      <option key={produkt.id} value={produkt.id}>
+                        {produkt.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Werkstatt-Hilfe
+                  <select name="chargenMitarbeiterId" required>
+                    {werkstattMitarbeiter.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Herstellungsdatum
+                    <input
+                      defaultValue={today}
+                      name="herstellungsdatum"
+                      required
+                      type="date"
+                    />
+                  </label>
+
+                  <label>
+                    MHD
+                    <input name="mhd" required type="date" />
+                  </label>
+                </div>
+
+                <div className="field-row">
+                  <label>
+                    Produzierte Menge
+                    <input min="1" name="produzierteMenge" required type="number" />
+                  </label>
+
+                  <label>
+                    Status
+                    <select
+                      name="chargenStatus"
+                      defaultValue="freigegeben"
+                      required
+                    >
+                      {chargenstatusWerte.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <button type="submit">Charge speichern</button>
+              </>
+            )}
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="chargen-heading">
+            <h2 id="chargen-heading">Chargen</h2>
+            {chargen.length === 0 ? (
+              <p className="empty-state">Noch keine Chargen erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {chargen.map((charge) => (
+                  <article className="customer-card" key={charge.id}>
+                    <div>
+                      <h3>Charge #{charge.id}</h3>
+                      <p>
+                        {charge.produkt.name} · MHD {formatDate(charge.mhd)}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Herstellung</dt>
+                      <dd>{formatDate(charge.herstellungsdatum)}</dd>
+                      <dt>Menge</dt>
+                      <dd>{charge.produzierteMenge}</dd>
+                      <dt>Werkstatt</dt>
+                      <dd>{charge.mitarbeiter.name}</dd>
+                    </dl>
+                    <span className="status-pill">{charge.status}</span>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         </section>
       ) : null}
 
