@@ -113,6 +113,18 @@ p {
   gap: 18px;
 }
 
+.role-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 20px;
+  align-items: end;
+}
+
+.role-switcher {
+  display: grid;
+  gap: 12px;
+}
+
 .overview-header {
   display: flex;
   align-items: flex-start;
@@ -309,7 +321,8 @@ button:hover {
   .layout-grid,
   .field-row,
   .metric-grid,
-  .task-item {
+  .task-item,
+  .role-panel {
     grid-template-columns: 1fr;
   }
 

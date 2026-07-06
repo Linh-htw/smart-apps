@@ -102,6 +102,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-032` ergaenzt `Mitarbeiter` als Stammdatenmodell mit Rolle, Zugriffsrechten und Kontaktfeldern. Rollen werden zentral gegen `Admin`, `Werkstatt-Hilfe` und `Packer` validiert. Die Zuordnung zu Chargen und Paketen folgt, sobald diese Fachmodelle umgesetzt werden.
 
+`NW-010` nutzt die Mitarbeiterrolle als serverseitig ausgewerteten Ansichtskontext. Die Startseite rendert Verwaltungsbereiche nur, wenn die aktive Rolle die passende Berechtigung hat: Admin sieht die vorhandenen Verwaltungsbereiche, Werkstatt-Hilfe sieht nur den Chargenarbeitsbereich, Packer nur den Packlistenarbeitsbereich. Bis eine echte Authentifizierung entschieden ist, ersetzt diese Auswahl kein Login und keine Identitaetspruefung.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

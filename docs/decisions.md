@@ -196,5 +196,18 @@ Die Rollenwerte fuer Mitarbeitende sind `Admin`, `Werkstatt-Hilfe` und `Packer`.
 ### Konsequenzen
 - `NW-032` ist im Backlog auf `done` gesetzt.
 - `NW-039` bleibt `in-progress`, weil weitere Enum-Werte noch offen sind.
-- Authentifizierung und serverseitige Durchsetzung der Rollenrechte bleiben Teil von `NW-010`.
+- Authentifizierung bleibt eine offene technische Entscheidung; die rollenbasierte Oberflaeche wird in `NW-010` behandelt.
 - Zuordnungen zu Chargen und Paketen werden erst mit den jeweiligen Fachmodellen ergaenzt.
+
+## 2026-07-06 - NW-010 serverseitige Rollenansicht umgesetzt
+
+**Kontext:** Die Rollenwerte sind geklaert, aber Authentifizierung und Hosting sind weiterhin offene technische Entscheidungen. Fuer die lokale V1-Entwicklung braucht die App trotzdem eine rollengetrennte Arbeitsoberflaeche.
+
+### Entscheidung
+Die App nutzt vorerst eine serverseitig ausgewertete Mitarbeiter-Auswahl als aktiven Rollenkontext. Berechtigungen werden zentral in `src/lib/employee-options.ts` definiert. Die Startseite rendert Verwaltungsbereiche nur fuer berechtigte Rollen: Admin sieht Kunden, Mitarbeitende, Bestellungen und Produkte; Werkstatt-Hilfe sieht nur den Chargenarbeitsbereich; Packer sieht nur den Packlistenarbeitsbereich.
+
+### Konsequenzen
+- `NW-010` ist im Backlog auf `done` gesetzt.
+- Diese Umsetzung ist keine Authentifizierung und ersetzt keine spaetere Identitaetspruefung.
+- Authentifizierung bleibt eine offene technische Entscheidung.
+- Werkstatt-Hilfe und Packer erhalten bis zur Umsetzung von Chargen und Packlisten nur ihre jeweiligen Arbeitsbereich-Platzhalter.

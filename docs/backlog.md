@@ -35,7 +35,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-006 | Zahlungsstatus und Verbindlichkeit | P1 - Kern | done | docs/spec.md GR-01, W-1 | DM-Zusage reserviert nur; verbindlich erst nach Zahlungseingang. |
 | NW-028 | Klarer Bestellstatus | P1 - Kern | done | docs/spec.md V1-Scope | Bestellung braucht sichtbaren, eindeutigen Status fuer aktive Bearbeitung. |
 | NW-011 | Aktive Arbeitsansicht | P1 - Kern | done | docs/spec.md V1-Scope | Ausschliesslich offene Aufgaben, relevante Warnungen und naechste Schritte anzeigen. |
-| NW-010 | Rollen- und Berechtigungssystem | P1 - Kern | validated | docs/spec.md V1-Scope, GR-09 | Admin, Werkstatt-Hilfe und Packer strikt trennen. |
+| NW-010 | Rollen- und Berechtigungssystem | P1 - Kern | done | docs/spec.md V1-Scope, GR-09 | Serverseitige Rollenansicht trennt Admin, Werkstatt-Hilfe und Packer fuer die vorhandenen Arbeitsbereiche. |
 | NW-032 | Mitarbeiterverwaltung | P1 - Kern | done | docs/spec.md Entitaet Mitarbeiter | Mitarbeitende mit Rolle, Rechten und Kontakt. Zuordnung zu Chargen/Paketen folgt mit den jeweiligen Fachmodellen. |
 | NW-033 | Admin-Vollzugriff | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Nina sieht und bearbeitet alle Bereiche. |
 | NW-034 | Werkstatt-Hilfe-Zugriff | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Werkstatt-Hilfe darf ausschliesslich Chargen anlegen. |

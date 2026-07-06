@@ -17,7 +17,12 @@ import {
   isZahlungsstatus,
   zahlungsstatusWerte,
 } from "@/lib/order-options";
-import { isRolle, rollen } from "@/lib/employee-options";
+import {
+  canAccess,
+  isRolle,
+  type Rolle,
+  rollen,
+} from "@/lib/employee-options";
 
 export const dynamic = "force-dynamic";
 
@@ -90,6 +95,10 @@ function getNextBestellschritt(bestellung: {
   }
 
   return "Zur weiteren Bearbeitung vormerken";
+}
+
+function getQueryValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 async function createKunde(formData: FormData) {
@@ -227,7 +236,11 @@ async function createMitarbeiter(formData: FormData) {
   revalidatePath("/");
 }
 
-export default async function Home() {
+type HomeProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
   const kunden = await prisma.kunde.findMany({
     orderBy: [{ stammkunde: "desc" }, { name: "asc" }],
   });
@@ -241,6 +254,25 @@ export default async function Home() {
   const mitarbeiter = await prisma.mitarbeiter.findMany({
     orderBy: [{ rolle: "asc" }, { name: "asc" }],
   });
+  const params = searchParams ? await searchParams : {};
+  const selectedMitarbeiterId = requiredInt(
+    getQueryValue(params.mitarbeiterId) ?? null,
+  );
+  const selectedMitarbeiter =
+    mitarbeiter.find((person) => person.id === selectedMitarbeiterId) ??
+    mitarbeiter.find((person) => person.rolle === "Admin") ??
+    mitarbeiter[0] ??
+    null;
+  const activeRolle: Rolle =
+    selectedMitarbeiter && isRolle(selectedMitarbeiter.rolle)
+      ? selectedMitarbeiter.rolle
+      : "Admin";
+  const canManageCustomers = canAccess(activeRolle, "manageCustomers");
+  const canManageEmployees = canAccess(activeRolle, "manageEmployees");
+  const canManageOrders = canAccess(activeRolle, "manageOrders");
+  const canManageProducts = canAccess(activeRolle, "manageProducts");
+  const canCreateBatches = canAccess(activeRolle, "createBatches");
+  const canViewPacklists = canAccess(activeRolle, "viewPacklists");
   const aktiveBestellungen = bestellungen.filter(
     (bestellung) => bestellung.status !== "storniert",
   );
@@ -256,7 +288,9 @@ export default async function Home() {
     <main className="workspace">
       <header className="workspace-header">
         <div>
-          <p className="eyebrow">NW-001 / NW-002 / NW-005 / NW-011 / NW-032</p>
+          <p className="eyebrow">
+            NW-001 / NW-002 / NW-005 / NW-010 / NW-011 / NW-032
+          </p>
           <h1>Arbeitsansicht</h1>
         </div>
         <p className="summary">
@@ -265,7 +299,81 @@ export default async function Home() {
         </p>
       </header>
 
-      <section className="workspace-overview" aria-labelledby="arbeit-heading">
+      <section className="workspace-overview" aria-labelledby="rolle-heading">
+        <div className="panel role-panel">
+          <div>
+            <p className="eyebrow">Aktive Rolle</p>
+            <h2 id="rolle-heading">
+              {selectedMitarbeiter
+                ? `${selectedMitarbeiter.name} · ${selectedMitarbeiter.rolle}`
+                : "Admin · Ersteinrichtung"}
+            </h2>
+            <p>
+              Die Auswahl steuert serverseitig, welche Arbeitsbereiche diese
+              Ansicht anzeigt.
+            </p>
+          </div>
+
+          {mitarbeiter.length === 0 ? (
+            <p className="empty-state">
+              Noch keine Mitarbeitenden erfasst. Bis zur ersten Anlage bleibt
+              die Admin-Ansicht aktiv.
+            </p>
+          ) : (
+            <form className="role-switcher">
+              <label>
+                Mitarbeiter
+                <select
+                  name="mitarbeiterId"
+                  defaultValue={selectedMitarbeiter?.id ?? ""}
+                >
+                  {mitarbeiter.map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.name} · {person.rolle}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit">Ansicht wechseln</button>
+            </form>
+          )}
+        </div>
+      </section>
+
+      {canCreateBatches && !canManageProducts ? (
+        <section className="workspace-overview" aria-labelledby="chargen-heading">
+          <div className="panel overview-panel">
+            <div>
+              <p className="eyebrow">Werkstatt-Hilfe</p>
+              <h2 id="chargen-heading">Chargenanlage</h2>
+            </div>
+            <p className="empty-state">
+              Die Chargenverwaltung ist noch nicht umgesetzt. Diese Rolle
+              erhaelt hier ausschliesslich die Chargenanlage, sobald der
+              Chargenbereich verfuegbar ist.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
+      {canViewPacklists && !canManageOrders ? (
+        <section className="workspace-overview" aria-labelledby="packliste-heading">
+          <div className="panel overview-panel">
+            <div>
+              <p className="eyebrow">Packer</p>
+              <h2 id="packliste-heading">Tages-Packliste</h2>
+            </div>
+            <p className="empty-state">
+              Packlisten sind noch nicht umgesetzt. Diese Rolle sieht hier
+              spaeter nur Name, Lieferadresse, Produkte, zugewiesene Charge und
+              Paketstatus.
+            </p>
+          </div>
+        </section>
+      ) : null}
+
+      {canManageOrders ? (
+        <section className="workspace-overview" aria-labelledby="arbeit-heading">
         <div className="panel overview-panel">
           <div className="overview-header">
             <div>
@@ -315,9 +423,11 @@ export default async function Home() {
             </div>
           )}
         </div>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="layout-grid">
+      {canManageCustomers ? (
+        <section className="layout-grid">
         <form action={createKunde} className="panel form-panel">
           <h2>Kunde anlegen</h2>
 
@@ -449,9 +559,11 @@ export default async function Home() {
             </div>
           )}
         </section>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="layout-grid feature-section">
+      {canManageEmployees ? (
+        <section className="layout-grid feature-section">
         <form action={createMitarbeiter} className="panel form-panel">
           <h2>Mitarbeiter anlegen</h2>
 
@@ -529,9 +641,11 @@ export default async function Home() {
             </div>
           )}
         </section>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="layout-grid feature-section">
+      {canManageOrders ? (
+        <section className="layout-grid feature-section">
         <form action={createBestellung} className="panel form-panel">
           <h2>Bestellung anlegen</h2>
 
@@ -627,9 +741,11 @@ export default async function Home() {
             </div>
           )}
         </section>
-      </section>
+        </section>
+      ) : null}
 
-      <section className="layout-grid feature-section">
+      {canManageProducts ? (
+        <section className="layout-grid feature-section">
         <form action={createProdukt} className="panel form-panel">
           <h2>Produkt anlegen</h2>
 
@@ -749,7 +865,8 @@ export default async function Home() {
             </div>
           )}
         </section>
-      </section>
+        </section>
+      ) : null}
     </main>
   );
 }
