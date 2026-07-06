@@ -100,6 +100,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-011` stellt die aktive Arbeitsansicht als erste Oberflaeche dar. Sie zeigt offene, nicht stornierte Bestellungen, Zahlungswarnungen, verbindliche Bestellungen und den naechsten Schritt pro Bestellung. Lager-, Chargen- und Packlistenwarnungen werden erst ergaenzt, sobald die zugehoerigen Fachmodelle existieren.
 
+`NW-032` ergaenzt `Mitarbeiter` als Stammdatenmodell mit Rolle, Zugriffsrechten und Kontaktfeldern. Rollen werden zentral gegen `Admin`, `Werkstatt-Hilfe` und `Packer` validiert. Die Zuordnung zu Chargen und Paketen folgt, sobald diese Fachmodelle umgesetzt werden.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

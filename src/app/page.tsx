@@ -17,6 +17,7 @@ import {
   isZahlungsstatus,
   zahlungsstatusWerte,
 } from "@/lib/order-options";
+import { isRolle, rollen } from "@/lib/employee-options";
 
 export const dynamic = "force-dynamic";
 
@@ -203,6 +204,29 @@ async function createBestellung(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createMitarbeiter(formData: FormData) {
+  "use server";
+
+  const name = formData.get("mitarbeiterName")?.toString().trim() ?? "";
+  const rolle = formData.get("rolle")?.toString() ?? "";
+
+  if (!name || !isRolle(rolle)) {
+    return;
+  }
+
+  await prisma.mitarbeiter.create({
+    data: {
+      name,
+      rolle,
+      zugriffsrechte: nullableText(formData.get("zugriffsrechte")),
+      email: nullableText(formData.get("mitarbeiterEmail")),
+      telefonnummer: nullableText(formData.get("telefonnummer")),
+    },
+  });
+
+  revalidatePath("/");
+}
+
 export default async function Home() {
   const kunden = await prisma.kunde.findMany({
     orderBy: [{ stammkunde: "desc" }, { name: "asc" }],
@@ -213,6 +237,9 @@ export default async function Home() {
   const bestellungen = await prisma.bestellung.findMany({
     include: { kunde: true },
     orderBy: [{ datum: "desc" }, { id: "desc" }],
+  });
+  const mitarbeiter = await prisma.mitarbeiter.findMany({
+    orderBy: [{ rolle: "asc" }, { name: "asc" }],
   });
   const aktiveBestellungen = bestellungen.filter(
     (bestellung) => bestellung.status !== "storniert",
@@ -229,12 +256,12 @@ export default async function Home() {
     <main className="workspace">
       <header className="workspace-header">
         <div>
-          <p className="eyebrow">NW-001 / NW-002 / NW-005 / NW-011</p>
+          <p className="eyebrow">NW-001 / NW-002 / NW-005 / NW-011 / NW-032</p>
           <h1>Arbeitsansicht</h1>
         </div>
         <p className="summary">
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
-          {bestellungen.length} Bestellungen
+          {bestellungen.length} Bestellungen · {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -417,6 +444,86 @@ export default async function Home() {
                   {kunde.stammkunde ? (
                     <span className="status-pill">Stammkunde</span>
                   ) : null}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </section>
+
+      <section className="layout-grid feature-section">
+        <form action={createMitarbeiter} className="panel form-panel">
+          <h2>Mitarbeiter anlegen</h2>
+
+          <label>
+            Name
+            <input name="mitarbeiterName" required />
+          </label>
+
+          <label>
+            Rolle
+            <select name="rolle" defaultValue="Packer" required>
+              {rollen.map((rolle) => (
+                <option key={rolle} value={rolle}>
+                  {rolle}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="field-row">
+            <label>
+              E-Mail
+              <input name="mitarbeiterEmail" type="email" />
+            </label>
+
+            <label>
+              Telefonnummer
+              <input name="telefonnummer" />
+            </label>
+          </div>
+
+          <label>
+            Zugriffsrechte
+            <textarea name="zugriffsrechte" rows={3} />
+          </label>
+
+          <button type="submit">Mitarbeiter speichern</button>
+        </form>
+
+        <section className="panel list-panel" aria-labelledby="mitarbeiter-heading">
+          <h2 id="mitarbeiter-heading">Mitarbeitende</h2>
+          {mitarbeiter.length === 0 ? (
+            <p className="empty-state">Noch keine Mitarbeitenden erfasst.</p>
+          ) : (
+            <div className="customer-list">
+              {mitarbeiter.map((person) => (
+                <article className="customer-card" key={person.id}>
+                  <div>
+                    <h3>{person.name}</h3>
+                    <p>{person.rolle}</p>
+                  </div>
+                  <dl>
+                    {person.email ? (
+                      <>
+                        <dt>E-Mail</dt>
+                        <dd>{person.email}</dd>
+                      </>
+                    ) : null}
+                    {person.telefonnummer ? (
+                      <>
+                        <dt>Telefon</dt>
+                        <dd>{person.telefonnummer}</dd>
+                      </>
+                    ) : null}
+                    {person.zugriffsrechte ? (
+                      <>
+                        <dt>Rechte</dt>
+                        <dd>{person.zugriffsrechte}</dd>
+                      </>
+                    ) : null}
+                  </dl>
+                  <span className="status-pill">{person.rolle}</span>
                 </article>
               ))}
             </div>

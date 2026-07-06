@@ -36,7 +36,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-028 | Klarer Bestellstatus | P1 - Kern | done | docs/spec.md V1-Scope | Bestellung braucht sichtbaren, eindeutigen Status fuer aktive Bearbeitung. |
 | NW-011 | Aktive Arbeitsansicht | P1 - Kern | done | docs/spec.md V1-Scope | Ausschliesslich offene Aufgaben, relevante Warnungen und naechste Schritte anzeigen. |
 | NW-010 | Rollen- und Berechtigungssystem | P1 - Kern | validated | docs/spec.md V1-Scope, GR-09 | Admin, Werkstatt-Hilfe und Packer strikt trennen. |
-| NW-032 | Mitarbeiterverwaltung | P1 - Kern | validated | docs/spec.md Entitaet Mitarbeiter | Mitarbeitende mit Rolle, Rechten, Kontakt und Zuordnung zu Chargen/Paketen. |
+| NW-032 | Mitarbeiterverwaltung | P1 - Kern | done | docs/spec.md Entitaet Mitarbeiter | Mitarbeitende mit Rolle, Rechten und Kontakt. Zuordnung zu Chargen/Paketen folgt mit den jeweiligen Fachmodellen. |
 | NW-033 | Admin-Vollzugriff | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Nina sieht und bearbeitet alle Bereiche. |
 | NW-034 | Werkstatt-Hilfe-Zugriff | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Werkstatt-Hilfe darf ausschliesslich Chargen anlegen. |
 | NW-035 | Packer-Zugriff mit Datensparsamkeit | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Packer sieht nur Packliste, Name, Lieferadresse, Produkte, Charge und Paketstatus. |
@@ -85,7 +85,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
-| NW-039 | Enum-Werte definieren | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus und Bestellstatus sind geklaert; Chargenstatus, Lagerort, Paketstatus, Retourenstatus, Produktzustand, Erstattungsart und Rolle bleiben offen. |
+| NW-039 | Enum-Werte definieren | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus und Rolle sind geklaert; Chargenstatus, Lagerort, Paketstatus, Retourenstatus, Produktzustand und Erstattungsart bleiben offen. |
 | NW-040 | Tech-Stack entscheiden | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment bleiben offen. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Manuell, halbautomatisch oder Anbieter-Integration fuer V1 entscheiden. |
 | NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Datenfeld sichtbar, aber Workflow spaeter, oder komplett spaeter. |

@@ -76,3 +76,16 @@ model Bestellung {
   @@index([status])
   @@index([datum])
 }
+
+model Mitarbeiter {
+  id             Int      @id @default(autoincrement())
+  name           String
+  rolle          String
+  zugriffsrechte String?
+  email          String?
+  telefonnummer  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([rolle])
+}

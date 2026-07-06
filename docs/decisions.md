@@ -185,3 +185,16 @@ Die Startseite zeigt zuerst eine aktive Arbeitsansicht auf Basis der vorhandenen
 - `NW-011` ist im Backlog auf `done` gesetzt.
 - Die Arbeitsansicht wird spaeter um Lager-, Chargen- und Packlistenwarnungen erweitert, sobald die zugehoerigen Features umgesetzt sind.
 - `NW-029` bleibt validiert, wartet aber auf `NW-003 Chargenverwaltung`, weil Bestellpositionen laut Spec eine Charge enthalten.
+
+## 2026-07-06 - Rollenwerte und NW-032 Mitarbeiterverwaltung umgesetzt
+
+**Kontext:** `NW-032` braucht konkrete Rollenwerte. Die Zielgruppenbeschreibung und `GR-09` definieren bereits die drei Rollen Admin, Werkstatt-Hilfe und Packer.
+
+### Entscheidung
+Die Rollenwerte fuer Mitarbeitende sind `Admin`, `Werkstatt-Hilfe` und `Packer`. Die App ergaenzt ein Prisma-Modell `Mitarbeiter` mit Name, Rolle, Zugriffsrechten, E-Mail und Telefonnummer. Rollen werden zentral in `src/lib/employee-options.ts` definiert und serverseitig validiert.
+
+### Konsequenzen
+- `NW-032` ist im Backlog auf `done` gesetzt.
+- `NW-039` bleibt `in-progress`, weil weitere Enum-Werte noch offen sind.
+- Authentifizierung und serverseitige Durchsetzung der Rollenrechte bleiben Teil von `NW-010`.
+- Zuordnungen zu Chargen und Paketen werden erst mit den jeweiligen Fachmodellen ergaenzt.
