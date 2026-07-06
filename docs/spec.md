@@ -30,13 +30,13 @@ Der Kernnutzen liegt in einer aktiven Arbeitsansicht: offene Aufgaben, Zahlungss
 - Packlisten fuer Mitarbeiter
 - Rollen- und Berechtigungssystem
 - Aktive Arbeitsansicht mit ausschliesslich offenen Aufgaben
+- Verpflichtender Allergen-Bestaetigungsworkflow bei allergenbehafteten Produkten
 
 ### Kann warten
 - Marketing-Aktionen
 - Rabattcodes
 - Automatische Versandkosten-Berechnung
 - Statistiken und Auswertungen, z. B. Bestseller
-- Allergene
 
 ## 4. Entitaeten
 
@@ -239,7 +239,6 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 ## 8. Offene Klaerungen
 
 - Gewuenschter Tech-Stack und Hosting.
-- Ob Allergene trotz "Kann warten" in V1 als Datenfeld sichtbar, aber nicht workflow-blockierend umgesetzt werden.
 
 ## 9. Geklaerte Enum-Werte
 

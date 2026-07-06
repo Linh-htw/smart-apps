@@ -399,3 +399,26 @@ Erstattungsart nutzt fuer V1 die Werte `Keine`, `Gutschein`, `Geld zurück` und 
 ### Konsequenzen
 - `NW-039` ist im Backlog auf `done` gesetzt.
 - `Keine` wird nur verwendet, wenn keine Erstattung erfolgt, etwa weil die Retoure abgelehnt wurde.
+
+## 2026-07-06 - Auth und Hosting werden spaeter geklaert
+
+**Kontext:** Die App nutzt aktuell eine lokale Rollenansicht ohne echte Authentifizierung. Auth, Hosting und Deployment sind wichtig, aber fuer die naechsten Fachfeatures nicht zwingend.
+
+### Entscheidung
+Auth, Hosting und Deployment werden jetzt nicht weiter festgelegt. Die lokale Entwicklung mit Next.js, Prisma und SQLite bleibt fuer die fachliche V1-Umsetzung bestehen.
+
+### Konsequenzen
+- `NW-040` bleibt als geklaerte, aber spaeter umzusetzende Grundsatzfrage im Backlog sichtbar.
+- Fachfeatures wie Pakete, Retouren und Bearbeitung koennen weitergebaut werden, ohne jetzt Login oder Hosting zu entscheiden.
+
+## 2026-07-06 - Allergen-Workflow gehoert in V1
+
+**Kontext:** Allergene standen zunaechst unter "Kann warten", gleichzeitig verlangt `GR-10` eine Bestaetigung vor Bestellabschluss bei allergenbehafteten Produkten.
+
+### Entscheidung
+V1 bekommt einen verpflichtenden Allergen-Bestaetigungsworkflow. Bei Bestellungen mit allergenbehafteten Produkten muss vor dem Abschluss eine Bestaetigung mit Timestamp vorliegen.
+
+### Konsequenzen
+- `NW-042` ist im Backlog auf `done` gesetzt.
+- `NW-025` wird aus `P4 - Spaeter` in `P3 - Regeln & Automatisierung` verschoben und bleibt als umzusetzenes V1-Feature sichtbar.
+- Produkt-Allergene bleiben nicht nur ein sichtbares Datenfeld, sondern werden workflow-relevant.

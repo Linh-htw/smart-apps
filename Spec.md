@@ -243,5 +243,4 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 - Rabattcodes
 - Automatische Versandkosten-Berechnung
 - Statistiken und Auswertungen (z. B. Bestseller)
-- Allergene
 

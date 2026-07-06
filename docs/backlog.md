@@ -70,6 +70,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-019 | Monatliche Abo-Abwicklung | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-14 | Sammelabwicklung am 15. mit Versandlabeln, konsolidierter Packliste und Lagerabbuchung. |
 | NW-037 | Abo-Pausierungsregel | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-15 | Maximal zwei Monate pausieren; Anmeldung bis zum 15. des Vormonats. |
 | NW-038 | Versandkostenregel | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-13 | B2C ab 39 EUR frei, darunter 4,50 EUR; B2B und Abo immer frei. |
+| NW-025 | Allergen-Workflow | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-10 | In V1 verpflichtend: Bei allergenbehafteten Produkten muss vor Bestellabschluss eine Allergenbestaetigung mit Timestamp vorliegen. |
 
 ## P4 - Spaeter
 
@@ -79,16 +80,15 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-022 | Marketing-Aktionen | P4 - Spaeter | hypo | docs/spec.md Kann warten | Explizit nicht V1. |
 | NW-023 | Rabattcodes | P4 - Spaeter | hypo | docs/spec.md Kann warten | Explizit nicht V1. |
 | NW-024 | Statistiken und Auswertungen | P4 - Spaeter | hypo | docs/spec.md Kann warten | Bestseller etc., explizit nicht V1. |
-| NW-025 | Allergen-Workflow | P4 - Spaeter | validated | docs/spec.md Kann warten, GR-10 | Fachregel existiert, aber Allergene koennen laut Priorisierung warten. |
 
 ## P0 - Klaerung
 
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
 | NW-039 | Enum-Werte definieren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | Alle aktuell benoetigten Enum-Werte sind geklaert: Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus, Lagerort, Paketstatus, Versandoption, Retourenstatus, Produktzustand und Erstattungsart. |
-| NW-040 | Tech-Stack entscheiden | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment bleiben offen. |
+| NW-040 | Auth, Hosting und Deployment klaeren | P0 - Klaerung | validated | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment werden bewusst spaeter geklaert und blockieren die naechsten Fachfeatures nicht. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 arbeitet manuell: Versandlabel ausserhalb der App, Trackingnummer und Versand-/Zustelldaten in der App pflegen. |
-| NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Datenfeld sichtbar, aber Workflow spaeter, oder komplett spaeter. |
+| NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 bekommt einen verpflichtenden Allergen-Bestaetigungsworkflow bei allergenbehafteten Produkten. |
 
 ## Workflow
 
