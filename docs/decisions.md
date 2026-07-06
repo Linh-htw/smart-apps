@@ -283,3 +283,16 @@ Die Packer-Ansicht zeigt eine Tages-Packliste aus verbindlichen Bestellungen mit
 - `NW-009` ist im Backlog auf `done` gesetzt.
 - Paketstatus wird noch nicht angezeigt, weil Paketverwaltung und Paketstatus separat in `NW-030` und `NW-016` umgesetzt werden.
 - Die Umsetzung stuetzt die Datensparsamkeit aus `GR-09`; `NW-035` bleibt offen, bis auch Paketstatus abgedeckt ist.
+
+## 2026-07-06 - NW-027 Lagerreservierung bei Bestellpositionen umgesetzt
+
+**Kontext:** Nach Chargen, Lagerbestand, FIFO-Zuteilung und Bestellpositionen muss die App verhindern, dass dieselbe freie Chargenmenge mehrfach fuer Bestellungen verplant wird.
+
+### Entscheidung
+Beim Anlegen einer Bestellposition bucht die App die zugewiesene FIFO-Charge in derselben Transaktion in den Lagerbestand. Ausstehende Bestellungen erhoehen die voruebergehend reservierte Menge, bezahlte Bestellungen erhoehen die verbindlich reservierte Menge. Verfuegbare Menge wird kuenftig aus produzierter Chargenmenge minus Lagerreservierungen berechnet.
+
+### Konsequenzen
+- `NW-027` ist im Backlog auf `done` gesetzt.
+- Die Lagerreservierung ist fuer den bestehenden Bestellkanal synchron zur Bestellposition.
+- Verkaufsevents, Abo-Abwicklung und Retouren werden spaeter an dieselbe Bestandslogik angeschlossen, sobald ihre Modelle umgesetzt sind.
+- Statuswechsel von ausstehend zu bezahlt braucht spaeter eine Umbuchung von voruebergehender zu verbindlicher Reservierung.

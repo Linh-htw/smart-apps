@@ -47,7 +47,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 |---|---|---|---|---|---|
 | NW-003 | Chargenverwaltung | P2 - Lager & Fulfillment | done | docs/spec.md Entitaet Charge | Chargen mit Produkt, Werkstatt-Hilfe, Herstellungsdatum, MHD, Menge und Status. |
 | NW-004 | Lagerbestand mit Reservierungen | P2 - Lager & Fulfillment | done | docs/spec.md Entitaet Lagerbestand | Lagerorte, voruebergehend reservierte und verbindlich reservierte Mengen je Charge. |
-| NW-027 | Synchroner Lagerabzug ueber alle Kanaele | P2 - Lager & Fulfillment | validated | docs/spec.md V1-Scope | Bestand muss bei Bestellungen, Events, Abo-Abwicklung und Retouren konsistent bleiben. |
+| NW-027 | Synchroner Lagerabzug ueber alle Kanaele | P2 - Lager & Fulfillment | done | docs/spec.md V1-Scope | Bestellpositionen buchen Reservierungen direkt in den Lagerbestand; Events, Abo-Abwicklung und Retouren folgen mit den jeweiligen Modellen. |
 | NW-007 | Manuelle Reservierungswarnungen | P2 - Lager & Fulfillment | done | docs/spec.md GR-02, W-2 | Warnfristen fuer Neukunden und Stammkunden in der Arbeitsansicht, keine automatische Stornierung. |
 | NW-008 | FIFO-Bestandszuteilung | P2 - Lager & Fulfillment | done | docs/spec.md GR-03 | Automatischer Vorschlag und Zuweisung der freigegebenen Charge mit fruehestem MHD bei Bestellpositionen. |
 | NW-009 | Packlisten fuer Packer | P2 - Lager & Fulfillment | done | docs/spec.md V1-Scope, GR-03, GR-09 | Tages-Packliste fuer verbindliche Bestellungen mit Name, Lieferadresse, Produkt, Menge und zugewiesener Charge. |

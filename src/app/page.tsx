@@ -168,21 +168,35 @@ function getReservierteMenge(charge: {
     mengeVoruebergehendReserviert: number;
     mengeVerbindlichReserviert: number;
   }>;
-  bestellpositionen: Array<{ menge: number }>;
 }) {
-  const lagerReserviert = charge.lagerbestaende.reduce(
+  return charge.lagerbestaende.reduce(
     (summe, bestand) =>
       summe +
       bestand.mengeVoruebergehendReserviert +
       bestand.mengeVerbindlichReserviert,
     0,
   );
-  const positionenReserviert = charge.bestellpositionen.reduce(
-    (summe, position) => summe + position.menge,
-    0,
-  );
+}
 
-  return lagerReserviert + positionenReserviert;
+function getReservierungsLagerort(charge: {
+  lagerbestaende: Array<{ lagerort: string }>;
+}) {
+  return (
+    charge.lagerbestaende.find((bestand) => bestand.lagerort === "Versandbereit")
+      ?.lagerort ??
+    charge.lagerbestaende[0]?.lagerort ??
+    "Versandbereit"
+  );
+}
+
+function getFreieMenge(charge: {
+  produzierteMenge: number;
+  lagerbestaende: Array<{
+    mengeVoruebergehendReserviert: number;
+    mengeVerbindlichReserviert: number;
+  }>;
+}) {
+  return charge.produzierteMenge - getReservierteMenge(charge);
 }
 
 function getQueryValue(value: string | string[] | undefined) {
@@ -315,7 +329,7 @@ async function createBestellposition(formData: FormData) {
   const [bestellung, produkt, chargenFuerProdukt] = await Promise.all([
     prisma.bestellung.findUnique({
       where: { id: bestellungId },
-      select: { id: true },
+      select: { id: true, zahlungsstatus: true },
     }),
     prisma.produkt.findUnique({
       where: { id: produktId },
@@ -323,10 +337,7 @@ async function createBestellposition(formData: FormData) {
     }),
     prisma.charge.findMany({
       where: { produktId, status: "freigegeben" },
-      include: {
-        lagerbestaende: true,
-        bestellpositionen: { select: { menge: true } },
-      },
+      include: { lagerbestaende: true },
       orderBy: [{ mhd: "asc" }, { id: "asc" }],
     }),
   ]);
@@ -336,21 +347,43 @@ async function createBestellposition(formData: FormData) {
   }
 
   const vorgeschlageneCharge = chargenFuerProdukt.find(
-    (charge) =>
-      charge.produzierteMenge - getReservierteMenge(charge) >= menge,
+    (charge) => getFreieMenge(charge) >= menge,
   );
 
   if (!vorgeschlageneCharge) {
     return;
   }
 
-  await prisma.bestellposition.create({
-    data: {
-      bestellungId,
-      produktId,
-      chargeId: vorgeschlageneCharge.id,
-      menge,
-    },
+  const lagerort = getReservierungsLagerort(vorgeschlageneCharge);
+  const isVerbindlich = bestellung.zahlungsstatus === "bezahlt";
+
+  await prisma.$transaction(async (tx) => {
+    await tx.bestellposition.create({
+      data: {
+        bestellungId,
+        produktId,
+        chargeId: vorgeschlageneCharge.id,
+        menge,
+      },
+    });
+
+    await tx.lagerbestand.upsert({
+      where: {
+        chargeId_lagerort: {
+          chargeId: vorgeschlageneCharge.id,
+          lagerort,
+        },
+      },
+      create: {
+        chargeId: vorgeschlageneCharge.id,
+        lagerort,
+        mengeVoruebergehendReserviert: isVerbindlich ? 0 : menge,
+        mengeVerbindlichReserviert: isVerbindlich ? menge : 0,
+      },
+      update: isVerbindlich
+        ? { mengeVerbindlichReserviert: { increment: menge } }
+        : { mengeVoruebergehendReserviert: { increment: menge } },
+    });
   });
 
   revalidatePath("/");
@@ -568,14 +601,14 @@ export default async function Home({ searchParams }: HomeProps) {
         (charge) =>
           charge.produktId === produkt.id &&
           charge.status === "freigegeben" &&
-          charge.produzierteMenge - getReservierteMenge(charge) > 0,
+          getFreieMenge(charge) > 0,
       );
 
       return charge
         ? {
             produkt,
             charge,
-            verfuegbar: charge.produzierteMenge - getReservierteMenge(charge),
+            verfuegbar: getFreieMenge(charge),
           }
         : null;
     })
@@ -595,7 +628,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-029 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-027 / NW-029 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
