@@ -85,7 +85,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
-| NW-039 | Enum-Werte definieren | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus, Lagerort, Paketstatus und Versandoption sind geklaert; Retourenstatus, Produktzustand und Erstattungsart bleiben offen. |
+| NW-039 | Enum-Werte definieren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | Alle aktuell benoetigten Enum-Werte sind geklaert: Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus, Lagerort, Paketstatus, Versandoption, Retourenstatus, Produktzustand und Erstattungsart. |
 | NW-040 | Tech-Stack entscheiden | P0 - Klaerung | in-progress | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment bleiben offen. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 arbeitet manuell: Versandlabel ausserhalb der App, Trackingnummer und Versand-/Zustelldaten in der App pflegen. |
 | NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | hypo | docs/spec.md Offene Klaerungen | Datenfeld sichtbar, aber Workflow spaeter, oder komplett spaeter. |

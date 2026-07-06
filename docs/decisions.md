@@ -366,3 +366,36 @@ V1 erstellt Versandlabel ausserhalb der App. Die App speichert Versandoption, Ve
 - `NW-041` ist im Backlog auf `done` gesetzt.
 - Es wird fuer V1 keine DHL- oder andere Versanddienstleister-Integration gebaut.
 - `NW-030` und `NW-016` koennen mit manueller Paket- und Trackingpflege umgesetzt werden.
+
+## 2026-07-06 - Retourenstatus geklaert
+
+**Kontext:** Fuer `NW-015 Retourenverwaltung` braucht die App Prozessstatuswerte fuer Retouren. Erstattung soll nicht als Retourenstatus modelliert werden.
+
+### Entscheidung
+Retourenstatus nutzt fuer V1 die Werte `Angemeldet`, `Eingegangen`, `In Prüfung`, `Angenommen`, `Abgelehnt` und `Abgeschlossen`.
+
+### Konsequenzen
+- `NW-039` bleibt `in-progress`, weil Produktzustand und Erstattungsart weiterhin offen sind.
+- Erstattung wird separat ueber `Erstattungsart` geklaert und nicht in den Retourenstatus gemischt.
+
+## 2026-07-06 - Produktzustand fuer Retouren geklaert
+
+**Kontext:** Fuer Retouren und Rueckbuchung in Bestand muss die App den Zustand der zurueckgesendeten Ware erfassen.
+
+### Entscheidung
+Produktzustand nutzt fuer V1 die Werte `Ungeöffnet`, `Geöffnet`, `Beschädigt` und `Mangelhaft`.
+
+### Konsequenzen
+- `NW-039` bleibt `in-progress`, weil Erstattungsart weiterhin offen ist.
+- Die Werte passen zur spaeteren Bestandsrueckbuchung: ungeoeffnete Ware kann geprueft zurueckgebucht werden; geoeffnete oder beschaedigte Ware wird ausgebucht; mangelhafte Ware dient als Reklamationsfall.
+
+## 2026-07-06 - Erstattungsart fuer Retouren geklaert
+
+**Kontext:** Fuer `NW-015 Retourenverwaltung` braucht die App neben Retourenstatus und Produktzustand konkrete Erstattungsarten.
+
+### Entscheidung
+Erstattungsart nutzt fuer V1 die Werte `Keine`, `Gutschein`, `Geld zurück` und `Ersatzprodukt`.
+
+### Konsequenzen
+- `NW-039` ist im Backlog auf `done` gesetzt.
+- `Keine` wird nur verwendet, wenn keine Erstattung erfolgt, etwa weil die Retoure abgelehnt wurde.

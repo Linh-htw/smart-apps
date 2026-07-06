@@ -238,7 +238,6 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 
 ## 8. Offene Klaerungen
 
-- Konkrete Enum-Werte fuer Retourenstatus, Produktzustand und Erstattungsart.
 - Gewuenschter Tech-Stack und Hosting.
 - Ob Allergene trotz "Kann warten" in V1 als Datenfeld sichtbar, aber nicht workflow-blockierend umgesetzt werden.
 
@@ -295,3 +294,11 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 | Feld | Werte |
 |---|---|
 | Versandlabel und Tracking V1 | Manuell; Versandlabel wird ausserhalb der App erstellt, Trackingnummer und Versand-/Zustelldaten werden in der App gepflegt |
+
+### Retoure
+
+| Feld | Werte |
+|---|---|
+| Retourenstatus | Angemeldet, Eingegangen, In Prüfung, Angenommen, Abgelehnt, Abgeschlossen |
+| Produktzustand | Ungeöffnet, Geöffnet, Beschädigt, Mangelhaft |
+| Erstattungsart | Keine, Gutschein, Geld zurück, Ersatzprodukt |
