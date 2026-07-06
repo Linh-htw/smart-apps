@@ -108,6 +108,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-004` ergaenzt `Lagerbestand` je Charge und Lagerort mit voruebergehend und verbindlich reservierten Mengen. Lagerorte werden zentral gegen `Werkstatt`, `Versandbereit` und `Restposten` validiert. Die produzierte Gesamtmenge bleibt an der Charge; freie Mengen werden spaeter aus Charge und Reservierungen abgeleitet.
 
+`NW-029` ergaenzt `Bestellposition` als Verbindung zwischen Bestellung, Produkt, Charge und Menge. Beim Anlegen wird serverseitig geprueft, dass die gewaehlte Charge zum gewaehlten Produkt gehoert. Automatische Bestandsreservierung und FIFO-Zuteilung folgen separat in den Lagerfeatures.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

@@ -53,6 +53,7 @@ model Produkt {
   updatedAt              DateTime @updatedAt
 
   chargen Charge[]
+  bestellpositionen Bestellposition[]
 
   @@index([kategorie])
   @@index([vegan])
@@ -71,6 +72,7 @@ model Bestellung {
   updatedAt      DateTime @updatedAt
 
   kunde Kunde @relation(fields: [kundeId], references: [id])
+  positionen Bestellposition[]
 
   @@index([kundeId])
   @@index([kanal])
@@ -108,11 +110,30 @@ model Charge {
   produkt     Produkt     @relation(fields: [produktId], references: [id])
   mitarbeiter Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
   lagerbestaende Lagerbestand[]
+  bestellpositionen Bestellposition[]
 
   @@index([produktId])
   @@index([mitarbeiterId])
   @@index([mhd])
   @@index([status])
+}
+
+model Bestellposition {
+  id           Int      @id @default(autoincrement())
+  bestellungId Int
+  produktId    Int
+  chargeId     Int
+  menge        Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bestellung Bestellung @relation(fields: [bestellungId], references: [id])
+  produkt    Produkt    @relation(fields: [produktId], references: [id])
+  charge     Charge     @relation(fields: [chargeId], references: [id])
+
+  @@index([bestellungId])
+  @@index([produktId])
+  @@index([chargeId])
 }
 
 model Lagerbestand {

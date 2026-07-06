@@ -223,6 +223,49 @@ async function createBestellung(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createBestellposition(formData: FormData) {
+  "use server";
+
+  const bestellungId = requiredInt(formData.get("positionBestellungId"));
+  const produktId = requiredInt(formData.get("positionProduktId"));
+  const chargeId = requiredInt(formData.get("positionChargeId"));
+  const menge = requiredInt(formData.get("positionMenge"));
+
+  if (!bestellungId || !produktId || !chargeId || !menge || menge < 1) {
+    return;
+  }
+
+  const [bestellung, produkt, charge] = await Promise.all([
+    prisma.bestellung.findUnique({
+      where: { id: bestellungId },
+      select: { id: true },
+    }),
+    prisma.produkt.findUnique({
+      where: { id: produktId },
+      select: { id: true },
+    }),
+    prisma.charge.findUnique({
+      where: { id: chargeId },
+      select: { id: true, produktId: true },
+    }),
+  ]);
+
+  if (!bestellung || !produkt || !charge || charge.produktId !== produktId) {
+    return;
+  }
+
+  await prisma.bestellposition.create({
+    data: {
+      bestellungId,
+      produktId,
+      chargeId,
+      menge,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 async function createMitarbeiter(formData: FormData) {
   "use server";
 
@@ -364,6 +407,14 @@ export default async function Home({ searchParams }: HomeProps) {
     include: { kunde: true },
     orderBy: [{ datum: "desc" }, { id: "desc" }],
   });
+  const bestellpositionen = await prisma.bestellposition.findMany({
+    include: {
+      bestellung: { include: { kunde: true } },
+      produkt: true,
+      charge: true,
+    },
+    orderBy: [{ id: "desc" }],
+  });
   const mitarbeiter = await prisma.mitarbeiter.findMany({
     orderBy: [{ rolle: "asc" }, { name: "asc" }],
   });
@@ -414,14 +465,15 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-010 / NW-011 / NW-032
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-010 / NW-011 / NW-029 / NW-032
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
         <p className="summary">
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
           {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
-          {lagerbestaende.length} Lagerbestaende · {mitarbeiter.length} Mitarbeitende
+          {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
+          {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -1052,6 +1104,98 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
           )}
         </section>
+        </section>
+      ) : null}
+
+      {canManageOrders ? (
+        <section className="layout-grid feature-section">
+          <form action={createBestellposition} className="panel form-panel">
+            <h2>Bestellposition anlegen</h2>
+
+            {bestellungen.length === 0 || chargen.length === 0 ? (
+              <p className="empty-state">
+                Zuerst Bestellung und Charge anlegen.
+              </p>
+            ) : (
+              <>
+                <label>
+                  Bestellung
+                  <select name="positionBestellungId" required>
+                    {bestellungen.map((bestellung) => (
+                      <option key={bestellung.id} value={bestellung.id}>
+                        #{bestellung.id} · {bestellung.kunde.name} ·{" "}
+                        {formatDate(bestellung.datum)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Produkt
+                  <select name="positionProduktId" required>
+                    {produkte.map((produkt) => (
+                      <option key={produkt.id} value={produkt.id}>
+                        {produkt.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Charge
+                    <select name="positionChargeId" required>
+                      {chargen.map((charge) => (
+                        <option key={charge.id} value={charge.id}>
+                          #{charge.id} · {charge.produkt.name} · MHD{" "}
+                          {formatDate(charge.mhd)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Menge
+                    <input min="1" name="positionMenge" required type="number" />
+                  </label>
+                </div>
+
+                <button type="submit">Position speichern</button>
+              </>
+            )}
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="positionen-heading">
+            <h2 id="positionen-heading">Bestellpositionen</h2>
+            {bestellpositionen.length === 0 ? (
+              <p className="empty-state">Noch keine Bestellpositionen erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {bestellpositionen.map((position) => (
+                  <article className="customer-card" key={position.id}>
+                    <div>
+                      <h3>Bestellung #{position.bestellung.id}</h3>
+                      <p>
+                        {position.bestellung.kunde.name} ·{" "}
+                        {position.produkt.name}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Menge</dt>
+                      <dd>{position.menge}</dd>
+                      <dt>Charge</dt>
+                      <dd>
+                        #{position.charge.id} · MHD{" "}
+                        {formatDate(position.charge.mhd)}
+                      </dd>
+                      <dt>Status</dt>
+                      <dd>{position.bestellung.status}</dd>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         </section>
       ) : null}
 

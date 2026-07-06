@@ -235,3 +235,15 @@ Lagerorte nutzen fuer V1 die Werte `Werkstatt`, `Versandbereit` und `Restposten`
 - `NW-004` ist im Backlog auf `done` gesetzt.
 - `NW-039` bleibt `in-progress`, weil Paketstatus, Retourenstatus, Produktzustand und Erstattungsart noch offen sind.
 - Freie Mengen werden noch nicht als eigenes Feld gespeichert, sondern koennen spaeter aus produzierter Chargenmenge und Reservierungen abgeleitet werden.
+
+## 2026-07-06 - NW-029 Bestellpositionen umgesetzt
+
+**Kontext:** Bestellpositionen waren bis zur Chargenverwaltung blockiert, weil sie laut Spec Bestellung, Produkt, Charge und Menge enthalten.
+
+### Entscheidung
+Die App ergaenzt ein Prisma-Modell `Bestellposition` mit Pflicht-Relationen zu `Bestellung`, `Produkt` und `Charge`. Beim Anlegen wird serverseitig validiert, dass die gewaehlte Charge zum gewaehlten Produkt gehoert.
+
+### Konsequenzen
+- `NW-029` ist im Backlog auf `done` gesetzt.
+- Automatische FIFO-Zuteilung wird nicht in `NW-029` umgesetzt, sondern bleibt Teil von `NW-008`.
+- Automatische Reservierungs- oder Lagerabbuchung folgt in den Lagerfeatures, insbesondere `NW-027`.
