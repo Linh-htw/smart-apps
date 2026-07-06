@@ -52,7 +52,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-008 | FIFO-Bestandszuteilung | P2 - Lager & Fulfillment | done | docs/spec.md GR-03 | Automatischer Vorschlag und Zuweisung der freigegebenen Charge mit fruehestem MHD bei Bestellpositionen. |
 | NW-009 | Packlisten fuer Packer | P2 - Lager & Fulfillment | done | docs/spec.md V1-Scope, GR-03, GR-09 | Tages-Packliste fuer verbindliche Bestellungen mit Name, Lieferadresse, Produkt, Menge und zugewiesener Charge. |
 | NW-030 | Paketverwaltung | P2 - Lager & Fulfillment | validated | docs/spec.md Entitaet Paket, Beziehung 7, 13 | Paket mit Bestellung, Packer, Versandoption, Versandkosten, Status, Tracking und Zustellung. |
-| NW-016 | Paket- und Trackingstatus | P2 - Lager & Fulfillment | validated | docs/spec.md GR-11 | Bestellung automatisch abschliessen, wenn Tracking Zustellung bestaetigt. |
+| NW-016 | Paket- und Trackingstatus | P2 - Lager & Fulfillment | validated | docs/spec.md GR-11 | Wenn ein Paket `Zugestellt` ist, wird die Bestellung automatisch auf `abgeschlossen` gesetzt. |
 | NW-020 | Verkaufsevent-Verwaltung | P2 - Lager & Fulfillment | done | docs/spec.md Entitaeten Verkaufsevent, Verkaufsevent-Position | Verkaufsevents mit Datum und Ort sowie mitgenommenen und verkauften Chargenmengen erfassen. |
 | NW-036 | Verkaufsevent-zu-Charge-Beziehung | P2 - Lager & Fulfillment | done | docs/spec.md Beziehungen 10-11 | Verkaufsevents werden ueber Positionen n:m mit Chargen verbunden. |
 

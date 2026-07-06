@@ -143,7 +143,7 @@ Die App ergaenzt ein Prisma-Modell `Produkt` und eine Produktverwaltung auf der 
 **Kontext:** Fuer die kanaluebergreifende Bestellverwaltung braucht die App konkrete Werte fuer Bestellkanal, Zahlungsstatus und Bestellstatus. Diese Werte waren in `NW-039` noch offen.
 
 ### Entscheidung
-Bestellkanal nutzt `Instagram`, `Email` und `Abo`. Zahlungsstatus nutzt `ausstehend` und `bezahlt`. Bestellstatus nutzt `Eingegangen`, `verbindlich` und `storniert`.
+Bestellkanal nutzt `Instagram`, `Email` und `Abo`. Zahlungsstatus nutzt `ausstehend` und `bezahlt`. Bestellstatus nutzt `Eingegangen`, `verbindlich`, `storniert` und `abgeschlossen`.
 
 ### Konsequenzen
 - `NW-005` kann mit zentral validierten Bestellwerten umgesetzt werden.
@@ -422,3 +422,14 @@ V1 bekommt einen verpflichtenden Allergen-Bestaetigungsworkflow. Bei Bestellunge
 - `NW-042` ist im Backlog auf `done` gesetzt.
 - `NW-025` wird aus `P4 - Spaeter` in `P3 - Regeln & Automatisierung` verschoben und bleibt als umzusetzenes V1-Feature sichtbar.
 - Produkt-Allergene bleiben nicht nur ein sichtbares Datenfeld, sondern werden workflow-relevant.
+
+## 2026-07-06 - Bestellabschluss ueber Paket-Zustellung
+
+**Kontext:** `GR-11` verlangt, dass eine Bestellung abgeschlossen wird, sobald die Zustellung bestaetigt ist. Dafuer braucht die Bestellung einen klaren Abschlussstatus.
+
+### Entscheidung
+Bestellstatus erhaelt den zusaetzlichen Wert `abgeschlossen`. Wenn ein Paket den Status `Zugestellt` bekommt, soll die zugehoerige Bestellung automatisch auf `abgeschlossen` gesetzt werden. Ein separater Status `archiviert` wird fuer V1 nicht eingefuehrt.
+
+### Konsequenzen
+- `NW-016` kann mit Paketstatus `Zugestellt` als Ausloeser fuer den Bestellabschluss umgesetzt werden.
+- Abgeschlossene Bestellungen gelten als erledigt und sollen nicht mehr als offene Aufgabe erscheinen.

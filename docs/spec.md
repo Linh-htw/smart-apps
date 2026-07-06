@@ -248,7 +248,7 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 |---|---|
 | Bestellkanal | Instagram, Email, Abo |
 | Zahlungsstatus | ausstehend, bezahlt |
-| Bestellstatus | Eingegangen, verbindlich, storniert |
+| Bestellstatus | Eingegangen, verbindlich, storniert, abgeschlossen |
 
 ### Produkt
 

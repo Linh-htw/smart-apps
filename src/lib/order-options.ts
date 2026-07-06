@@ -6,6 +6,7 @@ export const bestellstatusWerte = [
   "Eingegangen",
   "verbindlich",
   "storniert",
+  "abgeschlossen",
 ] as const;
 
 export type Bestellkanal = (typeof bestellkanaele)[number];
