@@ -308,3 +308,15 @@ Die App ergaenzt `Verkaufsevent` und `VerkaufseventPosition`. Positionen verbind
 - `NW-020` und `NW-036` sind im Backlog auf `done` gesetzt.
 - Mitgenommene Event-Mengen reduzieren die freie Chargenmenge, damit diese Ware nicht parallel fuer Bestellungen verplant wird.
 - Nicht verkaufte Event-Mengen werden noch nicht automatisch zurueckgebucht; dafuer braucht es spaeter eine eigene fachliche Rueckbuchungsfunktion.
+
+## 2026-07-06 - NW-017 MHD-Warnungen umgesetzt
+
+**Kontext:** `GR-12` verlangt Rabattvorschlaege vor Ablauf des MHD, aber keine automatische Preisaenderung ohne Ninas Bestaetigung.
+
+### Entscheidung
+Die aktive Arbeitsansicht zeigt freie, freigegebene Chargen mit nahem MHD als Aufgabe. Ab 56 Tagen vor MHD wird ein 20-%-Rabatt vorgeschlagen, ab 30 Tagen vor MHD ein 50-%-Rabatt. Bereits ueberschrittene MHDs werden als kritische Restposten-Pruefung angezeigt.
+
+### Konsequenzen
+- `NW-017` ist im Backlog auf `done` gesetzt.
+- Preise, Produktdaten und Lagerorte werden nicht automatisch veraendert.
+- Die Warnung nutzt die aktuell freie Chargenmenge, damit voll reservierte oder fuer Events mitgenommene Chargen nicht als Verkaufsaufgabe erscheinen.

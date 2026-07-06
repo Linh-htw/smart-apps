@@ -106,6 +106,50 @@ function getDaysSince(value: Date, now = new Date()) {
   );
 }
 
+function getDaysUntil(value: Date, now = new Date()) {
+  const target = new Date(value);
+  target.setHours(0, 0, 0, 0);
+
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+
+  return Math.ceil((target.getTime() - start.getTime()) / 86_400_000);
+}
+
+function getMhdWarnung(charge: {
+  mhd: Date;
+  status: string;
+}) {
+  if (charge.status !== "freigegeben") {
+    return null;
+  }
+
+  const tageBisMhd = getDaysUntil(charge.mhd);
+
+  if (tageBisMhd <= 30) {
+    return {
+      level: "critical",
+      rabatt: 50,
+      tageBisMhd,
+      text:
+        tageBisMhd < 0
+          ? "MHD ueberschritten, Restposten pruefen"
+          : "30 Tage oder weniger bis MHD, 50 % Rabatt vorschlagen",
+    };
+  }
+
+  if (tageBisMhd <= 56) {
+    return {
+      level: "warning",
+      rabatt: 20,
+      tageBisMhd,
+      text: "8 Wochen oder weniger bis MHD, 20 % Rabatt vorschlagen",
+    };
+  }
+
+  return null;
+}
+
 function getReservierungswarnung(bestellung: {
   datum: Date;
   zahlungsstatus: string;
@@ -729,6 +773,13 @@ export default async function Home({ searchParams }: HomeProps) {
       frei: getFreieMenge(charge),
     }))
     .filter((eintrag) => eintrag.frei > 0);
+  const mhdWarnungen = chargenMitFreierMenge
+    .map(({ charge, frei }) => ({
+      charge,
+      frei,
+      warnung: getMhdWarnung(charge),
+    }))
+    .filter((eintrag) => eintrag.warnung !== null);
   const packlistenBestellungen = verbindlicheBestellungen
     .map((bestellung) => ({
       bestellung,
@@ -744,7 +795,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-020 / NW-027 / NW-029 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-017 / NW-020 / NW-027 / NW-029 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1230,6 +1281,10 @@ export default async function Home({ searchParams }: HomeProps) {
               <span>Stornierte ausgeblendet</span>
               <strong>{bestellungen.length - aktiveBestellungen.length}</strong>
             </div>
+            <div className="metric-tile">
+              <span>MHD-Warnungen</span>
+              <strong>{mhdWarnungen.length}</strong>
+            </div>
           </div>
 
           {aktiveBestellungen.length === 0 ? (
@@ -1263,6 +1318,35 @@ export default async function Home({ searchParams }: HomeProps) {
                     </span>
                     <span className="status-pill">{bestellung.status}</span>
                     <strong>{getNextBestellschritt(bestellung)}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {mhdWarnungen.length === 0 ? null : (
+            <div className="task-list">
+              {mhdWarnungen.map(({ charge, frei, warnung }) => (
+                <article className="task-item" key={charge.id}>
+                  <div>
+                    <h3>Charge #{charge.id}</h3>
+                    <p>
+                      {charge.produkt.name} - MHD {formatDate(charge.mhd)} -{" "}
+                      {frei} frei
+                    </p>
+                    <p
+                      className={`warning-text ${
+                        warnung?.level === "critical" ? "critical" : ""
+                      }`}
+                    >
+                      {warnung?.text}
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">
+                      {warnung?.rabatt} % Vorschlag
+                    </span>
+                    <strong>Manuell bestaetigen</strong>
                   </div>
                 </article>
               ))}

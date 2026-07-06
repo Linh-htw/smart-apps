@@ -120,6 +120,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-020` und `NW-036` ergaenzen `Verkaufsevent` und `VerkaufseventPosition`. Ein Verkaufsevent hat Datum und Ort. Positionen verbinden ein Event mit einer Charge und speichern `mengeMitgenommen` sowie `mengeVerkauft`; `mengeVerkauft` darf nicht groesser sein als `mengeMitgenommen`. Pro Event und Charge gibt es maximal eine Position. Nicht verkaufte Event-Mengen bleiben bis zu einer spaeteren Rueckbuchungsfunktion blockiert.
 
+`NW-017` ergaenzt MHD-Warnungen in der aktiven Arbeitsansicht. Freie, freigegebene Chargen werden ab 56 Tagen vor MHD mit einem 20-%-Rabattvorschlag und ab 30 Tagen vor MHD mit einem 50-%-Rabattvorschlag angezeigt. Die App aendert Preise nicht automatisch; Nina muss jeden Vorschlag manuell bestaetigen.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell
