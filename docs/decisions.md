@@ -332,3 +332,37 @@ Beim Anlegen einer Bestellposition prueft die FIFO-Zuteilung den Kundentyp der B
 - `NW-014` ist im Backlog auf `done` gesetzt.
 - Die Regel greift serverseitig bei der Chargenzuteilung und kann nicht nur durch die Oberflaeche umgangen werden.
 - Zahlungsziel- und Preisautomatik fuer B2B bleiben spaetere Aufgaben, weil die App aktuell noch keine Positionspreise oder Rechnungslogik fuehrt.
+
+## 2026-07-06 - Paketstatus fuer NW-030 geklaert
+
+**Kontext:** Fuer Paketverwaltung und Paket-/Trackingstatus braucht die App konkrete Statuswerte.
+
+### Entscheidung
+Paketstatus nutzt fuer V1 die Werte `Vorbereitet`, `Gepackt`, `Versendet` und `Zugestellt`.
+
+### Konsequenzen
+- `NW-030` und `NW-016` sind nicht mehr durch fehlende Paketstatuswerte blockiert.
+- `NW-039` bleibt `in-progress`, weil Retourenstatus, Produktzustand und Erstattungsart weiterhin offen sind.
+
+## 2026-07-06 - Versandoptionen fuer NW-030 geklaert
+
+**Kontext:** Fuer die Paketverwaltung braucht die App konkrete Versandoptionen.
+
+### Entscheidung
+Versandoption nutzt fuer V1 die Werte `DHL` und `DHL Express`.
+
+### Konsequenzen
+- `NW-030` ist nicht mehr durch fehlende Versandoptionen blockiert.
+- Weitere Versandarten werden erst ergaenzt, wenn sie fachlich benoetigt werden.
+
+## 2026-07-06 - Versandlabel und Tracking fuer V1 manuell
+
+**Kontext:** Fuer Paketverwaltung und Paket-/Trackingstatus muss geklaert sein, ob V1 eine Versanddienstleister-Integration braucht.
+
+### Entscheidung
+V1 erstellt Versandlabel ausserhalb der App. Die App speichert Versandoption, Versandkosten, Paketstatus, Trackingnummer, Versanddatum und Zustelldatum manuell.
+
+### Konsequenzen
+- `NW-041` ist im Backlog auf `done` gesetzt.
+- Es wird fuer V1 keine DHL- oder andere Versanddienstleister-Integration gebaut.
+- `NW-030` und `NW-016` koennen mit manueller Paket- und Trackingpflege umgesetzt werden.
