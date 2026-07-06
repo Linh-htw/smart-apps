@@ -122,6 +122,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-017` ergaenzt MHD-Warnungen in der aktiven Arbeitsansicht. Freie, freigegebene Chargen werden ab 56 Tagen vor MHD mit einem 20-%-Rabattvorschlag und ab 30 Tagen vor MHD mit einem 50-%-Rabattvorschlag angezeigt. Die App aendert Preise nicht automatisch; Nina muss jeden Vorschlag manuell bestaetigen.
 
+`NW-014` erweitert die Bestandszuteilung fuer B2B-Bestellungen. Wenn eine B2B-Bestellposition mindestens 50 Einheiten umfasst, darf die FIFO-Zuteilung nur eine Charge waehlen, bei der nach der Reservierung mindestens die am Produkt gepflegte B2C-Puffermenge frei bleibt. B2B-Bestellpositionen unter 50 Einheiten werden wie B2C behandelt.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

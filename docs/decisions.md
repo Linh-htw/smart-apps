@@ -320,3 +320,15 @@ Die aktive Arbeitsansicht zeigt freie, freigegebene Chargen mit nahem MHD als Au
 - `NW-017` ist im Backlog auf `done` gesetzt.
 - Preise, Produktdaten und Lagerorte werden nicht automatisch veraendert.
 - Die Warnung nutzt die aktuell freie Chargenmenge, damit voll reservierte oder fuer Events mitgenommene Chargen nicht als Verkaufsaufgabe erscheinen.
+
+## 2026-07-06 - NW-014 B2B-Pufferregel umgesetzt
+
+**Kontext:** `GR-06` definiert B2B-Sonderkonditionen ab 50 Einheiten und schuetzt den B2C-Puffer vor B2B-Bestellungen.
+
+### Entscheidung
+Beim Anlegen einer Bestellposition prueft die FIFO-Zuteilung den Kundentyp der Bestellung. Fuer B2B-Bestellpositionen ab 50 Einheiten wird nur eine Charge verwendet, wenn nach der Reservierung mindestens die am Produkt gepflegte B2C-Puffermenge frei bleibt. B2B-Bestellpositionen unter 50 Einheiten werden wie B2C behandelt.
+
+### Konsequenzen
+- `NW-014` ist im Backlog auf `done` gesetzt.
+- Die Regel greift serverseitig bei der Chargenzuteilung und kann nicht nur durch die Oberflaeche umgangen werden.
+- Zahlungsziel- und Preisautomatik fuer B2B bleiben spaetere Aufgaben, weil die App aktuell noch keine Positionspreise oder Rechnungslogik fuehrt.

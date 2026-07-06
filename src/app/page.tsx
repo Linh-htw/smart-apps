@@ -253,6 +253,38 @@ function getFreieMenge(charge: {
   return charge.produzierteMenge - getReservierteMenge(charge);
 }
 
+function getGanzePuffermenge(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.ceil(number) : 0;
+}
+
+function schuetztB2cPuffer({
+  charge,
+  kundeTyp,
+  menge,
+  produkt,
+}: {
+  charge: {
+    produzierteMenge: number;
+    lagerbestaende: Array<{
+      mengeVoruebergehendReserviert: number;
+      mengeVerbindlichReserviert: number;
+    }>;
+    verkaufseventPositionen?: Array<{ mengeMitgenommen: number }>;
+  };
+  kundeTyp: string;
+  menge: number;
+  produkt: { b2cPuffermenge: unknown };
+}) {
+  if (kundeTyp !== "B2B" || menge < 50) {
+    return true;
+  }
+
+  return (
+    getFreieMenge(charge) - menge >= getGanzePuffermenge(produkt.b2cPuffermenge)
+  );
+}
+
 function getQueryValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -383,15 +415,22 @@ async function createBestellposition(formData: FormData) {
   const [bestellung, produkt, chargenFuerProdukt] = await Promise.all([
     prisma.bestellung.findUnique({
       where: { id: bestellungId },
-      select: { id: true, zahlungsstatus: true },
+      select: {
+        id: true,
+        zahlungsstatus: true,
+        kunde: { select: { typ: true } },
+      },
     }),
     prisma.produkt.findUnique({
       where: { id: produktId },
-      select: { id: true },
+      select: { id: true, b2cPuffermenge: true },
     }),
     prisma.charge.findMany({
       where: { produktId, status: "freigegeben" },
-      include: { lagerbestaende: true },
+      include: {
+        lagerbestaende: true,
+        verkaufseventPositionen: { select: { mengeMitgenommen: true } },
+      },
       orderBy: [{ mhd: "asc" }, { id: "asc" }],
     }),
   ]);
@@ -401,7 +440,14 @@ async function createBestellposition(formData: FormData) {
   }
 
   const vorgeschlageneCharge = chargenFuerProdukt.find(
-    (charge) => getFreieMenge(charge) >= menge,
+    (charge) =>
+      getFreieMenge(charge) >= menge &&
+      schuetztB2cPuffer({
+        charge,
+        kundeTyp: bestellung.kunde.typ,
+        menge,
+        produkt,
+      }),
   );
 
   if (!vorgeschlageneCharge) {
@@ -763,6 +809,7 @@ export default async function Home({ searchParams }: HomeProps) {
             produkt,
             charge,
             verfuegbar: getFreieMenge(charge),
+            puffer: getGanzePuffermenge(produkt.b2cPuffermenge),
           }
         : null;
     })
@@ -795,7 +842,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-017 / NW-020 / NW-027 / NW-029 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-017 / NW-020 / NW-027 / NW-029 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1723,6 +1770,7 @@ export default async function Home({ searchParams }: HomeProps) {
                       <article className="task-item" key={vorschlag.produkt.id}>
                         <div>
                           <h3>{vorschlag.produkt.name}</h3>
+                          <p>B2C-Puffer: {vorschlag.puffer}</p>
                           <p>
                             Charge #{vorschlag.charge.id} · MHD{" "}
                             {formatDate(vorschlag.charge.mhd)}
