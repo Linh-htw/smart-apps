@@ -517,3 +517,16 @@ Die App wertet `abgeschlossen` als erfolgreiche Bestellung. Beim Bestellabschlus
 - `NW-012` ist im Backlog auf `done` gesetzt.
 - Die App versendet keine Nachrichten automatisch; Nina sieht eine Vorabinfo-Aufgabe fuer neue freigegebene Chargen.
 - Stammkunden werden nicht automatisch zurueckgestuft, wenn sie spaeter weniger als sechs Bestellungen im rollierenden Zeitraum haben.
+
+## 2026-07-09 - Abo-Box-Statuswerte geklaert
+
+**Kontext:** `NW-018 Abo-Box-Verwaltung` braucht konkrete Statuswerte. Die Spec definiert fuer Abo-Boxen bereits `Status`, `Startdatum`, `Pausiert seit` und `Kuendigungsdatum`, aber bisher keine Werte fuer das Status-Enum.
+
+### Entscheidung
+Abo-Box-Status nutzt fuer V1 die Werte `aktiv`, `pausiert` und `gekuendigt`.
+
+### Konsequenzen
+- `NW-018` ist nicht mehr durch fehlende Statuswerte blockiert.
+- `aktiv` wird bei der monatlichen Abo-Abwicklung beruecksichtigt.
+- `pausiert` wird fuer voruebergehend ausgesetzte Abo-Boxen verwendet.
+- `gekuendigt` wird fuer beendete Abo-Boxen verwendet und nicht mehr abgewickelt.

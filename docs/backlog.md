@@ -66,7 +66,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-015 | Retourenverwaltung | P3 - Regeln & Automatisierung | done | docs/spec.md Entitaet Retoure, GR-07 | Fristen, Produktzustand, Status, Erstattungsart und Reklamationslogik. |
 | NW-031 | Retouren-Rueckbuchung in Bestand | P3 - Regeln & Automatisierung | done | docs/spec.md GR-08 | Ungeoeffnete Ware je nach MHD zurueckbuchen oder als Restposten fuehren; beschaedigte Ware ausbuchen. |
 | NW-017 | MHD-Warnungen und Restposten-Vorschlaege | P3 - Regeln & Automatisierung | done | docs/spec.md GR-12 | Aktive Arbeitsansicht zeigt freie freigegebene Chargen 8 Wochen vor MHD mit 20 % und 30 Tage vor MHD mit 50 % Rabattvorschlag; keine automatische Preisaenderung. |
-| NW-018 | Abo-Box-Verwaltung | P3 - Regeln & Automatisierung | validated | docs/spec.md Entitaet Abo-Box | Status, Lieferadresse, Start, Pausierung und Kuendigung. |
+| NW-018 | Abo-Box-Verwaltung | P3 - Regeln & Automatisierung | validated | docs/spec.md Entitaet Abo-Box | Statuswerte sind geklaert: aktiv, pausiert, gekuendigt. Lieferadresse, Start, Pausierung und Kuendigung. |
 | NW-019 | Monatliche Abo-Abwicklung | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-14 | Sammelabwicklung am 15. mit Versandlabeln, konsolidierter Packliste und Lagerabbuchung. |
 | NW-037 | Abo-Pausierungsregel | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-15 | Maximal zwei Monate pausieren; Anmeldung bis zum 15. des Vormonats. |
 | NW-038 | Versandkostenregel | P3 - Regeln & Automatisierung | done | docs/spec.md GR-13 | B2C ab 39 EUR frei, darunter 4,50 EUR; B2B und Abo immer frei. |
@@ -85,7 +85,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
-| NW-039 | Enum-Werte definieren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | Alle aktuell benoetigten Enum-Werte sind geklaert: Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus, Lagerort, Paketstatus, Versandoption, Retourenstatus, Produktzustand und Erstattungsart. |
+| NW-039 | Enum-Werte definieren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | Alle aktuell benoetigten Enum-Werte sind geklaert: Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus, Lagerort, Paketstatus, Versandoption, Abo-Box-Status, Retourenstatus, Produktzustand und Erstattungsart. |
 | NW-040 | Auth, Hosting und Deployment klaeren | P0 - Klaerung | validated | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment werden bewusst spaeter geklaert und blockieren die naechsten Fachfeatures nicht. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 arbeitet manuell: Versandlabel ausserhalb der App, Trackingnummer und Versand-/Zustelldaten in der App pflegen. |
 | NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 bekommt einen verpflichtenden Allergen-Bestaetigungsworkflow bei allergenbehafteten Produkten. |

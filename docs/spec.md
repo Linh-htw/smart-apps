@@ -288,6 +288,12 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 | Paketstatus | Vorbereitet, Gepackt, Versendet, Zugestellt |
 | Versandoption | DHL, DHL Express |
 
+### Abo-Box
+
+| Feld | Werte |
+|---|---|
+| Abo-Box-Status | aktiv, pausiert, gekuendigt |
+
 ### Versand und Tracking
 
 | Feld | Werte |
