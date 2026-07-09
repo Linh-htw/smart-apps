@@ -530,3 +530,15 @@ Abo-Box-Status nutzt fuer V1 die Werte `aktiv`, `pausiert` und `gekuendigt`.
 - `aktiv` wird bei der monatlichen Abo-Abwicklung beruecksichtigt.
 - `pausiert` wird fuer voruebergehend ausgesetzte Abo-Boxen verwendet.
 - `gekuendigt` wird fuer beendete Abo-Boxen verwendet und nicht mehr abgewickelt.
+
+## 2026-07-09 - Abo-Box-Inhalt fuer V1 geklaert
+
+**Kontext:** `NW-018 Abo-Box-Verwaltung` und `NW-019 Monatliche Abo-Abwicklung` brauchen eine klare Definition, welche Produkte in einer monatlichen Abo-Box enthalten sind.
+
+### Entscheidung
+Nina waehlt monatlich genau vier Produkte fuer die Abo-Box aus. In der App sind das die Produkte, die mit `In Abo-Box enthalten` markiert sind. Diese vier Produkte gelten fuer alle aktiven Abo-Boxen im jeweiligen Monat.
+
+### Konsequenzen
+- Vor der monatlichen Abo-Abwicklung muessen genau vier Produkte mit `In Abo-Box enthalten` markiert sein.
+- Kundenspezifische Abo-Box-Inhalte werden in V1 nicht modelliert.
+- Eine separate Historie der monatlichen Abo-Auswahl wird in V1 nicht eingefuehrt; die abgewickelten Bestellungen und Positionen dokumentieren den konkreten Monatsinhalt.

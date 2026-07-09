@@ -224,6 +224,7 @@ Aufgeloeste n:m-Beziehungen:
 | GR-13 | B2C ab 39,00 EUR versandkostenfrei, darunter 4,50 EUR. B2B- und Abo-Bestellungen immer versandkostenfrei. |
 | GR-14 | Abo-Bestellungen werden am 15. jedes Monats gesammelt abgewickelt, inklusive Versandlabel, konsolidierter Packliste und Lagerabbuchung. |
 | GR-15 | Abo-Pausierung maximal zwei aufeinanderfolgende Monate und Anmeldung bis zum 15. des Vormonats. |
+| GR-16 | Nina waehlt monatlich genau vier Produkte fuer die Abo-Box aus. Enthalten sind die Produkte, die mit `In Abo-Box enthalten` markiert sind. Diese Auswahl gilt fuer alle aktiven Abo-Boxen; kundenspezifische Abo-Box-Inhalte werden in V1 nicht modelliert. |
 
 ## 7. Aufgeloeste Widersprueche
 

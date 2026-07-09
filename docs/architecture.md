@@ -73,7 +73,7 @@ Hinweis fuer Windows: Generierte Artefakte wie `.next` und `node_modules/.prisma
 - **Bestellpositionen:** Produkt, Charge, Menge.
 - **Packlisten/Pakete:** Packer-Sicht, Versandoption, Paketstatus, Tracking.
 - **Retouren:** Fristen, Produktzustand, Erstattung/Ersatz, Rueckbuchung in Bestand.
-- **Abo-Boxen:** Status, Lieferadresse, monatliche Sammelabwicklung, Pausierung.
+- **Abo-Boxen:** Status, Lieferadresse, monatliche Sammelabwicklung, Pausierung, globale Produktauswahl.
 - **Verkaufsevents:** Mitgenommene und verkaufte Chargenmengen.
 - **Mitarbeiter/Rollen:** Admin, Werkstatt-Hilfe, Packer.
 
@@ -84,6 +84,7 @@ Hinweis fuer Windows: Generierte Artefakte wie `.next` und `node_modules/.prisma
 - FIFO nach fruehestem MHD ist Standard bei Bestandszuteilung.
 - B2B-Bestellungen duerfen den B2C-Puffer nicht unterschreiten.
 - Statuswechsel muessen nachvollziehbar und validiert sein.
+- `Produkt.inAboBoxEnthalten` bildet in V1 die monatliche globale Abo-Auswahl: genau vier markierte Produkte fuer alle aktiven Abo-Boxen.
 - Rollenrechte muessen serverseitig erzwungen werden.
 
 ## Datenmodell
