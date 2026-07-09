@@ -133,7 +133,7 @@ Der Kernnutzen liegt in einer aktiven Arbeitsansicht: offene Aufgaben, Zahlungss
 | Datum | Date |
 | Kanal | Enum |
 | Lieferadresse | String |
-| Allergene gelesen | Enum |
+| Allergenbestaetigung | DateTime |
 | Zahlungsstatus | Enum |
 | Status | Enum |
 

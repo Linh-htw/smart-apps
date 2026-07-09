@@ -70,7 +70,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-019 | Monatliche Abo-Abwicklung | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-14 | Sammelabwicklung am 15. mit Versandlabeln, konsolidierter Packliste und Lagerabbuchung. |
 | NW-037 | Abo-Pausierungsregel | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-15 | Maximal zwei Monate pausieren; Anmeldung bis zum 15. des Vormonats. |
 | NW-038 | Versandkostenregel | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-13 | B2C ab 39 EUR frei, darunter 4,50 EUR; B2B und Abo immer frei. |
-| NW-025 | Allergen-Workflow | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-10 | In V1 verpflichtend: Bei allergenbehafteten Produkten muss vor Bestellabschluss eine Allergenbestaetigung mit Timestamp vorliegen. |
+| NW-025 | Allergen-Workflow | P3 - Regeln & Automatisierung | done | docs/spec.md GR-10 | In V1 verpflichtend: Bei allergenbehafteten Produkten muss vor Bestellabschluss eine Allergenbestaetigung mit Timestamp vorliegen. |
 
 ## P4 - Spaeter
 

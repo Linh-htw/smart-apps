@@ -66,6 +66,7 @@ model Bestellung {
   datum          DateTime
   kanal          String
   lieferadresse  String?
+  allergeneBestaetigtAm DateTime?
   zahlungsstatus String
   status         String
   createdAt      DateTime @default(now())
@@ -80,6 +81,7 @@ model Bestellung {
   @@index([zahlungsstatus])
   @@index([status])
   @@index([datum])
+  @@index([allergeneBestaetigtAm])
 }
 
 model Mitarbeiter {

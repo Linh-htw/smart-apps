@@ -224,6 +224,18 @@ function getNextBestellschritt(bestellung: {
   return "Zur weiteren Bearbeitung vormerken";
 }
 
+function hatUnbestaetigteAllergene(bestellung: {
+  allergeneBestaetigtAm: Date | null;
+  positionen: Array<{ produkt: { allergene: string | null } }>;
+}) {
+  return (
+    !bestellung.allergeneBestaetigtAm &&
+    bestellung.positionen.some((position) =>
+      Boolean(position.produkt.allergene?.trim()),
+    )
+  );
+}
+
 function getReservierteMenge(charge: {
   lagerbestaende: Array<{
     mengeVoruebergehendReserviert: number;
@@ -433,13 +445,14 @@ async function createBestellposition(formData: FormData) {
       where: { id: bestellungId },
       select: {
         id: true,
+        allergeneBestaetigtAm: true,
         zahlungsstatus: true,
         kunde: { select: { typ: true } },
       },
     }),
     prisma.produkt.findUnique({
       where: { id: produktId },
-      select: { id: true, b2cPuffermenge: true },
+      select: { id: true, allergene: true, b2cPuffermenge: true },
     }),
     prisma.charge.findMany({
       where: { produktId, status: "freigegeben" },
@@ -452,6 +465,17 @@ async function createBestellposition(formData: FormData) {
   ]);
 
   if (!bestellung || !produkt) {
+    return;
+  }
+
+  const allergenBestaetigt = formData.get("allergeneBestaetigt") === "on";
+  const brauchtAllergenbestaetigung = Boolean(produkt.allergene?.trim());
+
+  if (
+    brauchtAllergenbestaetigung &&
+    !allergenBestaetigt &&
+    !bestellung.allergeneBestaetigtAm
+  ) {
     return;
   }
 
@@ -474,6 +498,13 @@ async function createBestellposition(formData: FormData) {
   const isVerbindlich = bestellung.zahlungsstatus === "bezahlt";
 
   await prisma.$transaction(async (tx) => {
+    if (brauchtAllergenbestaetigung && allergenBestaetigt) {
+      await tx.bestellung.update({
+        where: { id: bestellungId },
+        data: { allergeneBestaetigtAm: new Date() },
+      });
+    }
+
     await tx.bestellposition.create({
       data: {
         bestellungId,
@@ -738,7 +769,11 @@ async function createPaket(formData: FormData) {
   const [bestellung, mitarbeiter] = await Promise.all([
     prisma.bestellung.findUnique({
       where: { id: bestellungId },
-      select: { id: true },
+      select: {
+        id: true,
+        allergeneBestaetigtAm: true,
+        positionen: { select: { produkt: { select: { allergene: true } } } },
+      },
     }),
     prisma.mitarbeiter.findUnique({
       where: { id: mitarbeiterId },
@@ -747,6 +782,10 @@ async function createPaket(formData: FormData) {
   ]);
 
   if (!bestellung || !mitarbeiter || mitarbeiter.rolle !== "Packer") {
+    return;
+  }
+
+  if (status === "Zugestellt" && hatUnbestaetigteAllergene(bestellung)) {
     return;
   }
 
@@ -789,10 +828,23 @@ async function updatePaketstatus(formData: FormData) {
 
   const paket = await prisma.paket.findUnique({
     where: { id: paketId },
-    select: { id: true, bestellungId: true },
+    select: {
+      id: true,
+      bestellungId: true,
+      bestellung: {
+        select: {
+          allergeneBestaetigtAm: true,
+          positionen: { select: { produkt: { select: { allergene: true } } } },
+        },
+      },
+    },
   });
 
   if (!paket) {
+    return;
+  }
+
+  if (status === "Zugestellt" && hatUnbestaetigteAllergene(paket.bestellung)) {
     return;
   }
 
@@ -957,6 +1009,20 @@ export default async function Home({ searchParams }: HomeProps) {
       warnung: getMhdWarnung(charge),
     }))
     .filter((eintrag) => eintrag.warnung !== null);
+  const allergenWarnungen = aktiveBestellungen
+    .map((bestellung) => ({
+      bestellung,
+      positionen: bestellpositionen.filter(
+        (position) =>
+          position.bestellungId === bestellung.id &&
+          Boolean(position.produkt.allergene?.trim()),
+      ),
+    }))
+    .filter(
+      (eintrag) =>
+        eintrag.positionen.length > 0 &&
+        !eintrag.bestellung.allergeneBestaetigtAm,
+    );
   const packlistenBestellungen = verbindlicheBestellungen
     .map((bestellung) => ({
       bestellung,
@@ -973,7 +1039,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-017 / NW-020 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-016 / NW-017 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1477,6 +1543,10 @@ export default async function Home({ searchParams }: HomeProps) {
               <span>MHD-Warnungen</span>
               <strong>{mhdWarnungen.length}</strong>
             </div>
+            <div className="metric-tile">
+              <span>Allergenbestaetigung offen</span>
+              <strong>{allergenWarnungen.length}</strong>
+            </div>
           </div>
 
           {aktiveBestellungen.length === 0 ? (
@@ -1539,6 +1609,31 @@ export default async function Home({ searchParams }: HomeProps) {
                       {warnung?.rabatt} % Vorschlag
                     </span>
                     <strong>Manuell bestaetigen</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {allergenWarnungen.length === 0 ? null : (
+            <div className="task-list">
+              {allergenWarnungen.map(({ bestellung, positionen }) => (
+                <article className="task-item" key={bestellung.id}>
+                  <div>
+                    <h3>Bestellung #{bestellung.id}</h3>
+                    <p>
+                      {bestellung.kunde.name} -{" "}
+                      {positionen
+                        .map((position) => position.produkt.name)
+                        .join(", ")}
+                    </p>
+                    <p className="warning-text critical">
+                      Allergenliste muss vor Abschluss bestaetigt werden.
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">Allergene offen</span>
+                    <strong>Bestaetigung nachholen</strong>
                   </div>
                 </article>
               ))}
@@ -1851,6 +1946,12 @@ export default async function Home({ searchParams }: HomeProps) {
                     <dd>
                       <span className="status-pill">{bestellung.status}</span>
                     </dd>
+                    {bestellung.allergeneBestaetigtAm ? (
+                      <>
+                        <dt>Allergene</dt>
+                        <dd>{formatDate(bestellung.allergeneBestaetigtAm)}</dd>
+                      </>
+                    ) : null}
                     {bestellung.lieferadresse ? (
                       <>
                         <dt>Lieferadresse</dt>
@@ -1884,6 +1985,9 @@ export default async function Home({ searchParams }: HomeProps) {
                       <option key={bestellung.id} value={bestellung.id}>
                         #{bestellung.id} · {bestellung.kunde.name} ·{" "}
                         {formatDate(bestellung.datum)}
+                        {bestellung.allergeneBestaetigtAm
+                          ? " - Allergene bestaetigt"
+                          : ""}
                       </option>
                     ))}
                   </select>
@@ -1898,6 +2002,9 @@ export default async function Home({ searchParams }: HomeProps) {
                         value={vorschlag.produkt.id}
                       >
                         {vorschlag.produkt.name}
+                        {vorschlag.produkt.allergene
+                          ? ` - Allergene: ${vorschlag.produkt.allergene}`
+                          : ""}
                       </option>
                     ))}
                   </select>
@@ -1906,6 +2013,11 @@ export default async function Home({ searchParams }: HomeProps) {
                 <label>
                   Menge
                   <input min="1" name="positionMenge" required type="number" />
+                </label>
+
+                <label className="checkbox-label">
+                  <input name="allergeneBestaetigt" type="checkbox" />
+                  Allergenliste gelesen und vom Kunden bestaetigt
                 </label>
 
                 <div className="fifo-box">

@@ -128,6 +128,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-014` erweitert die Bestandszuteilung fuer B2B-Bestellungen. Wenn eine B2B-Bestellposition mindestens 50 Einheiten umfasst, darf die FIFO-Zuteilung nur eine Charge waehlen, bei der nach der Reservierung mindestens die am Produkt gepflegte B2C-Puffermenge frei bleibt. B2B-Bestellpositionen unter 50 Einheiten werden wie B2C behandelt.
 
+`NW-025` ergaenzt `Bestellung.allergeneBestaetigtAm` als Timestamp fuer die Allergenbestaetigung. Beim Anlegen einer Bestellposition mit einem Produkt, dessen `allergene`-Feld befuellt ist, muss die Bestaetigung gesetzt oder bereits vorhanden sein. Eine Bestellung mit allergenbehafteten Positionen ohne Timestamp kann nicht ueber den Paketstatus `Zugestellt` auf `abgeschlossen` wechseln.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

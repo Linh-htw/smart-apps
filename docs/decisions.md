@@ -457,3 +457,15 @@ Beim Anlegen oder Aktualisieren eines Pakets setzt der Status `Zugestellt` die z
 - `NW-016` ist im Backlog auf `done` gesetzt.
 - Abgeschlossene Bestellungen verschwinden aus der offenen Arbeits- und Packer-Packliste.
 - Ein spaeteres Zuruecksetzen des Paketstatus oeffnet die Bestellung nicht automatisch wieder; dafuer gibt es aktuell keine fachliche Regel.
+
+## 2026-07-09 - NW-025 Allergen-Workflow umgesetzt
+
+**Kontext:** `GR-10` verlangt bei allergenbehafteten Produkten eine Kundenbestaetigung mit Timestamp vor dem Bestellabschluss. Produkte haben bereits ein freies Feld `allergene`; Bestellungen hatten noch keinen dokumentierten Bestaetigungszeitpunkt.
+
+### Entscheidung
+Die App speichert die Allergenbestaetigung als `Bestellung.allergeneBestaetigtAm`. Beim Anlegen einer Bestellposition mit befuellten Produkt-Allergenen muss die Allergenliste als gelesen bestaetigt werden, sofern die Bestellung noch keinen Timestamp hat. Zusaetzlich verhindert die Paketstatuslogik den Wechsel auf `Zugestellt`, wenn eine Bestellung allergenbehaftete Positionen ohne Bestaetigung enthaelt.
+
+### Konsequenzen
+- `NW-025` ist im Backlog auf `done` gesetzt.
+- Die aktive Arbeitsansicht zeigt offene Allergenbestaetigungen als Warnung.
+- Das Bestellattribut aus der Spec wird technisch als Timestamp konkretisiert, nicht als weiteres Enum.
