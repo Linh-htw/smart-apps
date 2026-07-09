@@ -136,6 +136,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-031` ergaenzt eine einmalige Bestandsbuchung fuer angenommene Retouren. Ungeoeffnete Ware mit mehr als 28 Tagen MHD-Restlaufzeit reduziert die verbindliche Reservierung der urspruenglichen Charge und wird damit wieder frei. Ungeoeffnete Ware mit 28 Tagen oder weniger MHD-Restlaufzeit wird ebenfalls aus der verbindlichen Reservierung geloest und ueber einen `Restposten`-Lagerbestand markiert. Geoeffnete, beschaedigte oder mangelhafte Ware wird als ausgebucht dokumentiert und erhoeht den freien Bestand nicht.
 
+`NW-012` aktualisiert Kunden automatisch zu Stammkunden, sobald sechs abgeschlossene Bestellungen innerhalb von 365 Tagen vorliegen. Die Pruefung laeuft beim Bestellabschluss ueber Paket-Zustellung und wird beim Laden der Arbeitsansicht fuer bestehende Daten nachgezogen. B2C-Positionswerte beruecksichtigen fuer Stammkunden einen 10-%-Rabatt bei berechneten Warenwerten. Die Arbeitsansicht zeigt Inaktivitaetswarnungen nach acht Monaten ohne abgeschlossene Bestellung sowie Vorabinfo-Aufgaben fuer neue freigegebene Chargen innerhalb der ersten 24 Stunden.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

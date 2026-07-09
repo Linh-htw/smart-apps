@@ -505,3 +505,15 @@ Die App ergaenzt an `Retoure` die Felder `bestandsbuchung` und `bestandsbuchungA
 - `NW-031` ist im Backlog auf `done` gesetzt.
 - Eine Retoure wird nach der Bestandsbuchung auf `Abgeschlossen` gesetzt und kann nicht erneut gebucht werden.
 - Das Modell bleibt kompatibel mit der bisherigen Ableitung freier Mengen aus produzierter Menge minus Reservierungen.
+
+## 2026-07-09 - NW-012 Stammkundenautomatik umgesetzt
+
+**Kontext:** `GR-04` definiert Stammkunden als Kunden mit sechs erfolgreichen Bestellungen innerhalb von 365 Tagen. Stammkunden erhalten 10 % Rabatt, 24 Stunden Vorab-Benachrichtigung ueber neue Chargen und nach acht Monaten Inaktivitaet eine Warnung fuer Nina.
+
+### Entscheidung
+Die App wertet `abgeschlossen` als erfolgreiche Bestellung. Beim Bestellabschluss ueber Paket-Zustellung wird der Kunde automatisch auf `stammkunde` gesetzt, wenn innerhalb von 365 Tagen sechs abgeschlossene Bestellungen vorliegen. Bestehende Daten werden beim Laden der Arbeitsansicht nachgezogen. Berechnete B2C-Warenwerte nutzen fuer Stammkunden 10 % Rabatt. Vorab-Benachrichtigungen und Inaktivitaet werden als Aufgaben in der Arbeitsansicht dargestellt, nicht als externe Nachrichten.
+
+### Konsequenzen
+- `NW-012` ist im Backlog auf `done` gesetzt.
+- Die App versendet keine Nachrichten automatisch; Nina sieht eine Vorabinfo-Aufgabe fuer neue freigegebene Chargen.
+- Stammkunden werden nicht automatisch zurueckgestuft, wenn sie spaeter weniger als sechs Bestellungen im rollierenden Zeitraum haben.

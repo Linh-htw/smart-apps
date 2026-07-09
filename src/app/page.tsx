@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { Fragment } from "react";
 import { prisma } from "@/lib/prisma";
 import {
@@ -134,6 +135,19 @@ function getDaysSince(value: Date, now = new Date()) {
   );
 }
 
+function getHoursSince(value: Date, now = new Date()) {
+  return Math.max(
+    0,
+    Math.floor((now.getTime() - value.getTime()) / 3_600_000),
+  );
+}
+
+function addMonths(value: Date, months: number) {
+  const date = new Date(value);
+  date.setMonth(date.getMonth() + months);
+  return date;
+}
+
 function getDaysUntil(value: Date, now = new Date()) {
   const target = new Date(value);
   target.setHours(0, 0, 0, 0);
@@ -257,12 +271,16 @@ function hatUnbestaetigteAllergene(bestellung: {
 function getPositionspreis(position: {
   menge: number;
   produkt: { preisB2b: unknown; preisB2c: unknown };
-  bestellung: { kunde: { typ: string } };
+  bestellung: { kunde: { stammkunde: boolean; typ: string } };
 }) {
   const nutztB2bPreis = position.bestellung.kunde.typ === "B2B" && position.menge >= 50;
-  const einzelpreis = nutztB2bPreis
+  const basispreis = nutztB2bPreis
     ? Number(position.produkt.preisB2b)
     : Number(position.produkt.preisB2c);
+  const einzelpreis =
+    !nutztB2bPreis && position.bestellung.kunde.stammkunde
+      ? basispreis * 0.9
+      : basispreis;
 
   return einzelpreis * position.menge;
 }
@@ -270,7 +288,7 @@ function getPositionspreis(position: {
 function getBestellwert(positionen: Array<{
   menge: number;
   produkt: { preisB2b: unknown; preisB2c: unknown };
-  bestellung: { kunde: { typ: string } };
+  bestellung: { kunde: { stammkunde: boolean; typ: string } };
 }>) {
   return positionen.reduce(
     (summe, position) => summe + getPositionspreis(position),
@@ -284,7 +302,7 @@ function getVersandkostenVorschlag(bestellung: {
   positionen: Array<{
     menge: number;
     produkt: { preisB2b: unknown; preisB2c: unknown };
-    bestellung: { kunde: { typ: string } };
+    bestellung: { kunde: { stammkunde: boolean; typ: string } };
   }>;
 }) {
   if (bestellung.kanal === "Abo" || bestellung.kunde.typ === "B2B") {
@@ -444,6 +462,48 @@ function schuetztB2cPuffer({
 
 function getQueryValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
+}
+
+async function aktualisiereStammkundeStatus(
+  tx: Prisma.TransactionClient,
+  kundeId: number,
+) {
+  const seit = addDays(new Date(), -365);
+  const abgeschlosseneBestellungen = await tx.bestellung.count({
+    where: {
+      kundeId,
+      status: "abgeschlossen",
+      datum: { gte: seit },
+    },
+  });
+
+  if (abgeschlosseneBestellungen < 6) {
+    return;
+  }
+
+  await tx.kunde.updateMany({
+    where: { id: kundeId, stammkunde: false },
+    data: { stammkunde: true },
+  });
+}
+
+async function aktualisiereAlleStammkunden() {
+  const kundenMitAbschluessen = await prisma.kunde.findMany({
+    where: {
+      stammkunde: false,
+      bestellungen: {
+        some: {
+          status: "abgeschlossen",
+          datum: { gte: addDays(new Date(), -365) },
+        },
+      },
+    },
+    select: { id: true },
+  });
+
+  for (const kunde of kundenMitAbschluessen) {
+    await prisma.$transaction((tx) => aktualisiereStammkundeStatus(tx, kunde.id));
+  }
 }
 
 async function createKunde(formData: FormData) {
@@ -900,6 +960,7 @@ async function createPaket(formData: FormData) {
       where: { id: bestellungId },
       select: {
         id: true,
+        kundeId: true,
         allergeneBestaetigtAm: true,
         positionen: { select: { produkt: { select: { allergene: true } } } },
       },
@@ -937,6 +998,7 @@ async function createPaket(formData: FormData) {
         where: { id: bestellungId },
         data: { status: "abgeschlossen" },
       });
+      await aktualisiereStammkundeStatus(tx, bestellung.kundeId);
     }
   });
 
@@ -962,6 +1024,7 @@ async function updatePaketstatus(formData: FormData) {
       bestellungId: true,
       bestellung: {
         select: {
+          kundeId: true,
           allergeneBestaetigtAm: true,
           positionen: { select: { produkt: { select: { allergene: true } } } },
         },
@@ -993,6 +1056,7 @@ async function updatePaketstatus(formData: FormData) {
         where: { id: paket.bestellungId },
         data: { status: "abgeschlossen" },
       });
+      await aktualisiereStammkundeStatus(tx, paket.bestellung.kundeId);
     }
   });
 
@@ -1135,6 +1199,8 @@ type HomeProps = {
 };
 
 export default async function Home({ searchParams }: HomeProps) {
+  await aktualisiereAlleStammkunden();
+
   const kunden = await prisma.kunde.findMany({
     orderBy: [{ stammkunde: "desc" }, { name: "asc" }],
   });
@@ -1324,6 +1390,35 @@ export default async function Home({ searchParams }: HomeProps) {
         eintrag.positionen.length > 0 &&
         !eintrag.bestellung.allergeneBestaetigtAm,
     );
+  const stammkundenInaktiv = kunden
+    .filter((kunde) => kunde.stammkunde)
+    .map((kunde) => {
+      const letzteBestellung =
+        bestellungen
+          .filter(
+            (bestellung) =>
+              bestellung.kundeId === kunde.id &&
+              bestellung.status === "abgeschlossen",
+          )
+          .sort((a, b) => b.datum.getTime() - a.datum.getTime())[0] ?? null;
+
+      return { kunde, letzteBestellung };
+    })
+    .filter(({ letzteBestellung }) => {
+      if (!letzteBestellung) {
+        return true;
+      }
+
+      return letzteBestellung.datum < addMonths(new Date(), -8);
+    });
+  const stammkundenVorabChargen =
+    kunden.some((kunde) => kunde.stammkunde)
+      ? chargen.filter(
+          (charge) =>
+            charge.status === "freigegeben" &&
+            getHoursSince(charge.createdAt) <= 24,
+        )
+      : [];
   const packlistenBestellungen = verbindlicheBestellungen
     .map((bestellung) => ({
       bestellung,
@@ -1852,6 +1947,14 @@ export default async function Home({ searchParams }: HomeProps) {
               <span>Offene Retouren</span>
               <strong>{offeneRetouren.length}</strong>
             </div>
+            <div className="metric-tile">
+              <span>Stammkunden inaktiv</span>
+              <strong>{stammkundenInaktiv.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Vorabinfo Chargen</span>
+              <strong>{stammkundenVorabChargen.length}</strong>
+            </div>
           </div>
 
           {aktiveBestellungen.length === 0 ? (
@@ -1961,6 +2064,55 @@ export default async function Home({ searchParams }: HomeProps) {
                     <span className="status-pill">{retoure.status}</span>
                     <span className="status-pill">{retoure.produktzustand}</span>
                     <strong>Retoure bearbeiten</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {stammkundenInaktiv.length === 0 ? null : (
+            <div className="task-list">
+              {stammkundenInaktiv.slice(0, 6).map(({ kunde, letzteBestellung }) => (
+                <article className="task-item" key={kunde.id}>
+                  <div>
+                    <h3>{kunde.name}</h3>
+                    <p>
+                      {letzteBestellung
+                        ? `Letzte abgeschlossene Bestellung am ${formatDate(
+                            letzteBestellung.datum,
+                          )}`
+                        : "Keine abgeschlossene Bestellung dokumentiert"}
+                    </p>
+                    <p className="warning-text">
+                      Stammkunde seit 8 Monaten inaktiv, Kontakt pruefen.
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">Stammkunde</span>
+                    <strong>Nachfassen</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {stammkundenVorabChargen.length === 0 ? null : (
+            <div className="task-list">
+              {stammkundenVorabChargen.map((charge) => (
+                <article className="task-item" key={charge.id}>
+                  <div>
+                    <h3>Charge #{charge.id}</h3>
+                    <p>
+                      {charge.produkt.name} - MHD {formatDate(charge.mhd)}
+                    </p>
+                    <p className="warning-text">
+                      Neue Charge innerhalb von 24 Stunden: Stammkunden vorab
+                      informieren.
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">Vorabinfo</span>
+                    <strong>Stammkunden informieren</strong>
                   </div>
                 </article>
               ))}
