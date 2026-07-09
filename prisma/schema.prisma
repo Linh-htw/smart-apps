@@ -32,6 +32,7 @@ model Kunde {
   updatedAt       DateTime @updatedAt
 
   bestellungen Bestellung[]
+  aboBoxen     AboBox[]
 
   @@index([typ])
   @@index([stammkunde])
@@ -52,7 +53,7 @@ model Produkt {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 
-  chargen Charge[]
+  chargen           Charge[]
   bestellpositionen Bestellposition[]
 
   @@index([kategorie])
@@ -61,20 +62,20 @@ model Produkt {
 }
 
 model Bestellung {
-  id             Int      @id @default(autoincrement())
-  kundeId        Int
-  datum          DateTime
-  kanal          String
-  lieferadresse  String?
+  id                    Int       @id @default(autoincrement())
+  kundeId               Int
+  datum                 DateTime
+  kanal                 String
+  lieferadresse         String?
   allergeneBestaetigtAm DateTime?
-  zahlungsstatus String
-  status         String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  zahlungsstatus        String
+  status                String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  kunde Kunde @relation(fields: [kundeId], references: [id])
+  kunde      Kunde             @relation(fields: [kundeId], references: [id])
   positionen Bestellposition[]
-  pakete Paket[]
+  pakete     Paket[]
 
   @@index([kundeId])
   @@index([kanal])
@@ -95,7 +96,7 @@ model Mitarbeiter {
   updatedAt      DateTime @updatedAt
 
   chargen Charge[]
-  pakete Paket[]
+  pakete  Paket[]
 
   @@index([rolle])
 }
@@ -124,20 +125,20 @@ model Paket {
 }
 
 model Charge {
-  id                  Int      @id @default(autoincrement())
-  produktId           Int
-  mitarbeiterId       Int
-  herstellungsdatum   DateTime
-  mhd                 DateTime
-  produzierteMenge    Int
-  status              String
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  produktId         Int
+  mitarbeiterId     Int
+  herstellungsdatum DateTime
+  mhd               DateTime
+  produzierteMenge  Int
+  status            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  produkt     Produkt     @relation(fields: [produktId], references: [id])
-  mitarbeiter Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
-  lagerbestaende Lagerbestand[]
-  bestellpositionen Bestellposition[]
+  produkt                 Produkt                 @relation(fields: [produktId], references: [id])
+  mitarbeiter             Mitarbeiter             @relation(fields: [mitarbeiterId], references: [id])
+  lagerbestaende          Lagerbestand[]
+  bestellpositionen       Bestellposition[]
   verkaufseventPositionen VerkaufseventPosition[]
 
   @@index([produktId])
@@ -159,13 +160,13 @@ model Verkaufsevent {
 }
 
 model VerkaufseventPosition {
-  id                 Int      @id @default(autoincrement())
-  verkaufseventId    Int
-  chargeId           Int
-  mengeMitgenommen   Int
-  mengeVerkauft      Int      @default(0)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  verkaufseventId  Int
+  chargeId         Int
+  mengeMitgenommen Int
+  mengeVerkauft    Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   verkaufsevent Verkaufsevent @relation(fields: [verkaufseventId], references: [id])
   charge        Charge        @relation(fields: [chargeId], references: [id])
@@ -195,7 +196,7 @@ model Bestellposition {
 }
 
 model Retoure {
-  id                Int      @id @default(autoincrement())
+  id                Int       @id @default(autoincrement())
   bestellpositionId Int
   grund             String?
   produktzustand    String
@@ -203,8 +204,8 @@ model Retoure {
   erstattungsart    String
   bestandsbuchung   String?
   bestandsbuchungAm DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   bestellposition Bestellposition @relation(fields: [bestellpositionId], references: [id])
 
@@ -216,14 +217,34 @@ model Retoure {
   @@index([bestandsbuchungAm])
 }
 
+model AboBox {
+  id               Int       @id @default(autoincrement())
+  kundeId          Int
+  lieferadresse    String
+  status           String
+  startdatum       DateTime
+  pausiertSeit     DateTime?
+  kuendigungsdatum DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  kunde Kunde @relation(fields: [kundeId], references: [id])
+
+  @@index([kundeId])
+  @@index([status])
+  @@index([startdatum])
+  @@index([pausiertSeit])
+  @@index([kuendigungsdatum])
+}
+
 model Lagerbestand {
-  id                              Int      @id @default(autoincrement())
-  chargeId                        Int
-  lagerort                        String
-  mengeVoruebergehendReserviert   Int      @default(0)
-  mengeVerbindlichReserviert      Int      @default(0)
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
+  id                            Int      @id @default(autoincrement())
+  chargeId                      Int
+  lagerort                      String
+  mengeVoruebergehendReserviert Int      @default(0)
+  mengeVerbindlichReserviert    Int      @default(0)
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
 
   charge Charge @relation(fields: [chargeId], references: [id])
 

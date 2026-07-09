@@ -139,6 +139,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-012` aktualisiert Kunden automatisch zu Stammkunden, sobald sechs abgeschlossene Bestellungen innerhalb von 365 Tagen vorliegen. Die Pruefung laeuft beim Bestellabschluss ueber Paket-Zustellung und wird beim Laden der Arbeitsansicht fuer bestehende Daten nachgezogen. B2C-Positionswerte beruecksichtigen fuer Stammkunden einen 10-%-Rabatt bei berechneten Warenwerten. Die Arbeitsansicht zeigt Inaktivitaetswarnungen nach acht Monaten ohne abgeschlossene Bestellung sowie Vorabinfo-Aufgaben fuer neue freigegebene Chargen innerhalb der ersten 24 Stunden.
 
+`NW-018` ergaenzt `AboBox` als kundenbezogenes Modell mit Lieferadresse, Status, Startdatum, Pausiert-seit und Kuendigungsdatum. Statuswerte werden zentral gegen `aktiv`, `pausiert` und `gekuendigt` validiert. Die globale Monatsauswahl bleibt an `Produkt.inAboBoxEnthalten`; die Arbeitsansicht zeigt die aktuelle Auswahl als `x/4`, ohne die monatliche Abo-Abwicklung schon auszufuehren.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

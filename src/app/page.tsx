@@ -44,6 +44,10 @@ import {
   produktzustandWerte,
   retourenstatusWerte,
 } from "@/lib/return-options";
+import {
+  aboBoxStatusWerte,
+  isAboBoxStatus,
+} from "@/lib/subscription-options";
 
 export const dynamic = "force-dynamic";
 
@@ -612,6 +616,43 @@ async function createBestellung(formData: FormData) {
       lieferadresse: nullableText(formData.get("lieferadresse")),
       zahlungsstatus,
       status: getBestellstatusForZahlung(zahlungsstatus),
+    },
+  });
+
+  revalidatePath("/");
+}
+
+async function createAboBox(formData: FormData) {
+  "use server";
+
+  const kundeId = requiredInt(formData.get("aboBoxKundeId"));
+  const lieferadresse = formData.get("aboBoxLieferadresse")?.toString().trim() ?? "";
+  const status = formData.get("aboBoxStatus")?.toString() ?? "";
+  const startdatum = requiredDate(formData.get("aboBoxStartdatum"));
+  const pausiertSeit = nullableDate(formData.get("aboBoxPausiertSeit"));
+  const kuendigungsdatum = nullableDate(formData.get("aboBoxKuendigungsdatum"));
+
+  if (!kundeId || !lieferadresse || !isAboBoxStatus(status) || !startdatum) {
+    return;
+  }
+
+  const kunde = await prisma.kunde.findUnique({
+    where: { id: kundeId },
+    select: { id: true },
+  });
+
+  if (!kunde) {
+    return;
+  }
+
+  await prisma.aboBox.create({
+    data: {
+      kundeId,
+      lieferadresse,
+      status,
+      startdatum,
+      pausiertSeit: status === "pausiert" ? pausiertSeit : null,
+      kuendigungsdatum: status === "gekuendigt" ? kuendigungsdatum : null,
     },
   });
 
@@ -1271,6 +1312,10 @@ export default async function Home({ searchParams }: HomeProps) {
     },
     orderBy: [{ id: "desc" }],
   });
+  const aboBoxen = await prisma.aboBox.findMany({
+    include: { kunde: true },
+    orderBy: [{ status: "asc" }, { startdatum: "desc" }, { id: "desc" }],
+  });
   const params = searchParams ? await searchParams : {};
   const selectedMitarbeiterId = requiredInt(
     getQueryValue(params.mitarbeiterId) ?? null,
@@ -1428,6 +1473,8 @@ export default async function Home({ searchParams }: HomeProps) {
       pakete: pakete.filter((paket) => paket.bestellungId === bestellung.id),
     }))
     .filter((eintrag) => eintrag.positionen.length > 0);
+  const aktiveAboBoxen = aboBoxen.filter((aboBox) => aboBox.status === "aktiv");
+  const aboBoxProdukte = produkte.filter((produkt) => produkt.inAboBoxEnthalten);
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -1435,7 +1482,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1444,7 +1491,8 @@ export default async function Home({ searchParams }: HomeProps) {
           {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
           {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
           {verkaufsevents.length} Verkaufsevents Â· {pakete.length} Pakete -{" "}
-          {retouren.length} Retouren - {mitarbeiter.length} Mitarbeitende
+          {retouren.length} Retouren - {aboBoxen.length} Abo-Boxen -{" "}
+          {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -1955,6 +2003,14 @@ export default async function Home({ searchParams }: HomeProps) {
               <span>Vorabinfo Chargen</span>
               <strong>{stammkundenVorabChargen.length}</strong>
             </div>
+            <div className="metric-tile">
+              <span>Aktive Abo-Boxen</span>
+              <strong>{aktiveAboBoxen.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Abo-Produktauswahl</span>
+              <strong>{aboBoxProdukte.length}/4</strong>
+            </div>
           </div>
 
           {aktiveBestellungen.length === 0 ? (
@@ -2443,6 +2499,119 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
           )}
         </section>
+        </section>
+      ) : null}
+
+      {canManageOrders ? (
+        <section className="layout-grid feature-section">
+          <form action={createAboBox} className="panel form-panel">
+            <h2>Abo-Box anlegen</h2>
+
+            {kunden.length === 0 ? (
+              <p className="empty-state">Zuerst einen Kunden anlegen.</p>
+            ) : (
+              <>
+                <label>
+                  Kunde
+                  <select name="aboBoxKundeId" required>
+                    {kunden.map((kunde) => (
+                      <option key={kunde.id} value={kunde.id}>
+                        {kunde.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Lieferadresse
+                  <textarea name="aboBoxLieferadresse" required rows={3} />
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Status
+                    <select name="aboBoxStatus" defaultValue="aktiv" required>
+                      {aboBoxStatusWerte.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Startdatum
+                    <input
+                      defaultValue={today}
+                      name="aboBoxStartdatum"
+                      required
+                      type="date"
+                    />
+                  </label>
+                </div>
+
+                <div className="field-row">
+                  <label>
+                    Pausiert seit
+                    <input name="aboBoxPausiertSeit" type="date" />
+                  </label>
+
+                  <label>
+                    Kuendigungsdatum
+                    <input name="aboBoxKuendigungsdatum" type="date" />
+                  </label>
+                </div>
+
+                <p className="note-text">
+                  Aktuelle Abo-Produktauswahl: {aboBoxProdukte.length}/4
+                  markiert.
+                </p>
+
+                <button type="submit">Abo-Box speichern</button>
+              </>
+            )}
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="abo-boxen-heading">
+            <h2 id="abo-boxen-heading">Abo-Boxen</h2>
+            {aboBoxen.length === 0 ? (
+              <p className="empty-state">Noch keine Abo-Boxen erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {aboBoxen.map((aboBox) => (
+                  <article className="customer-card" key={aboBox.id}>
+                    <div>
+                      <h3>Abo-Box #{aboBox.id}</h3>
+                      <p>
+                        {aboBox.kunde.name} - Start{" "}
+                        {formatDate(aboBox.startdatum)}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Status</dt>
+                      <dd>
+                        <span className="status-pill">{aboBox.status}</span>
+                      </dd>
+                      <dt>Lieferadresse</dt>
+                      <dd>{aboBox.lieferadresse}</dd>
+                      {aboBox.pausiertSeit ? (
+                        <>
+                          <dt>Pausiert seit</dt>
+                          <dd>{formatDate(aboBox.pausiertSeit)}</dd>
+                        </>
+                      ) : null}
+                      {aboBox.kuendigungsdatum ? (
+                        <>
+                          <dt>Kuendigung</dt>
+                          <dd>{formatDate(aboBox.kuendigungsdatum)}</dd>
+                        </>
+                      ) : null}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         </section>
       ) : null}
 

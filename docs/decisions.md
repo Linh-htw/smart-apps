@@ -542,3 +542,15 @@ Nina waehlt monatlich genau vier Produkte fuer die Abo-Box aus. In der App sind 
 - Vor der monatlichen Abo-Abwicklung muessen genau vier Produkte mit `In Abo-Box enthalten` markiert sein.
 - Kundenspezifische Abo-Box-Inhalte werden in V1 nicht modelliert.
 - Eine separate Historie der monatlichen Abo-Auswahl wird in V1 nicht eingefuehrt; die abgewickelten Bestellungen und Positionen dokumentieren den konkreten Monatsinhalt.
+
+## 2026-07-09 - NW-018 Abo-Box-Verwaltung umgesetzt
+
+**Kontext:** Nach Klaerung der Abo-Box-Statuswerte und des globalen Monatsinhalts kann die App Abo-Boxen als Kundenbeziehung verwalten. Die monatliche Abwicklung bleibt ein separates Feature.
+
+### Entscheidung
+Die App ergaenzt ein Prisma-Modell `AboBox` mit Kunde, Lieferadresse, Status, Startdatum, Pausiert-seit und Kuendigungsdatum. Statuswerte werden zentral in `src/lib/subscription-options.ts` validiert. Die Startseite zeigt aktive Abo-Boxen und die aktuelle globale Abo-Produktauswahl als `x/4`.
+
+### Konsequenzen
+- `NW-018` ist im Backlog auf `done` gesetzt.
+- `NW-019` bleibt offen, weil aus Abo-Boxen noch keine monatlichen Bestellungen, Packlisten oder Lagerbuchungen erzeugt werden.
+- `NW-037` bleibt offen; die maximale Pausierungsdauer wird noch nicht automatisch validiert.
