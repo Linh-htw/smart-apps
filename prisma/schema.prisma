@@ -70,14 +70,17 @@ model Bestellung {
   allergeneBestaetigtAm DateTime?
   zahlungsstatus        String
   status                String
+  aboAbwicklungId       Int?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
-  kunde      Kunde             @relation(fields: [kundeId], references: [id])
-  positionen Bestellposition[]
-  pakete     Paket[]
+  kunde         Kunde             @relation(fields: [kundeId], references: [id])
+  aboAbwicklung AboAbwicklung?    @relation(fields: [aboAbwicklungId], references: [id])
+  positionen    Bestellposition[]
+  pakete        Paket[]
 
   @@index([kundeId])
+  @@index([aboAbwicklungId])
   @@index([kanal])
   @@index([zahlungsstatus])
   @@index([status])
@@ -235,6 +238,20 @@ model AboBox {
   @@index([startdatum])
   @@index([pausiertSeit])
   @@index([kuendigungsdatum])
+}
+
+model AboAbwicklung {
+  id            Int      @id @default(autoincrement())
+  jahr          Int
+  monat         Int
+  ausgefuehrtAm DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bestellungen Bestellung[]
+
+  @@unique([jahr, monat])
+  @@index([ausgefuehrtAm])
 }
 
 model Lagerbestand {

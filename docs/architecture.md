@@ -141,6 +141,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-018` ergaenzt `AboBox` als kundenbezogenes Modell mit Lieferadresse, Status, Startdatum, Pausiert-seit und Kuendigungsdatum. Statuswerte werden zentral gegen `aktiv`, `pausiert` und `gekuendigt` validiert. Die globale Monatsauswahl bleibt an `Produkt.inAboBoxEnthalten`; die Arbeitsansicht zeigt die aktuelle Auswahl als `x/4`, ohne die monatliche Abo-Abwicklung schon auszufuehren.
 
+`NW-019` ergaenzt `AboAbwicklung` als Monatslauf mit eindeutiger Kombination aus Jahr und Monat. Die Abwicklung wird in V1 manuell per Button ausgeloest, nicht automatisch per Cronjob. Voraussetzung sind mindestens eine aktive Abo-Box und genau vier mit `In Abo-Box enthalten` markierte Produkte. Pro aktiver Abo-Box wird eine `Abo`-Bestellung mit Status `verbindlich` und Zahlungsstatus `bezahlt` angelegt; je Abo-Produkt entsteht eine Bestellposition mit Menge 1 per FIFO-Zuteilung. Die Lagerreservierung wird im selben Transaktionsschritt verbindlich gebucht. Wenn fuer eine Position keine freigegebene FIFO-Charge mit freier Menge vorhanden ist, wird der gesamte Monatslauf nicht angelegt.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

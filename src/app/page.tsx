@@ -111,6 +111,24 @@ function nullableDate(value: FormDataEntryValue | null) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+function requiredMonth(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim();
+  const match = text?.match(/^(\d{4})-(\d{2})$/);
+
+  if (!match) {
+    return null;
+  }
+
+  const jahr = Number.parseInt(match[1], 10);
+  const monat = Number.parseInt(match[2], 10);
+
+  if (Number.isNaN(jahr) || Number.isNaN(monat) || monat < 1 || monat > 12) {
+    return null;
+  }
+
+  return { jahr, monat };
+}
+
 function formatCurrency(value: unknown) {
   return new Intl.NumberFormat("de-DE", {
     style: "currency",
@@ -120,6 +138,13 @@ function formatCurrency(value: unknown) {
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat("de-DE").format(value);
+}
+
+function formatMonth(jahr: number, monat: number) {
+  return new Intl.DateTimeFormat("de-DE", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(jahr, monat - 1, 1));
 }
 
 function formatDecimalInput(value: unknown) {
@@ -166,6 +191,10 @@ function addDays(value: Date, days: number) {
   const date = new Date(value);
   date.setDate(date.getDate() + days);
   return date;
+}
+
+function getAboAbwicklungsdatum(jahr: number, monat: number) {
+  return new Date(jahr, monat - 1, 15);
 }
 
 function getMhdWarnung(charge: {
@@ -655,6 +684,175 @@ async function createAboBox(formData: FormData) {
       kuendigungsdatum: status === "gekuendigt" ? kuendigungsdatum : null,
     },
   });
+
+  revalidatePath("/");
+}
+
+async function createAboAbwicklung(formData: FormData) {
+  "use server";
+
+  const monat = requiredMonth(formData.get("aboAbwicklungMonat"));
+  const allergeneBestaetigt =
+    formData.get("aboAbwicklungAllergeneBestaetigt") === "on";
+
+  if (!monat) {
+    return;
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const bestehendeAbwicklung = await tx.aboAbwicklung.findUnique({
+        where: {
+          jahr_monat: {
+            jahr: monat.jahr,
+            monat: monat.monat,
+          },
+        },
+        select: { id: true },
+      });
+
+      if (bestehendeAbwicklung) {
+        return;
+      }
+
+      const abwicklungsdatum = getAboAbwicklungsdatum(
+        monat.jahr,
+        monat.monat,
+      );
+      const [aktiveAboBoxen, aboProdukte] = await Promise.all([
+        tx.aboBox.findMany({
+          where: {
+            status: "aktiv",
+            startdatum: { lte: abwicklungsdatum },
+          },
+          include: { kunde: true },
+          orderBy: [{ id: "asc" }],
+        }),
+        tx.produkt.findMany({
+          where: { inAboBoxEnthalten: true },
+          orderBy: [{ kategorie: "asc" }, { name: "asc" }, { id: "asc" }],
+        }),
+      ]);
+
+      if (aktiveAboBoxen.length === 0 || aboProdukte.length !== 4) {
+        return;
+      }
+
+      const brauchtAllergenbestaetigung = aboProdukte.some((produkt) =>
+        Boolean(produkt.allergene?.trim()),
+      );
+
+      if (brauchtAllergenbestaetigung && !allergeneBestaetigt) {
+        return;
+      }
+
+      const produktIds = aboProdukte.map((produkt) => produkt.id);
+      const chargenFuerAbo = await tx.charge.findMany({
+        where: {
+          produktId: { in: produktIds },
+          status: "freigegeben",
+        },
+        include: {
+          lagerbestaende: true,
+          verkaufseventPositionen: { select: { mengeMitgenommen: true } },
+        },
+        orderBy: [{ mhd: "asc" }, { id: "asc" }],
+      });
+      const freieMengen = new Map(
+        chargenFuerAbo.map((charge) => [charge.id, getFreieMenge(charge)]),
+      );
+      const positionenProAboBox = aktiveAboBoxen.map((aboBox) => {
+        const positionen = aboProdukte.map((produkt) => {
+          const charge = chargenFuerAbo.find(
+            (candidate) =>
+              candidate.produktId === produkt.id &&
+              (freieMengen.get(candidate.id) ?? 0) >= 1,
+          );
+
+          if (!charge) {
+            return null;
+          }
+
+          freieMengen.set(charge.id, (freieMengen.get(charge.id) ?? 0) - 1);
+
+          return { produkt, charge };
+        });
+
+        if (positionen.some((position) => position === null)) {
+          return null;
+        }
+
+        return {
+          aboBox,
+          positionen: positionen as Array<{
+            produkt: (typeof aboProdukte)[number];
+            charge: (typeof chargenFuerAbo)[number];
+          }>,
+        };
+      });
+
+      if (positionenProAboBox.some((eintrag) => eintrag === null)) {
+        return;
+      }
+
+      const abwicklung = await tx.aboAbwicklung.create({
+        data: {
+          jahr: monat.jahr,
+          monat: monat.monat,
+        },
+      });
+
+      for (const eintrag of positionenProAboBox) {
+        if (!eintrag) {
+          continue;
+        }
+
+        const bestellung = await tx.bestellung.create({
+          data: {
+            kundeId: eintrag.aboBox.kundeId,
+            datum: abwicklungsdatum,
+            kanal: "Abo",
+            lieferadresse: eintrag.aboBox.lieferadresse,
+            allergeneBestaetigtAm: brauchtAllergenbestaetigung
+              ? new Date()
+              : null,
+            zahlungsstatus: "bezahlt",
+            status: "verbindlich",
+            aboAbwicklungId: abwicklung.id,
+          },
+        });
+
+        for (const position of eintrag.positionen) {
+          await tx.bestellposition.create({
+            data: {
+              bestellungId: bestellung.id,
+              produktId: position.produkt.id,
+              chargeId: position.charge.id,
+              menge: 1,
+            },
+          });
+
+          await tx.lagerbestand.upsert({
+            where: {
+              chargeId_lagerort: {
+                chargeId: position.charge.id,
+                lagerort: getReservierungsLagerort(position.charge),
+              },
+            },
+            create: {
+              chargeId: position.charge.id,
+              lagerort: getReservierungsLagerort(position.charge),
+              mengeVoruebergehendReserviert: 0,
+              mengeVerbindlichReserviert: 1,
+            },
+            update: { mengeVerbindlichReserviert: { increment: 1 } },
+          });
+        }
+      }
+    });
+  } catch {
+    return;
+  }
 
   revalidatePath("/");
 }
@@ -1316,6 +1514,12 @@ export default async function Home({ searchParams }: HomeProps) {
     include: { kunde: true },
     orderBy: [{ status: "asc" }, { startdatum: "desc" }, { id: "desc" }],
   });
+  const aboAbwicklungen = await prisma.aboAbwicklung.findMany({
+    include: {
+      _count: { select: { bestellungen: true } },
+    },
+    orderBy: [{ jahr: "desc" }, { monat: "desc" }],
+  });
   const params = searchParams ? await searchParams : {};
   const selectedMitarbeiterId = requiredInt(
     getQueryValue(params.mitarbeiterId) ?? null,
@@ -1475,14 +1679,20 @@ export default async function Home({ searchParams }: HomeProps) {
     .filter((eintrag) => eintrag.positionen.length > 0);
   const aktiveAboBoxen = aboBoxen.filter((aboBox) => aboBox.status === "aktiv");
   const aboBoxProdukte = produkte.filter((produkt) => produkt.inAboBoxEnthalten);
+  const aboProdukteMitAllergenen = aboBoxProdukte.filter((produkt) =>
+    Boolean(produkt.allergene?.trim()),
+  );
+  const kannAboAbwickeln =
+    aktiveAboBoxen.length > 0 && aboBoxProdukte.length === 4;
   const today = new Date().toISOString().slice(0, 10);
+  const currentMonth = new Date().toISOString().slice(0, 7);
 
   return (
     <main className="workspace">
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1492,7 +1702,7 @@ export default async function Home({ searchParams }: HomeProps) {
           {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
           {verkaufsevents.length} Verkaufsevents Â· {pakete.length} Pakete -{" "}
           {retouren.length} Retouren - {aboBoxen.length} Abo-Boxen -{" "}
-          {mitarbeiter.length} Mitarbeitende
+          {aboAbwicklungen.length} Abo-Abwicklungen - {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -2571,6 +2781,88 @@ export default async function Home({ searchParams }: HomeProps) {
               </>
             )}
           </form>
+
+          <section className="panel form-panel" aria-labelledby="abo-abwicklung-heading">
+            <h2 id="abo-abwicklung-heading">Abo-Abwicklung</h2>
+
+            <form action={createAboAbwicklung} className="stacked-form">
+              <label>
+                Monat
+                <input
+                  defaultValue={currentMonth}
+                  name="aboAbwicklungMonat"
+                  required
+                  type="month"
+                />
+              </label>
+
+              <dl>
+                <dt>Aktive Abo-Boxen</dt>
+                <dd>{aktiveAboBoxen.length}</dd>
+                <dt>Abo-Produkte</dt>
+                <dd>{aboBoxProdukte.length}/4</dd>
+              </dl>
+
+              {aboBoxProdukte.length === 0 ? (
+                <p className="empty-state">
+                  Zuerst vier Produkte als Abo-Box-Inhalt markieren.
+                </p>
+              ) : (
+                <div className="fifo-box">
+                  <p className="eyebrow">Monatsauswahl</p>
+                  <div className="customer-list">
+                    {aboBoxProdukte.map((produkt) => (
+                      <article className="task-item" key={produkt.id}>
+                        <div>
+                          <h3>{produkt.name}</h3>
+                          <p>{produkt.kategorie}</p>
+                          {produkt.allergene ? (
+                            <p>Allergene: {produkt.allergene}</p>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {aboProdukteMitAllergenen.length > 0 ? (
+                <label className="checkbox-label">
+                  <input name="aboAbwicklungAllergeneBestaetigt" type="checkbox" />
+                  Allergenlisten fuer Abo-Produkte liegen bestaetigt vor
+                </label>
+              ) : null}
+
+              {!kannAboAbwickeln ? (
+                <p className="empty-state">
+                  Abwicklung braucht mindestens eine aktive Abo-Box und genau
+                  vier markierte Abo-Produkte.
+                </p>
+              ) : null}
+
+              <button disabled={!kannAboAbwickeln} type="submit">
+                Abo-Abwicklung erstellen
+              </button>
+            </form>
+
+            {aboAbwicklungen.length === 0 ? (
+              <p className="empty-state">Noch keine Abo-Abwicklung erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {aboAbwicklungen.slice(0, 6).map((abwicklung) => (
+                  <article className="customer-card" key={abwicklung.id}>
+                    <div>
+                      <h3>{formatMonth(abwicklung.jahr, abwicklung.monat)}</h3>
+                      <p>{formatDate(abwicklung.ausgefuehrtAm)}</p>
+                    </div>
+                    <span className="status-pill">
+                      {abwicklung._count.bestellungen} Bestellungen
+                    </span>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
 
           <section className="panel list-panel" aria-labelledby="abo-boxen-heading">
             <h2 id="abo-boxen-heading">Abo-Boxen</h2>

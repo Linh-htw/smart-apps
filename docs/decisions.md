@@ -554,3 +554,16 @@ Die App ergaenzt ein Prisma-Modell `AboBox` mit Kunde, Lieferadresse, Status, St
 - `NW-018` ist im Backlog auf `done` gesetzt.
 - `NW-019` bleibt offen, weil aus Abo-Boxen noch keine monatlichen Bestellungen, Packlisten oder Lagerbuchungen erzeugt werden.
 - `NW-037` bleibt offen; die maximale Pausierungsdauer wird noch nicht automatisch validiert.
+
+## 2026-07-09 - NW-019 Abo-Abwicklung manuell ausloesen
+
+**Kontext:** `GR-14` nennt den 15. des Monats als Sammelabwicklung. Hosting, Scheduler und Hintergrundjobs sind fuer V1 noch nicht entschieden.
+
+### Entscheidung
+Die monatliche Abo-Abwicklung wird in V1 manuell per Button gestartet. Die App speichert den Monatslauf als `AboAbwicklung` mit eindeutiger Kombination aus Jahr und Monat, damit derselbe Monat nicht doppelt abgewickelt wird. Aus aktiven Abo-Boxen werden Abo-Bestellungen erzeugt; die vier global markierten Abo-Produkte werden per FIFO als Positionen angelegt und verbindlich im Lager reserviert.
+
+### Konsequenzen
+- `NW-019` ist im Backlog auf `done` gesetzt.
+- Ein Cronjob oder automatischer Hintergrundlauf wird fuer V1 nicht eingefuehrt.
+- Der Monatslauf ist transaktional: Wenn aktive Abo-Boxen, genau vier Abo-Produkte, Allergenbestaetigung oder FIFO-Bestand fehlen, wird nichts teilweise angelegt.
+- Versandlabel und Pakete bleiben weiterhin manuell, passend zur V1-Entscheidung fuer Versandlabel und Tracking.
