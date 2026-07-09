@@ -314,6 +314,14 @@ button:hover {
   overflow-wrap: anywhere;
 }
 
+.inline-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+
 .warning-text {
   margin-top: 8px;
   color: var(--warning);

@@ -445,3 +445,15 @@ Die App ergaenzt ein Prisma-Modell `Paket` mit Pflicht-Relationen zu `Bestellung
 - `NW-030` ist im Backlog auf `done` gesetzt.
 - Die Packer-Packliste zeigt Paketstatus zu einer Bestellung, bleibt aber bei Name, Lieferadresse, Produkt, Menge und Charge datensparsam.
 - `NW-016` bleibt separat: Erst dort setzt `Zugestellt` die zugehoerige Bestellung automatisch auf `abgeschlossen`.
+
+## 2026-07-09 - NW-016 Paketstatus schliesst Bestellung ab
+
+**Kontext:** `GR-11` verlangt, dass eine Bestellung abgeschlossen wird, sobald die Zustellung bestaetigt ist. Paketstatus und Trackingdaten werden in V1 manuell gepflegt.
+
+### Entscheidung
+Beim Anlegen oder Aktualisieren eines Pakets setzt der Status `Zugestellt` die zugehoerige Bestellung in derselben Datenbanktransaktion auf `abgeschlossen`. Paketstatus, Trackingnummer, Versanddatum und Zustelldatum bleiben manuell pflegbar.
+
+### Konsequenzen
+- `NW-016` ist im Backlog auf `done` gesetzt.
+- Abgeschlossene Bestellungen verschwinden aus der offenen Arbeits- und Packer-Packliste.
+- Ein spaeteres Zuruecksetzen des Paketstatus oeffnet die Bestellung nicht automatisch wieder; dafuer gibt es aktuell keine fachliche Regel.

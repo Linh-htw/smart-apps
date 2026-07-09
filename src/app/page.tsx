@@ -750,17 +750,69 @@ async function createPaket(formData: FormData) {
     return;
   }
 
-  await prisma.paket.create({
-    data: {
-      bestellungId,
-      mitarbeiterId,
-      versandoption,
-      versandkosten,
-      status,
-      versanddatum,
-      trackingnummer: nullableText(formData.get("trackingnummer")),
-      zustelldatum,
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.paket.create({
+      data: {
+        bestellungId,
+        mitarbeiterId,
+        versandoption,
+        versandkosten,
+        status,
+        versanddatum,
+        trackingnummer: nullableText(formData.get("trackingnummer")),
+        zustelldatum,
+      },
+    });
+
+    if (status === "Zugestellt") {
+      await tx.bestellung.update({
+        where: { id: bestellungId },
+        data: { status: "abgeschlossen" },
+      });
+    }
+  });
+
+  revalidatePath("/");
+}
+
+async function updatePaketstatus(formData: FormData) {
+  "use server";
+
+  const paketId = requiredInt(formData.get("paketId"));
+  const status = formData.get("paketStatus")?.toString() ?? "";
+  const versanddatum = nullableDate(formData.get("versanddatum"));
+  const zustelldatum = nullableDate(formData.get("zustelldatum"));
+
+  if (!paketId || !isPaketstatus(status)) {
+    return;
+  }
+
+  const paket = await prisma.paket.findUnique({
+    where: { id: paketId },
+    select: { id: true, bestellungId: true },
+  });
+
+  if (!paket) {
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.paket.update({
+      where: { id: paketId },
+      data: {
+        status,
+        versanddatum,
+        trackingnummer: nullableText(formData.get("trackingnummer")),
+        zustelldatum,
+      },
+    });
+
+    if (status === "Zugestellt") {
+      await tx.bestellung.update({
+        where: { id: paket.bestellungId },
+        data: { status: "abgeschlossen" },
+      });
+    }
   });
 
   revalidatePath("/");
@@ -2053,6 +2105,62 @@ export default async function Home({ searchParams }: HomeProps) {
                       ) : null}
                     </dl>
                     <span className="status-pill">{paket.status}</span>
+                    <form action={updatePaketstatus} className="inline-form">
+                      <input name="paketId" type="hidden" value={paket.id} />
+
+                      <label>
+                        Paketstatus aktualisieren
+                        <select
+                          name="paketStatus"
+                          defaultValue={paket.status}
+                          required
+                        >
+                          {paketstatusWerte.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label>
+                        Trackingnummer
+                        <input
+                          defaultValue={paket.trackingnummer ?? ""}
+                          name="trackingnummer"
+                        />
+                      </label>
+
+                      <div className="field-row">
+                        <label>
+                          Versanddatum
+                          <input
+                            defaultValue={
+                              paket.versanddatum
+                                ? paket.versanddatum.toISOString().slice(0, 10)
+                                : ""
+                            }
+                            name="versanddatum"
+                            type="date"
+                          />
+                        </label>
+
+                        <label>
+                          Zustelldatum
+                          <input
+                            defaultValue={
+                              paket.zustelldatum
+                                ? paket.zustelldatum.toISOString().slice(0, 10)
+                                : ""
+                            }
+                            name="zustelldatum"
+                            type="date"
+                          />
+                        </label>
+                      </div>
+
+                      <button type="submit">Status speichern</button>
+                    </form>
                   </article>
                 ))}
               </div>
