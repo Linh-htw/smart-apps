@@ -132,6 +132,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-038` berechnet einen Versandkosten-Vorschlag fuer Pakete nach `GR-13`: B2C ab 39,00 EUR Warenwert versandkostenfrei, darunter 4,50 EUR; B2B- und Abo-Bestellungen immer versandkostenfrei. Der Vorschlag wird beim Anlegen eines Pakets als Default angezeigt, bleibt aber manuell ueberschreibbar, weil die automatische Versandkostenberechnung als separates spaeteres Feature (`NW-021`) gefuehrt wird.
 
+`NW-015` ergaenzt `Retoure` als positionsbezogenes Modell mit Grund, Produktzustand, Retourenstatus und Erstattungsart. Eine Retoure kann nur fuer zugestellte Bestellpositionen innerhalb der fachlichen Frist angelegt werden: B2C 14 Tage, B2B und Abo 7 Tage ab Zustellung. B2B- und Abo-Retouren werden nur fuer `Beschaedigt` oder `Mangelhaft` akzeptiert. Die Rueckbuchung in Bestand bleibt Teil von `NW-031`.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

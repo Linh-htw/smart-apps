@@ -63,7 +63,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-012 | Stammkundenautomatik | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-04 | Sechs erfolgreiche Bestellungen in 365 Tagen, 10 % Rabatt, Vorab-Benachrichtigung, Inaktivitaetswarnung. |
 | NW-013 | Produktknappheit-Priorisierung | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-05, W-3 | Stammkunden vor Neukunden, innerhalb der Gruppe nach Anfragezeitpunkt. |
 | NW-014 | B2B-Sonderkonditionen und B2C-Puffer | P3 - Regeln & Automatisierung | done | docs/spec.md GR-06 | B2B-Bestellpositionen ab 50 Einheiten duerfen den B2C-Puffer der Charge nicht aufbrauchen; kleinere B2B-Mengen laufen wie B2C. |
-| NW-015 | Retourenverwaltung | P3 - Regeln & Automatisierung | validated | docs/spec.md Entitaet Retoure, GR-07 | Fristen, Produktzustand, Status, Erstattungsart und Reklamationslogik. |
+| NW-015 | Retourenverwaltung | P3 - Regeln & Automatisierung | done | docs/spec.md Entitaet Retoure, GR-07 | Fristen, Produktzustand, Status, Erstattungsart und Reklamationslogik. |
 | NW-031 | Retouren-Rueckbuchung in Bestand | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-08 | Ungeoeffnete Ware je nach MHD zurueckbuchen oder als Restposten fuehren; beschaedigte Ware ausbuchen. |
 | NW-017 | MHD-Warnungen und Restposten-Vorschlaege | P3 - Regeln & Automatisierung | done | docs/spec.md GR-12 | Aktive Arbeitsansicht zeigt freie freigegebene Chargen 8 Wochen vor MHD mit 20 % und 30 Tage vor MHD mit 50 % Rabattvorschlag; keine automatische Preisaenderung. |
 | NW-018 | Abo-Box-Verwaltung | P3 - Regeln & Automatisierung | validated | docs/spec.md Entitaet Abo-Box | Status, Lieferadresse, Start, Pausierung und Kuendigung. |

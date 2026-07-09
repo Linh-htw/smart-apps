@@ -481,3 +481,15 @@ Die App berechnet beim Paket-Anlegen einen Versandkosten-Vorschlag: B2C unter 39
 - `NW-038` ist im Backlog auf `done` gesetzt.
 - Nina kann den vorgeschlagenen Betrag weiterhin manuell ueberschreiben.
 - `NW-021` bleibt offen, weil es um eine spaetere vollautomatische Versandkostenberechnung geht.
+
+## 2026-07-09 - NW-015 Retourenverwaltung umgesetzt
+
+**Kontext:** Die Spec definiert Retouren je Bestellposition mit Grund, Produktzustand, Status und Erstattungsart. `GR-07` legt unterschiedliche Fristen und Bedingungen fuer B2C, B2B und Abo fest.
+
+### Entscheidung
+Die App ergaenzt ein Prisma-Modell `Retoure`. Retouren werden nur fuer Bestellpositionen mit zugestelltem Paket innerhalb der Frist angelegt: B2C 14 Tage, B2B und Abo 7 Tage ab Zustellung. Fuer B2B und Abo akzeptiert die App nur die Produktzustaende `Beschaedigt` und `Mangelhaft`, weil die Spec dort nur eindeutige Maengel, Transportschaeden oder fehlerhafte/beschaedigte Produkte erlaubt.
+
+### Konsequenzen
+- `NW-015` ist im Backlog auf `done` gesetzt.
+- Die aktive Arbeitsansicht zeigt offene Retouren.
+- Bestandsrueckbuchung oder Ausbuchung erfolgt noch nicht; das bleibt `NW-031`.

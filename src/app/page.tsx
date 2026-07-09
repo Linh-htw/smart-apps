@@ -35,6 +35,14 @@ import {
   paketstatusWerte,
   versandoptionen,
 } from "@/lib/package-options";
+import {
+  erstattungsarten,
+  isErstattungsart,
+  isProduktzustand,
+  isRetourenstatus,
+  produktzustandWerte,
+  retourenstatusWerte,
+} from "@/lib/return-options";
 
 export const dynamic = "force-dynamic";
 
@@ -134,6 +142,12 @@ function getDaysUntil(value: Date, now = new Date()) {
   start.setHours(0, 0, 0, 0);
 
   return Math.ceil((target.getTime() - start.getTime()) / 86_400_000);
+}
+
+function addDays(value: Date, days: number) {
+  const date = new Date(value);
+  date.setDate(date.getDate() + days);
+  return date;
 }
 
 function getMhdWarnung(charge: {
@@ -278,6 +292,64 @@ function getVersandkostenVorschlag(bestellung: {
   }
 
   return getBestellwert(bestellung.positionen) >= 39 ? 0 : 4.5;
+}
+
+function getRetourenfrist(bestellung: {
+  kanal: string;
+  kunde: { typ: string };
+  pakete: Array<{ zustelldatum: Date | null }>;
+}) {
+  const zugestelltePakete = bestellung.pakete
+    .filter((paket) => paket.zustelldatum)
+    .sort(
+      (a, b) =>
+        Number(a.zustelldatum?.getTime() ?? 0) -
+        Number(b.zustelldatum?.getTime() ?? 0),
+    );
+  const zustelldatum = zugestelltePakete[0]?.zustelldatum ?? null;
+
+  if (!zustelldatum) {
+    return null;
+  }
+
+  const fristTage =
+    bestellung.kanal === "Abo" || bestellung.kunde.typ === "B2B" ? 7 : 14;
+
+  return {
+    fristTage,
+    fristEnde: addDays(zustelldatum, fristTage),
+    zustelldatum,
+  };
+}
+
+function istRetourenfaehig({
+  bestellung,
+  produktzustand,
+  now = new Date(),
+}: {
+  bestellung: {
+    kanal: string;
+    kunde: { typ: string };
+    pakete: Array<{ zustelldatum: Date | null }>;
+  };
+  produktzustand: string;
+  now?: Date;
+}) {
+  const frist = getRetourenfrist(bestellung);
+
+  if (!frist) {
+    return false;
+  }
+
+  if (getDaysSince(frist.zustelldatum, now) > frist.fristTage) {
+    return false;
+  }
+
+  if (bestellung.kanal === "Abo" || bestellung.kunde.typ === "B2B") {
+    return produktzustand === "Beschaedigt" || produktzustand === "Mangelhaft";
+  }
+
+  return true;
 }
 
 function getReservierteMenge(charge: {
@@ -914,6 +986,55 @@ async function updatePaketstatus(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createRetoure(formData: FormData) {
+  "use server";
+
+  const bestellpositionId = requiredInt(formData.get("retourePositionId"));
+  const produktzustand = formData.get("produktzustand")?.toString() ?? "";
+  const status = formData.get("retourenstatus")?.toString() ?? "";
+  const erstattungsart = formData.get("erstattungsart")?.toString() ?? "";
+
+  if (
+    !bestellpositionId ||
+    !isProduktzustand(produktzustand) ||
+    !isRetourenstatus(status) ||
+    !isErstattungsart(erstattungsart)
+  ) {
+    return;
+  }
+
+  const position = await prisma.bestellposition.findUnique({
+    where: { id: bestellpositionId },
+    include: {
+      bestellung: {
+        include: {
+          kunde: true,
+          pakete: { select: { zustelldatum: true } },
+        },
+      },
+    },
+  });
+
+  if (
+    !position ||
+    !istRetourenfaehig({ bestellung: position.bestellung, produktzustand })
+  ) {
+    return;
+  }
+
+  await prisma.retoure.create({
+    data: {
+      bestellpositionId,
+      grund: nullableText(formData.get("retourengrund")),
+      produktzustand,
+      status,
+      erstattungsart,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -931,7 +1052,7 @@ export default async function Home({ searchParams }: HomeProps) {
   });
   const bestellpositionen = await prisma.bestellposition.findMany({
     include: {
-      bestellung: { include: { kunde: true } },
+      bestellung: { include: { kunde: true, pakete: true } },
       produkt: true,
       charge: true,
     },
@@ -974,6 +1095,18 @@ export default async function Home({ searchParams }: HomeProps) {
     include: {
       bestellung: { include: { kunde: true } },
       mitarbeiter: true,
+    },
+    orderBy: [{ id: "desc" }],
+  });
+  const retouren = await prisma.retoure.findMany({
+    include: {
+      bestellposition: {
+        include: {
+          bestellung: { include: { kunde: true } },
+          produkt: true,
+          charge: true,
+        },
+      },
     },
     orderBy: [{ id: "desc" }],
   });
@@ -1036,6 +1169,20 @@ export default async function Home({ searchParams }: HomeProps) {
       }),
     };
   });
+  const retourenfaehigePositionen = bestellpositionen
+    .map((position) => {
+      const frist = getRetourenfrist(position.bestellung);
+
+      return frist &&
+        getDaysSince(frist.zustelldatum) <= frist.fristTage
+        ? { position, frist }
+        : null;
+    })
+    .filter((eintrag) => eintrag !== null);
+  const offeneRetouren = retouren.filter(
+    (retoure) =>
+      retoure.status !== "Abgelehnt" && retoure.status !== "Abgeschlossen",
+  );
   const fifoVorschlaege = produkte
     .map((produkt) => {
       const charge = chargen.find(
@@ -1098,7 +1245,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-016 / NW-017 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1107,7 +1254,7 @@ export default async function Home({ searchParams }: HomeProps) {
           {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
           {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
           {verkaufsevents.length} Verkaufsevents Â· {pakete.length} Pakete -{" "}
-          {mitarbeiter.length} Mitarbeitende
+          {retouren.length} Retouren - {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -1606,6 +1753,10 @@ export default async function Home({ searchParams }: HomeProps) {
               <span>Allergenbestaetigung offen</span>
               <strong>{allergenWarnungen.length}</strong>
             </div>
+            <div className="metric-tile">
+              <span>Offene Retouren</span>
+              <strong>{offeneRetouren.length}</strong>
+            </div>
           </div>
 
           {aktiveBestellungen.length === 0 ? (
@@ -1693,6 +1844,28 @@ export default async function Home({ searchParams }: HomeProps) {
                   <div className="task-meta">
                     <span className="status-pill">Allergene offen</span>
                     <strong>Bestaetigung nachholen</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {offeneRetouren.length === 0 ? null : (
+            <div className="task-list">
+              {offeneRetouren.slice(0, 6).map((retoure) => (
+                <article className="task-item" key={retoure.id}>
+                  <div>
+                    <h3>Retoure #{retoure.id}</h3>
+                    <p>
+                      Bestellung #{retoure.bestellposition.bestellung.id} -{" "}
+                      {retoure.bestellposition.bestellung.kunde.name} -{" "}
+                      {retoure.bestellposition.produkt.name}
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">{retoure.status}</span>
+                    <span className="status-pill">{retoure.produktzustand}</span>
+                    <strong>Retoure bearbeiten</strong>
                   </div>
                 </article>
               ))}
@@ -2352,6 +2525,121 @@ export default async function Home({ searchParams }: HomeProps) {
 
                       <button type="submit">Status speichern</button>
                     </form>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {canManageOrders ? (
+        <section className="layout-grid feature-section">
+          <form action={createRetoure} className="panel form-panel">
+            <h2>Retoure anlegen</h2>
+
+            {retourenfaehigePositionen.length === 0 ? (
+              <p className="empty-state">
+                Keine zugestellte Bestellposition innerhalb der Retourenfrist.
+              </p>
+            ) : (
+              <>
+                <label>
+                  Bestellposition
+                  <select name="retourePositionId" required>
+                    {retourenfaehigePositionen.map(({ position, frist }) => (
+                      <option key={position.id} value={position.id}>
+                        #{position.id} - Bestellung #{position.bestellung.id} -{" "}
+                        {position.bestellung.kunde.name} -{" "}
+                        {position.produkt.name} - Frist bis{" "}
+                        {formatDate(frist.fristEnde)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Grund
+                  <textarea name="retourengrund" rows={3} />
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Produktzustand
+                    <select name="produktzustand" defaultValue="Ungeoeffnet" required>
+                      {produktzustandWerte.map((zustand) => (
+                        <option key={zustand} value={zustand}>
+                          {zustand}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Status
+                    <select name="retourenstatus" defaultValue="Angemeldet" required>
+                      {retourenstatusWerte.map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <label>
+                  Erstattungsart
+                  <select name="erstattungsart" defaultValue="Keine" required>
+                    {erstattungsarten.map((art) => (
+                      <option key={art} value={art}>
+                        {art}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <p className="note-text">
+                  B2B- und Abo-Retouren werden nur fuer beschaedigte oder
+                  mangelhafte Produkte akzeptiert.
+                </p>
+
+                <button type="submit">Retoure speichern</button>
+              </>
+            )}
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="retouren-heading">
+            <h2 id="retouren-heading">Retouren</h2>
+            {retouren.length === 0 ? (
+              <p className="empty-state">Noch keine Retouren erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {retouren.map((retoure) => (
+                  <article className="customer-card" key={retoure.id}>
+                    <div>
+                      <h3>Retoure #{retoure.id}</h3>
+                      <p>
+                        Bestellung #{retoure.bestellposition.bestellung.id} -{" "}
+                        {retoure.bestellposition.bestellung.kunde.name}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Produkt</dt>
+                      <dd>{retoure.bestellposition.produkt.name}</dd>
+                      <dt>Charge</dt>
+                      <dd>#{retoure.bestellposition.charge.id}</dd>
+                      <dt>Zustand</dt>
+                      <dd>{retoure.produktzustand}</dd>
+                      <dt>Erstattung</dt>
+                      <dd>{retoure.erstattungsart}</dd>
+                      {retoure.grund ? (
+                        <>
+                          <dt>Grund</dt>
+                          <dd>{retoure.grund}</dd>
+                        </>
+                      ) : null}
+                    </dl>
+                    <span className="status-pill">{retoure.status}</span>
                   </article>
                 ))}
               </div>
