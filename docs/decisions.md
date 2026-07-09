@@ -469,3 +469,15 @@ Die App speichert die Allergenbestaetigung als `Bestellung.allergeneBestaetigtAm
 - `NW-025` ist im Backlog auf `done` gesetzt.
 - Die aktive Arbeitsansicht zeigt offene Allergenbestaetigungen als Warnung.
 - Das Bestellattribut aus der Spec wird technisch als Timestamp konkretisiert, nicht als weiteres Enum.
+
+## 2026-07-09 - NW-038 Versandkostenregel als Vorschlag umgesetzt
+
+**Kontext:** `GR-13` definiert Versandkosten fuer B2C, B2B und Abo-Bestellungen. Gleichzeitig ist automatische Versandkostenberechnung als eigenes spaeteres Feature `NW-021` markiert.
+
+### Entscheidung
+Die App berechnet beim Paket-Anlegen einen Versandkosten-Vorschlag: B2C unter 39,00 EUR Warenwert bekommt 4,50 EUR, B2C ab 39,00 EUR ist frei, B2B und Abo sind immer frei. Der Vorschlag wird als Default im manuellen Versandkostenfeld genutzt und in der Paketliste sichtbar gemacht.
+
+### Konsequenzen
+- `NW-038` ist im Backlog auf `done` gesetzt.
+- Nina kann den vorgeschlagenen Betrag weiterhin manuell ueberschreiben.
+- `NW-021` bleibt offen, weil es um eine spaetere vollautomatische Versandkostenberechnung geht.

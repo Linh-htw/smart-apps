@@ -109,6 +109,10 @@ function formatDate(value: Date) {
   return new Intl.DateTimeFormat("de-DE").format(value);
 }
 
+function formatDecimalInput(value: unknown) {
+  return Number(value).toFixed(2);
+}
+
 function getDaysSince(value: Date, now = new Date()) {
   const start = new Date(value);
   start.setHours(0, 0, 0, 0);
@@ -234,6 +238,46 @@ function hatUnbestaetigteAllergene(bestellung: {
       Boolean(position.produkt.allergene?.trim()),
     )
   );
+}
+
+function getPositionspreis(position: {
+  menge: number;
+  produkt: { preisB2b: unknown; preisB2c: unknown };
+  bestellung: { kunde: { typ: string } };
+}) {
+  const nutztB2bPreis = position.bestellung.kunde.typ === "B2B" && position.menge >= 50;
+  const einzelpreis = nutztB2bPreis
+    ? Number(position.produkt.preisB2b)
+    : Number(position.produkt.preisB2c);
+
+  return einzelpreis * position.menge;
+}
+
+function getBestellwert(positionen: Array<{
+  menge: number;
+  produkt: { preisB2b: unknown; preisB2c: unknown };
+  bestellung: { kunde: { typ: string } };
+}>) {
+  return positionen.reduce(
+    (summe, position) => summe + getPositionspreis(position),
+    0,
+  );
+}
+
+function getVersandkostenVorschlag(bestellung: {
+  kanal: string;
+  kunde: { typ: string };
+  positionen: Array<{
+    menge: number;
+    produkt: { preisB2b: unknown; preisB2c: unknown };
+    bestellung: { kunde: { typ: string } };
+  }>;
+}) {
+  if (bestellung.kanal === "Abo" || bestellung.kunde.typ === "B2B") {
+    return 0;
+  }
+
+  return getBestellwert(bestellung.positionen) >= 39 ? 0 : 4.5;
 }
 
 function getReservierteMenge(charge: {
@@ -977,6 +1021,21 @@ export default async function Home({ searchParams }: HomeProps) {
   const packerMitarbeiter = mitarbeiter.filter(
     (person) => person.rolle === "Packer",
   );
+  const bestellungenMitVersandkosten = bestellungen.map((bestellung) => {
+    const positionen = bestellpositionen.filter(
+      (position) => position.bestellungId === bestellung.id,
+    );
+    const bestellwert = getBestellwert(positionen);
+
+    return {
+      bestellung,
+      bestellwert,
+      versandkostenVorschlag: getVersandkostenVorschlag({
+        ...bestellung,
+        positionen,
+      }),
+    };
+  });
   const fifoVorschlaege = produkte
     .map((produkt) => {
       const charge = chargen.find(
@@ -2096,12 +2155,16 @@ export default async function Home({ searchParams }: HomeProps) {
                 <label>
                   Bestellung
                   <select name="paketBestellungId" required>
-                    {bestellungen.map((bestellung) => (
+                    {bestellungenMitVersandkosten.map(
+                      ({ bestellung, bestellwert, versandkostenVorschlag }) => (
                       <option key={bestellung.id} value={bestellung.id}>
                         #{bestellung.id} - {bestellung.kunde.name} -{" "}
-                        {formatDate(bestellung.datum)}
+                        {formatDate(bestellung.datum)} - Warenwert{" "}
+                        {formatCurrency(bestellwert)} - Versandvorschlag{" "}
+                        {formatCurrency(versandkostenVorschlag)}
                       </option>
-                    ))}
+                      ),
+                    )}
                   </select>
                 </label>
 
@@ -2131,7 +2194,14 @@ export default async function Home({ searchParams }: HomeProps) {
                   <label>
                     Versandkosten
                     <input
-                      defaultValue="0"
+                      defaultValue={
+                        bestellungenMitVersandkosten[0]
+                          ? formatDecimalInput(
+                              bestellungenMitVersandkosten[0]
+                                .versandkostenVorschlag,
+                            )
+                          : "0.00"
+                      }
                       min="0"
                       name="versandkosten"
                       required
@@ -2196,6 +2266,15 @@ export default async function Home({ searchParams }: HomeProps) {
                       <dd>
                         {paket.versandoption} -{" "}
                         {formatCurrency(paket.versandkosten)}
+                      </dd>
+                      <dt>Vorschlag</dt>
+                      <dd>
+                        {formatCurrency(
+                          bestellungenMitVersandkosten.find(
+                            (eintrag) =>
+                              eintrag.bestellung.id === paket.bestellungId,
+                          )?.versandkostenVorschlag ?? 0,
+                        )}
                       </dd>
                       {paket.trackingnummer ? (
                         <>

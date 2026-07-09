@@ -130,6 +130,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-025` ergaenzt `Bestellung.allergeneBestaetigtAm` als Timestamp fuer die Allergenbestaetigung. Beim Anlegen einer Bestellposition mit einem Produkt, dessen `allergene`-Feld befuellt ist, muss die Bestaetigung gesetzt oder bereits vorhanden sein. Eine Bestellung mit allergenbehafteten Positionen ohne Timestamp kann nicht ueber den Paketstatus `Zugestellt` auf `abgeschlossen` wechseln.
 
+`NW-038` berechnet einen Versandkosten-Vorschlag fuer Pakete nach `GR-13`: B2C ab 39,00 EUR Warenwert versandkostenfrei, darunter 4,50 EUR; B2B- und Abo-Bestellungen immer versandkostenfrei. Der Vorschlag wird beim Anlegen eines Pakets als Default angezeigt, bleibt aber manuell ueberschreibbar, weil die automatische Versandkostenberechnung als separates spaeteres Feature (`NW-021`) gefuehrt wird.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell
