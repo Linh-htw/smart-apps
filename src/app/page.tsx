@@ -29,6 +29,12 @@ import {
   isChargenstatus,
 } from "@/lib/batch-options";
 import { isLagerort, lagerorte } from "@/lib/inventory-options";
+import {
+  isPaketstatus,
+  isVersandoption,
+  paketstatusWerte,
+  versandoptionen,
+} from "@/lib/package-options";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +79,16 @@ function requiredDecimal(value: FormDataEntryValue | null) {
 }
 
 function requiredDate(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim();
+  if (!text) {
+    return null;
+  }
+
+  const date = new Date(`${text}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function nullableDate(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
   if (!text) {
     return null;
@@ -698,6 +714,58 @@ async function createVerkaufseventPosition(formData: FormData) {
   revalidatePath("/");
 }
 
+async function createPaket(formData: FormData) {
+  "use server";
+
+  const bestellungId = requiredInt(formData.get("paketBestellungId"));
+  const mitarbeiterId = requiredInt(formData.get("paketMitarbeiterId"));
+  const versandoption = formData.get("versandoption")?.toString() ?? "";
+  const versandkosten = requiredDecimal(formData.get("versandkosten"));
+  const status = formData.get("paketStatus")?.toString() ?? "";
+  const versanddatum = nullableDate(formData.get("versanddatum"));
+  const zustelldatum = nullableDate(formData.get("zustelldatum"));
+
+  if (
+    !bestellungId ||
+    !mitarbeiterId ||
+    !isVersandoption(versandoption) ||
+    !versandkosten ||
+    !isPaketstatus(status)
+  ) {
+    return;
+  }
+
+  const [bestellung, mitarbeiter] = await Promise.all([
+    prisma.bestellung.findUnique({
+      where: { id: bestellungId },
+      select: { id: true },
+    }),
+    prisma.mitarbeiter.findUnique({
+      where: { id: mitarbeiterId },
+      select: { id: true, rolle: true },
+    }),
+  ]);
+
+  if (!bestellung || !mitarbeiter || mitarbeiter.rolle !== "Packer") {
+    return;
+  }
+
+  await prisma.paket.create({
+    data: {
+      bestellungId,
+      mitarbeiterId,
+      versandoption,
+      versandkosten,
+      status,
+      versanddatum,
+      trackingnummer: nullableText(formData.get("trackingnummer")),
+      zustelldatum,
+    },
+  });
+
+  revalidatePath("/");
+}
+
 type HomeProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
@@ -754,6 +822,13 @@ export default async function Home({ searchParams }: HomeProps) {
     },
     orderBy: [{ id: "desc" }],
   });
+  const pakete = await prisma.paket.findMany({
+    include: {
+      bestellung: { include: { kunde: true } },
+      mitarbeiter: true,
+    },
+    orderBy: [{ id: "desc" }],
+  });
   const params = searchParams ? await searchParams : {};
   const selectedMitarbeiterId = requiredInt(
     getQueryValue(params.mitarbeiterId) ?? null,
@@ -795,6 +870,9 @@ export default async function Home({ searchParams }: HomeProps) {
   const werkstattMitarbeiter = mitarbeiter.filter(
     (person) => person.rolle === "Werkstatt-Hilfe",
   );
+  const packerMitarbeiter = mitarbeiter.filter(
+    (person) => person.rolle === "Packer",
+  );
   const fifoVorschlaege = produkte
     .map((produkt) => {
       const charge = chargen.find(
@@ -833,6 +911,7 @@ export default async function Home({ searchParams }: HomeProps) {
       positionen: bestellpositionen.filter(
         (position) => position.bestellungId === bestellung.id,
       ),
+      pakete: pakete.filter((paket) => paket.bestellungId === bestellung.id),
     }))
     .filter((eintrag) => eintrag.positionen.length > 0);
   const today = new Date().toISOString().slice(0, 10);
@@ -842,7 +921,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-017 / NW-020 / NW-027 / NW-029 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-017 / NW-020 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -850,7 +929,8 @@ export default async function Home({ searchParams }: HomeProps) {
           {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
           {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
           {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
-          {verkaufsevents.length} Verkaufsevents - {mitarbeiter.length} Mitarbeitende
+          {verkaufsevents.length} Verkaufsevents Â· {pakete.length} Pakete -{" "}
+          {mitarbeiter.length} Mitarbeitende
         </p>
       </header>
 
@@ -1264,14 +1344,27 @@ export default async function Home({ searchParams }: HomeProps) {
               <p className="empty-state">Keine Packaufgaben vorhanden.</p>
             ) : (
               <div className="packlist">
-                {packlistenBestellungen.map(({ bestellung, positionen }) => (
+                {packlistenBestellungen.map(({ bestellung, positionen, pakete }) => (
                   <article className="packlist-order" key={bestellung.id}>
                     <div className="packlist-header">
                       <div>
                         <h3>{bestellung.kunde.name}</h3>
                         <p>{bestellung.lieferadresse ?? "Keine Lieferadresse erfasst"}</p>
                       </div>
-                      <span className="status-pill">Bestellung #{bestellung.id}</span>
+                      <div className="task-meta">
+                        <span className="status-pill">
+                          Bestellung #{bestellung.id}
+                        </span>
+                        {pakete.length === 0 ? (
+                          <span className="status-pill">Kein Paket</span>
+                        ) : (
+                          pakete.map((paket) => (
+                            <span className="status-pill" key={paket.id}>
+                              Paket #{paket.id}: {paket.status}
+                            </span>
+                          ))
+                        )}
+                      </div>
                     </div>
 
                     <div className="packlist-items">
@@ -1817,6 +1910,149 @@ export default async function Home({ searchParams }: HomeProps) {
                       <dt>Status</dt>
                       <dd>{position.bestellung.status}</dd>
                     </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </section>
+      ) : null}
+
+      {canManageOrders ? (
+        <section className="layout-grid feature-section">
+          <form action={createPaket} className="panel form-panel">
+            <h2>Paket anlegen</h2>
+
+            {bestellungen.length === 0 || packerMitarbeiter.length === 0 ? (
+              <p className="empty-state">
+                Zuerst Bestellung und Packer anlegen.
+              </p>
+            ) : (
+              <>
+                <label>
+                  Bestellung
+                  <select name="paketBestellungId" required>
+                    {bestellungen.map((bestellung) => (
+                      <option key={bestellung.id} value={bestellung.id}>
+                        #{bestellung.id} - {bestellung.kunde.name} -{" "}
+                        {formatDate(bestellung.datum)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Packer
+                  <select name="paketMitarbeiterId" required>
+                    {packerMitarbeiter.map((person) => (
+                      <option key={person.id} value={person.id}>
+                        {person.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Versandoption
+                    <select name="versandoption" defaultValue="DHL" required>
+                      {versandoptionen.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label>
+                    Versandkosten
+                    <input
+                      defaultValue="0"
+                      min="0"
+                      name="versandkosten"
+                      required
+                      step="0.01"
+                      type="number"
+                    />
+                  </label>
+                </div>
+
+                <label>
+                  Paketstatus
+                  <select name="paketStatus" defaultValue="Vorbereitet" required>
+                    {paketstatusWerte.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Trackingnummer
+                  <input name="trackingnummer" />
+                </label>
+
+                <div className="field-row">
+                  <label>
+                    Versanddatum
+                    <input name="versanddatum" type="date" />
+                  </label>
+
+                  <label>
+                    Zustelldatum
+                    <input name="zustelldatum" type="date" />
+                  </label>
+                </div>
+
+                <button type="submit">Paket speichern</button>
+              </>
+            )}
+          </form>
+
+          <section className="panel list-panel" aria-labelledby="pakete-heading">
+            <h2 id="pakete-heading">Pakete</h2>
+            {pakete.length === 0 ? (
+              <p className="empty-state">Noch keine Pakete erfasst.</p>
+            ) : (
+              <div className="customer-list">
+                {pakete.map((paket) => (
+                  <article className="customer-card" key={paket.id}>
+                    <div>
+                      <h3>Paket #{paket.id}</h3>
+                      <p>
+                        Bestellung #{paket.bestellung.id} -{" "}
+                        {paket.bestellung.kunde.name}
+                      </p>
+                    </div>
+                    <dl>
+                      <dt>Packer</dt>
+                      <dd>{paket.mitarbeiter.name}</dd>
+                      <dt>Versand</dt>
+                      <dd>
+                        {paket.versandoption} -{" "}
+                        {formatCurrency(paket.versandkosten)}
+                      </dd>
+                      {paket.trackingnummer ? (
+                        <>
+                          <dt>Tracking</dt>
+                          <dd>{paket.trackingnummer}</dd>
+                        </>
+                      ) : null}
+                      {paket.versanddatum ? (
+                        <>
+                          <dt>Versendet</dt>
+                          <dd>{formatDate(paket.versanddatum)}</dd>
+                        </>
+                      ) : null}
+                      {paket.zustelldatum ? (
+                        <>
+                          <dt>Zugestellt</dt>
+                          <dd>{formatDate(paket.zustelldatum)}</dd>
+                        </>
+                      ) : null}
+                    </dl>
+                    <span className="status-pill">{paket.status}</span>
                   </article>
                 ))}
               </div>

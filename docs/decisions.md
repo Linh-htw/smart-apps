@@ -433,3 +433,15 @@ Bestellstatus erhaelt den zusaetzlichen Wert `abgeschlossen`. Wenn ein Paket den
 ### Konsequenzen
 - `NW-016` kann mit Paketstatus `Zugestellt` als Ausloeser fuer den Bestellabschluss umgesetzt werden.
 - Abgeschlossene Bestellungen gelten als erledigt und sollen nicht mehr als offene Aufgabe erscheinen.
+
+## 2026-07-09 - NW-030 Paketverwaltung umgesetzt
+
+**Kontext:** Fuer Packlisten und spaetere Trackingstatus braucht die App Pakete mit Bestellung, Packer, Versandoption, Versandkosten, Paketstatus und manuellen Versand-/Zustelldaten. Versandlabel werden in V1 ausserhalb der App erstellt.
+
+### Entscheidung
+Die App ergaenzt ein Prisma-Modell `Paket` mit Pflicht-Relationen zu `Bestellung` und `Mitarbeiter`. Als Packer kann nur ein Mitarbeiter mit Rolle `Packer` zugeordnet werden. Paketstatus und Versandoptionen werden zentral in `src/lib/package-options.ts` validiert.
+
+### Konsequenzen
+- `NW-030` ist im Backlog auf `done` gesetzt.
+- Die Packer-Packliste zeigt Paketstatus zu einer Bestellung, bleibt aber bei Name, Lieferadresse, Produkt, Menge und Charge datensparsam.
+- `NW-016` bleibt separat: Erst dort setzt `Zugestellt` die zugehoerige Bestellung automatisch auf `abgeschlossen`.

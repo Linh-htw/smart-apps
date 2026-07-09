@@ -73,6 +73,7 @@ model Bestellung {
 
   kunde Kunde @relation(fields: [kundeId], references: [id])
   positionen Bestellposition[]
+  pakete Paket[]
 
   @@index([kundeId])
   @@index([kanal])
@@ -92,8 +93,32 @@ model Mitarbeiter {
   updatedAt      DateTime @updatedAt
 
   chargen Charge[]
+  pakete Paket[]
 
   @@index([rolle])
+}
+
+model Paket {
+  id             Int       @id @default(autoincrement())
+  bestellungId   Int
+  mitarbeiterId  Int
+  versandoption  String
+  versandkosten  Decimal
+  status         String
+  versanddatum   DateTime?
+  trackingnummer String?
+  zustelldatum   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  bestellung  Bestellung  @relation(fields: [bestellungId], references: [id])
+  mitarbeiter Mitarbeiter @relation(fields: [mitarbeiterId], references: [id])
+
+  @@index([bestellungId])
+  @@index([mitarbeiterId])
+  @@index([status])
+  @@index([versanddatum])
+  @@index([zustelldatum])
 }
 
 model Charge {

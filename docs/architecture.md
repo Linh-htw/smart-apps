@@ -118,6 +118,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-009` ergaenzt eine Packer-spezifische Tages-Packliste fuer verbindliche Bestellungen mit Bestellpositionen. Die Ansicht zeigt nur Name, Lieferadresse, Produkt, Menge und zugewiesene Charge mit MHD. Preise, Zahlungsstatus und weitere Kundendaten bleiben fuer Packer ausgeblendet; Paketstatus folgt mit der Paketverwaltung.
 
+`NW-030` ergaenzt `Paket` mit Bestellung-Relation, verantwortlichem Packer, Versandoption, Versandkosten, Paketstatus, Trackingnummer, Versanddatum und Zustelldatum. Paket- und Versandwerte werden zentral validiert. Die Packer-Packliste zeigt vorhandene Paketstatus, ohne Preise, Zahlungsstatus oder vollstaendige Kundendaten offenzulegen. Der automatische Bestellabschluss bei Zustellung bleibt Teil von `NW-016`.
+
 `NW-020` und `NW-036` ergaenzen `Verkaufsevent` und `VerkaufseventPosition`. Ein Verkaufsevent hat Datum und Ort. Positionen verbinden ein Event mit einer Charge und speichern `mengeMitgenommen` sowie `mengeVerkauft`; `mengeVerkauft` darf nicht groesser sein als `mengeMitgenommen`. Pro Event und Charge gibt es maximal eine Position. Nicht verkaufte Event-Mengen bleiben bis zu einer spaeteren Rueckbuchungsfunktion blockiert.
 
 `NW-017` ergaenzt MHD-Warnungen in der aktiven Arbeitsansicht. Freie, freigegebene Chargen werden ab 56 Tagen vor MHD mit einem 20-%-Rabattvorschlag und ab 30 Tagen vor MHD mit einem 50-%-Rabattvorschlag angezeigt. Die App aendert Preise nicht automatisch; Nina muss jeden Vorschlag manuell bestaetigen.
