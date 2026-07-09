@@ -134,6 +134,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-015` ergaenzt `Retoure` als positionsbezogenes Modell mit Grund, Produktzustand, Retourenstatus und Erstattungsart. Eine Retoure kann nur fuer zugestellte Bestellpositionen innerhalb der fachlichen Frist angelegt werden: B2C 14 Tage, B2B und Abo 7 Tage ab Zustellung. B2B- und Abo-Retouren werden nur fuer `Beschaedigt` oder `Mangelhaft` akzeptiert. Die Rueckbuchung in Bestand bleibt Teil von `NW-031`.
 
+`NW-031` ergaenzt eine einmalige Bestandsbuchung fuer angenommene Retouren. Ungeoeffnete Ware mit mehr als 28 Tagen MHD-Restlaufzeit reduziert die verbindliche Reservierung der urspruenglichen Charge und wird damit wieder frei. Ungeoeffnete Ware mit 28 Tagen oder weniger MHD-Restlaufzeit wird ebenfalls aus der verbindlichen Reservierung geloest und ueber einen `Restposten`-Lagerbestand markiert. Geoeffnete, beschaedigte oder mangelhafte Ware wird als ausgebucht dokumentiert und erhoeht den freien Bestand nicht.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

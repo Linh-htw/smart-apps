@@ -201,6 +201,8 @@ model Retoure {
   produktzustand    String
   status            String
   erstattungsart    String
+  bestandsbuchung   String?
+  bestandsbuchungAm DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -210,6 +212,8 @@ model Retoure {
   @@index([produktzustand])
   @@index([status])
   @@index([erstattungsart])
+  @@index([bestandsbuchung])
+  @@index([bestandsbuchungAm])
 }
 
 model Lagerbestand {

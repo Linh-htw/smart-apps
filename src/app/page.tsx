@@ -352,6 +352,19 @@ function istRetourenfaehig({
   return true;
 }
 
+function getRetoureBestandsbuchung(retoure: {
+  produktzustand: string;
+  bestellposition: { charge: { mhd: Date } };
+}) {
+  if (retoure.produktzustand !== "Ungeoeffnet") {
+    return "Ausgebucht";
+  }
+
+  return getDaysUntil(retoure.bestellposition.charge.mhd) > 28
+    ? "Zurueckgebucht"
+    : "Restposten";
+}
+
 function getReservierteMenge(charge: {
   lagerbestaende: Array<{
     mengeVoruebergehendReserviert: number;
@@ -1030,6 +1043,88 @@ async function createRetoure(formData: FormData) {
       status,
       erstattungsart,
     },
+  });
+
+  revalidatePath("/");
+}
+
+async function bucheRetoureInBestand(formData: FormData) {
+  "use server";
+
+  const retoureId = requiredInt(formData.get("retoureId"));
+
+  if (!retoureId) {
+    return;
+  }
+
+  const retoure = await prisma.retoure.findUnique({
+    where: { id: retoureId },
+    include: {
+      bestellposition: {
+        include: {
+          charge: { include: { lagerbestaende: true } },
+        },
+      },
+    },
+  });
+
+  if (
+    !retoure ||
+    retoure.bestandsbuchungAm ||
+    retoure.status !== "Angenommen"
+  ) {
+    return;
+  }
+
+  const buchung = getRetoureBestandsbuchung(retoure);
+
+  await prisma.$transaction(async (tx) => {
+    if (buchung === "Zurueckgebucht" || buchung === "Restposten") {
+      const verbindlicherBestand =
+        retoure.bestellposition.charge.lagerbestaende.find(
+          (bestand) => bestand.mengeVerbindlichReserviert > 0,
+        );
+
+      if (verbindlicherBestand) {
+        await tx.lagerbestand.update({
+          where: { id: verbindlicherBestand.id },
+          data: {
+            mengeVerbindlichReserviert: Math.max(
+              0,
+              verbindlicherBestand.mengeVerbindlichReserviert -
+                retoure.bestellposition.menge,
+            ),
+          },
+        });
+      }
+
+      if (buchung === "Restposten") {
+        await tx.lagerbestand.upsert({
+          where: {
+            chargeId_lagerort: {
+              chargeId: retoure.bestellposition.chargeId,
+              lagerort: "Restposten",
+            },
+          },
+          create: {
+            chargeId: retoure.bestellposition.chargeId,
+            lagerort: "Restposten",
+            mengeVoruebergehendReserviert: 0,
+            mengeVerbindlichReserviert: 0,
+          },
+          update: { lagerort: "Restposten" },
+        });
+      }
+    }
+
+    await tx.retoure.update({
+      where: { id: retoure.id },
+      data: {
+        bestandsbuchung: buchung,
+        bestandsbuchungAm: new Date(),
+        status: "Abgeschlossen",
+      },
+    });
   });
 
   revalidatePath("/");
@@ -2632,6 +2727,17 @@ export default async function Home({ searchParams }: HomeProps) {
                       <dd>{retoure.produktzustand}</dd>
                       <dt>Erstattung</dt>
                       <dd>{retoure.erstattungsart}</dd>
+                      {retoure.bestandsbuchung ? (
+                        <>
+                          <dt>Bestand</dt>
+                          <dd>
+                            {retoure.bestandsbuchung}
+                            {retoure.bestandsbuchungAm
+                              ? ` am ${formatDate(retoure.bestandsbuchungAm)}`
+                              : ""}
+                          </dd>
+                        </>
+                      ) : null}
                       {retoure.grund ? (
                         <>
                           <dt>Grund</dt>
@@ -2640,6 +2746,13 @@ export default async function Home({ searchParams }: HomeProps) {
                       ) : null}
                     </dl>
                     <span className="status-pill">{retoure.status}</span>
+                    {retoure.status === "Angenommen" &&
+                    !retoure.bestandsbuchungAm ? (
+                      <form action={bucheRetoureInBestand} className="inline-form">
+                        <input name="retoureId" type="hidden" value={retoure.id} />
+                        <button type="submit">Bestand buchen</button>
+                      </form>
+                    ) : null}
                   </article>
                 ))}
               </div>

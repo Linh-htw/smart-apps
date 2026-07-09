@@ -493,3 +493,15 @@ Die App ergaenzt ein Prisma-Modell `Retoure`. Retouren werden nur fuer Bestellpo
 - `NW-015` ist im Backlog auf `done` gesetzt.
 - Die aktive Arbeitsansicht zeigt offene Retouren.
 - Bestandsrueckbuchung oder Ausbuchung erfolgt noch nicht; das bleibt `NW-031`.
+
+## 2026-07-09 - NW-031 Retouren-Rueckbuchung umgesetzt
+
+**Kontext:** `GR-08` definiert, wie angenommene Retouren je nach Produktzustand und MHD-Restlaufzeit zu behandeln sind. Das aktuelle Lagerbestand-Modell speichert Reservierungen je Charge und Lagerort; physische Mengen liegen weiterhin an der Charge.
+
+### Entscheidung
+Die App ergaenzt an `Retoure` die Felder `bestandsbuchung` und `bestandsbuchungAm`. Angenommene Retouren koennen einmalig gebucht werden. Ungeoeffnete Ware mit mehr als 28 Tagen MHD-Restlaufzeit reduziert die verbindliche Reservierung der urspruenglichen Charge. Ungeoeffnete Ware mit 28 Tagen oder weniger MHD-Restlaufzeit reduziert ebenfalls die verbindliche Reservierung und markiert die Charge ueber einen `Restposten`-Lagerbestand. Nicht ungeoeffnete Ware wird als `Ausgebucht` dokumentiert.
+
+### Konsequenzen
+- `NW-031` ist im Backlog auf `done` gesetzt.
+- Eine Retoure wird nach der Bestandsbuchung auf `Abgeschlossen` gesetzt und kann nicht erneut gebucht werden.
+- Das Modell bleibt kompatibel mit der bisherigen Ableitung freier Mengen aus produzierter Menge minus Reservierungen.
