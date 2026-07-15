@@ -1,35 +1,92 @@
-# smart-apps
+# Nina Wolff Shop- und Kundenmanagement-App
 
-Shop- und Kundenmanagement-App fuer Nina Wolff.
+Interne Web-App fuer Shop- und Kundenmanagement. Die App buendelt Kunden,
+Produkte, Bestellungen, Chargen, Lagerbestand, Packlisten, Pakete, Retouren,
+Abo-Boxen und rollenbezogene Arbeitsansichten.
 
-Dieses Repository ist als Solo-Projekt nach der Modus-Operandi-Methodik eingerichtet. Die fachliche Grundlage ist `docs/spec.md`; sie ersetzt in diesem Projekt ein klassisches PRD.
+Der V1-Fokus liegt auf einer zentralen Arbeitsansicht fuer offene Aufgaben,
+Zahlungs- und Bestellstatus, FIFO-Zuteilung nach MHD, Packlisten,
+Retourenlogik, Abo-Abwicklung und einfachen Rollen fuer Admin,
+Werkstatt-Hilfe und Packer.
 
-## Projektstruktur
+## Setup und Start
 
-| Pfad | Zweck |
-|---|---|
-| `AGENTS.md` | Arbeitsanweisungen und Kontext fuer Coding-Agenten |
-| `Spec.md` | Urspruengliche Spezifikation im Repo-Root |
-| `docs/spec.md` | Fachliche Single Source of Truth fuer Scope, Entitaeten, Beziehungen und Geschaeftsregeln |
-| `docs/architecture.md` | Technische Architekturannahmen und offene Stack-Entscheidungen |
-| `docs/backlog.md` | Feature-Backlog mit stabilen `NW-###` IDs |
-| `docs/decisions.md` | Chronologisches Entscheidungslog |
-| `docs/modus-operandi.md` | Projektspezifischer Solo-Workflow |
-| `docs/concepts/` | Optionale Feature-Konzepte vor komplexer Umsetzung |
-| `docs/audit/` | Spaetere Codebase-, Security- und Architektur-Audits |
+Voraussetzung: Node.js und npm.
 
-## V1-Fokus
+1. Abhaengigkeiten installieren:
 
-- Zentrale Verwaltung von Bestellungen aus verschiedenen Kanaelen
-- Kunden- und Bestellzuordnung
-- Lagerverwaltung mit Chargen- und MHD-Logik
-- Zahlungs- und Bestellstatus
-- Packlisten fuer Mitarbeitende
-- Rollen- und Berechtigungssystem
-- Aktive Arbeitsansicht mit offenen Aufgaben
+```bash
+npm install
+```
 
-## Arbeitsweise
+2. Lokale Umgebungsdatei anlegen:
 
-Neue Sessions starten mit `AGENTS.md`, danach `docs/spec.md`, `docs/architecture.md` und bei Feature-Arbeit `docs/backlog.md` lesen.
+```bash
+copy .env.example .env
+```
 
-`docs/prd.md`, `docs/meetings/`, `docs/results/`, `docs/team/` und `docs/INBOX.md` werden in diesem Solo-Setup bewusst nicht verwendet.
+3. Datenbank vorbereiten:
+
+```bash
+npm run prisma:migrate -- --skip-generate
+```
+
+4. App starten:
+
+```bash
+npm run dev
+```
+
+5. Im Browser oeffnen:
+
+```text
+http://localhost:3000
+```
+
+Beim Start zeigt Next.js zusaetzlich eine lokale Netzwerk-URL an. Diese kann
+im selben Netzwerk im Browser geoeffnet werden.
+
+## Nutzung
+
+Wenn noch keine Mitarbeitenden angelegt sind, startet die App in der
+Admin-Ersteinrichtung. Danach kann ein Admin-Mitarbeiter angelegt werden.
+
+Sobald Mitarbeitende existieren, erscheint ein Demo-Login. Fuer die
+Pruefungsabgabe ist kein Passwort und kein Login-Code noetig: Mitarbeiter
+auswaehlen und anmelden. Die Rolle steuert anschliessend serverseitig die
+sichtbaren Arbeitsbereiche.
+
+Rollen:
+
+- Admin: Zugriff auf alle vorhandenen Verwaltungs- und Arbeitsbereiche.
+- Werkstatt-Hilfe: Zugriff auf den Chargenarbeitsbereich.
+- Packer: Zugriff auf die Tages-Packliste mit den noetigen Packdaten.
+
+## Wichtige Befehle
+
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run prisma:generate
+npm run prisma:migrate -- --skip-generate
+```
+
+## Projektdokumentation
+
+- `docs/spec.md`: fachliche Spezifikation und Geschaeftsregeln.
+- `docs/backlog.md`: Feature-Backlog mit `NW-###` IDs.
+- `docs/architecture.md`: technische Architektur und Entscheidungen.
+- `docs/decisions.md`: chronologisches Entscheidungslog.
+
+## KI-Hinweis
+
+Bei der Erstellung und Umsetzung dieses Projekts wurde KI-Unterstuetzung
+genutzt:
+
+- Tool: OpenAI Codex
+- Modell: GPT-5
+
+Die fachlichen Entscheidungen, Anforderungen und Abnahmekriterien wurden im
+Repository dokumentiert. Der finale Code wurde lokal geprueft mit `npm run lint`
+und `npm run build`.
