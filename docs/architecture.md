@@ -105,6 +105,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-010` nutzt die Mitarbeiterrolle als serverseitig ausgewerteten Ansichtskontext. Die Startseite rendert Verwaltungsbereiche nur, wenn die aktive Rolle die passende Berechtigung hat: Admin sieht die vorhandenen Verwaltungsbereiche, Werkstatt-Hilfe sieht nur den Chargenarbeitsbereich, Packer nur den Packlistenarbeitsbereich. Bis eine echte Authentifizierung entschieden ist, ersetzt diese Auswahl kein Login und keine Identitaetspruefung.
 
+`NW-033`, `NW-034` und `NW-035` schliessen die rollenbezogenen V1-Sichten ab. Admin hat Zugriff auf alle vorhandenen Verwaltungs- und Arbeitsbereiche inklusive Tages-Packliste. Werkstatt-Hilfe sieht nur den Chargenarbeitsbereich. Packer sieht ausschliesslich die Tages-Packliste mit Name, Lieferadresse, Produkten, Menge, Charge, MHD und Paketstatus; Preise, Umsaetze, Zahlungsstatus und vollstaendige Kundendaten werden dort nicht gerendert. Diese Trennung bleibt eine serverseitige Rollenansicht und ersetzt weiterhin keine echte Authentifizierung.
+
 `NW-003` ergaenzt `Charge` mit Produkt-Relation, verantwortlicher Werkstatt-Hilfe, Herstellungsdatum, MHD, produzierter Menge und Status. Chargenstatus wird zentral gegen `freigegeben` und `gesperrt` validiert. Lagerbestand und Bestandsmengen werden erst mit `NW-004` modelliert.
 
 `NW-004` ergaenzt `Lagerbestand` je Charge und Lagerort mit voruebergehend und verbindlich reservierten Mengen. Lagerorte werden zentral gegen `Werkstatt`, `Versandbereit` und `Restposten` validiert. Die produzierte Gesamtmenge bleibt an der Charge; freie Mengen werden spaeter aus Charge und Reservierungen abgeleitet.

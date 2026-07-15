@@ -591,3 +591,15 @@ Produktknappheit wird in V1 als priorisierte Pruefliste in der Arbeitsansicht um
 - `NW-013` ist im Backlog auf `done` gesetzt.
 - Nina sieht bei knappen Produkten, welche Bestellungen zuerst beruecksichtigt werden sollen.
 - Bereits gebuchte Reservierungen werden nicht automatisch umverteilt.
+
+## 2026-07-15 - NW-033 bis NW-035 Rollenabschluss fuer V1
+
+**Kontext:** Die App hatte bereits eine serverseitig ausgewertete Rollenansicht ueber `NW-010`. Fuer den V1-Abschluss mussten die konkreten Zielgruppen-Sichten gegen `GR-09` geprueft werden.
+
+### Entscheidung
+Admin bekommt alle vorhandenen Verwaltungs- und Arbeitsbereiche inklusive Tages-Packliste. Werkstatt-Hilfe bekommt nur den Chargenarbeitsbereich. Packer bekommt ausschliesslich die Tages-Packliste mit Name, Lieferadresse, Produkten, Menge, Charge, MHD und Paketstatus.
+
+### Konsequenzen
+- `NW-033`, `NW-034` und `NW-035` sind im Backlog auf `done` gesetzt.
+- Packer sehen weiterhin keine Preise, Umsaetze, Zahlungsstatus oder vollstaendige Kundendaten.
+- Die Umsetzung bleibt eine Rollenansicht ohne echte Authentifizierung; Auth bleibt Teil der offenen technischen Entscheidung `NW-040`.

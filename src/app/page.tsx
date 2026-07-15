@@ -2306,7 +2306,7 @@ export default async function Home({ searchParams }: HomeProps) {
         </section>
       ) : null}
 
-      {canViewPacklists && !canManageOrders ? (
+      {canViewPacklists ? (
         <section className="workspace-overview" aria-labelledby="packliste-heading">
           <div className="panel overview-panel">
             <div className="overview-header">

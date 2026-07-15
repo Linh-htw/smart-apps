@@ -37,9 +37,9 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-011 | Aktive Arbeitsansicht | P1 - Kern | done | docs/spec.md V1-Scope | Ausschliesslich offene Aufgaben, relevante Warnungen und naechste Schritte anzeigen. |
 | NW-010 | Rollen- und Berechtigungssystem | P1 - Kern | done | docs/spec.md V1-Scope, GR-09 | Serverseitige Rollenansicht trennt Admin, Werkstatt-Hilfe und Packer fuer die vorhandenen Arbeitsbereiche. |
 | NW-032 | Mitarbeiterverwaltung | P1 - Kern | done | docs/spec.md Entitaet Mitarbeiter | Mitarbeitende mit Rolle, Rechten und Kontakt. Zuordnung zu Chargen/Paketen folgt mit den jeweiligen Fachmodellen. |
-| NW-033 | Admin-Vollzugriff | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Nina sieht und bearbeitet alle Bereiche. |
-| NW-034 | Werkstatt-Hilfe-Zugriff | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Werkstatt-Hilfe darf ausschliesslich Chargen anlegen. |
-| NW-035 | Packer-Zugriff mit Datensparsamkeit | P1 - Kern | validated | docs/spec.md Zielgruppe, GR-09 | Packer sieht nur Packliste, Name, Lieferadresse, Produkte, Charge und Paketstatus. |
+| NW-033 | Admin-Vollzugriff | P1 - Kern | done | docs/spec.md Zielgruppe, GR-09 | Nina sieht und bearbeitet alle vorhandenen Bereiche inklusive Tages-Packliste. |
+| NW-034 | Werkstatt-Hilfe-Zugriff | P1 - Kern | done | docs/spec.md Zielgruppe, GR-09 | Werkstatt-Hilfe sieht ausschliesslich den Chargenarbeitsbereich und kann Chargen anlegen. |
+| NW-035 | Packer-Zugriff mit Datensparsamkeit | P1 - Kern | done | docs/spec.md Zielgruppe, GR-09 | Packer sieht nur die Tages-Packliste mit Name, Lieferadresse, Produkten, Menge, Charge, MHD und Paketstatus; keine Preise, Umsaetze, Zahlungsstatus oder vollstaendige Kundendaten. |
 
 ## P2 - Lager & Fulfillment
 
