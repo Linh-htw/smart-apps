@@ -61,7 +61,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
 | NW-012 | Stammkundenautomatik | P3 - Regeln & Automatisierung | done | docs/spec.md GR-04 | Sechs erfolgreiche Bestellungen in 365 Tagen, 10 % Rabatt, Vorab-Benachrichtigung, Inaktivitaetswarnung. |
-| NW-013 | Produktknappheit-Priorisierung | P3 - Regeln & Automatisierung | validated | docs/spec.md GR-05, W-3 | Stammkunden vor Neukunden, innerhalb der Gruppe nach Anfragezeitpunkt. |
+| NW-013 | Produktknappheit-Priorisierung | P3 - Regeln & Automatisierung | done | docs/spec.md GR-05, W-3 | Die Arbeitsansicht zeigt knappe B2C-Produkte mit priorisierter Reihenfolge: zuerst Stammkunden, danach B2C-Neukunden, innerhalb der Gruppe nach Bestelldatum als Anfragezeitpunkt. |
 | NW-014 | B2B-Sonderkonditionen und B2C-Puffer | P3 - Regeln & Automatisierung | done | docs/spec.md GR-06 | B2B-Bestellpositionen ab 50 Einheiten duerfen den B2C-Puffer der Charge nicht aufbrauchen; kleinere B2B-Mengen laufen wie B2C. |
 | NW-015 | Retourenverwaltung | P3 - Regeln & Automatisierung | done | docs/spec.md Entitaet Retoure, GR-07 | Fristen, Produktzustand, Status, Erstattungsart und Reklamationslogik. |
 | NW-031 | Retouren-Rueckbuchung in Bestand | P3 - Regeln & Automatisierung | done | docs/spec.md GR-08 | Ungeoeffnete Ware je nach MHD zurueckbuchen oder als Restposten fuehren; beschaedigte Ware ausbuchen. |

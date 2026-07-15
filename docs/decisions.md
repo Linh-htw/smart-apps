@@ -579,3 +579,15 @@ Die App speichert fuer Abo-Boxen `pausiertVon` und `pausiertBis` als konkrete Pa
 - `NW-037` ist im Backlog auf `done` gesetzt.
 - Nach Ablauf der Pause wird keine Abo-Box automatisch umgestellt.
 - Die aktive Arbeitsansicht zeigt Nina eine Warnung, damit sie den Status mit dem Kunden pruefen kann.
+
+## 2026-07-15 - NW-013 Produktknappheit als priorisierte Pruefliste
+
+**Kontext:** `GR-05` und `W-3` definieren bei Produktknappheit die Reihenfolge: zuerst Stammkunden, danach B2C-Neukunden, innerhalb der Gruppe nach Anfragezeitpunkt. Die App reserviert Bestand bereits beim Anlegen einer Bestellposition; eine automatische Umverteilung bestehender Reservierungen ist fuer V1 nicht definiert.
+
+### Entscheidung
+Produktknappheit wird in V1 als priorisierte Pruefliste in der Arbeitsansicht umgesetzt. Als Anfragezeitpunkt gilt `Bestellung.datum`. Die Liste beruecksichtigt offene B2C-Bestellpositionen und sortiert sie nach Stammkundenstatus, Bestelldatum und Bestell-ID.
+
+### Konsequenzen
+- `NW-013` ist im Backlog auf `done` gesetzt.
+- Nina sieht bei knappen Produkten, welche Bestellungen zuerst beruecksichtigt werden sollen.
+- Bereits gebuchte Reservierungen werden nicht automatisch umverteilt.

@@ -563,6 +563,55 @@ function schuetztB2cPuffer({
   );
 }
 
+function getPhysischVerfuegbareMenge(charge: {
+  produzierteMenge: number;
+  verkaufseventPositionen?: Array<{ mengeMitgenommen: number }>;
+}) {
+  const eventMengen =
+    charge.verkaufseventPositionen?.reduce(
+      (summe, position) => summe + position.mengeMitgenommen,
+      0,
+    ) ?? 0;
+
+  return charge.produzierteMenge - eventMengen;
+}
+
+function getKnappheitsPrioritaet(position: {
+  bestellung: { datum: Date; id: number; kunde: { stammkunde: boolean } };
+}) {
+  return {
+    gruppe: position.bestellung.kunde.stammkunde ? 0 : 1,
+    datum: position.bestellung.datum.getTime(),
+    bestellungId: position.bestellung.id,
+  };
+}
+
+function compareKnappheitsPrioritaet(
+  a: {
+    bestellung: { datum: Date; id: number; kunde: { stammkunde: boolean } };
+  },
+  b: {
+    bestellung: { datum: Date; id: number; kunde: { stammkunde: boolean } };
+  },
+) {
+  const prioritaetA = getKnappheitsPrioritaet(a);
+  const prioritaetB = getKnappheitsPrioritaet(b);
+
+  return (
+    prioritaetA.gruppe - prioritaetB.gruppe ||
+    prioritaetA.datum - prioritaetB.datum ||
+    prioritaetA.bestellungId - prioritaetB.bestellungId
+  );
+}
+
+function getKnappheitsPrioritaetslabel(position: {
+  bestellung: { kunde: { stammkunde: boolean } };
+}) {
+  return position.bestellung.kunde.stammkunde
+    ? "Stammkunde"
+    : "B2C-Neukunde";
+}
+
 function getQueryValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -1709,6 +1758,51 @@ export default async function Home({ searchParams }: HomeProps) {
         : null;
     })
     .filter((vorschlag) => vorschlag !== null);
+  const produktKnappheiten = produkte
+    .map((produkt) => {
+      const produktChargen = chargen.filter(
+        (charge) =>
+          charge.produktId === produkt.id && charge.status === "freigegeben",
+      );
+      const freieMenge = produktChargen.reduce(
+        (summe, charge) => summe + getFreieMenge(charge),
+        0,
+      );
+      const physischVerfuegbar = produktChargen.reduce(
+        (summe, charge) => summe + getPhysischVerfuegbareMenge(charge),
+        0,
+      );
+      const offeneB2cPositionen = bestellpositionen
+        .filter(
+          (position) =>
+            position.produktId === produkt.id &&
+            position.bestellung.kunde.typ === "B2C" &&
+            position.bestellung.status !== "storniert" &&
+            position.bestellung.status !== "abgeschlossen",
+        )
+        .sort(compareKnappheitsPrioritaet);
+      const offeneB2cNachfrage = offeneB2cPositionen.reduce(
+        (summe, position) => summe + position.menge,
+        0,
+      );
+
+      if (
+        offeneB2cPositionen.length === 0 ||
+        physischVerfuegbar <= 0 ||
+        freieMenge >= offeneB2cNachfrage
+      ) {
+        return null;
+      }
+
+      return {
+        produkt,
+        freieMenge,
+        offeneB2cNachfrage,
+        physischVerfuegbar,
+        priorisiertePositionen: offeneB2cPositionen,
+      };
+    })
+    .filter((eintrag) => eintrag !== null);
   const chargenMitFreierMenge = chargen
     .map((charge) => ({
       charge,
@@ -1805,7 +1899,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036 / NW-037
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-013 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036 / NW-037
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -2307,6 +2401,10 @@ export default async function Home({ searchParams }: HomeProps) {
               <strong>{bestellungen.length - aktiveBestellungen.length}</strong>
             </div>
             <div className="metric-tile">
+              <span>Produktknappheit</span>
+              <strong>{produktKnappheiten.length}</strong>
+            </div>
+            <div className="metric-tile">
               <span>MHD-Warnungen</span>
               <strong>{mhdWarnungen.length}</strong>
             </div>
@@ -2375,6 +2473,38 @@ export default async function Home({ searchParams }: HomeProps) {
                     </span>
                     <span className="status-pill">{bestellung.status}</span>
                     <strong>{getNextBestellschritt(bestellung)}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {produktKnappheiten.length === 0 ? null : (
+            <div className="task-list">
+              {produktKnappheiten.map((knappheit) => (
+                <article className="task-item" key={knappheit.produkt.id}>
+                  <div>
+                    <h3>{knappheit.produkt.name}</h3>
+                    <p>
+                      {knappheit.offeneB2cNachfrage} offen angefragt -{" "}
+                      {knappheit.freieMenge} frei -{" "}
+                      {knappheit.physischVerfuegbar} physisch verfuegbar
+                    </p>
+                    <p className="warning-text">
+                      Produkt knapp: Stammkunden zuerst, danach B2C-Neukunden
+                      nach Anfragezeitpunkt.
+                    </p>
+                  </div>
+                  <div className="task-meta">
+                    {knappheit.priorisiertePositionen.slice(0, 3).map(
+                      (position) => (
+                        <span className="status-pill" key={position.id}>
+                          {getKnappheitsPrioritaetslabel(position)} - #
+                          {position.bestellung.id}
+                        </span>
+                      ),
+                    )}
+                    <strong>Reihenfolge pruefen</strong>
                   </div>
                 </article>
               ))}
