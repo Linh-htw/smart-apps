@@ -86,7 +86,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | ID | Name | Phase | Status | Quelle | Notiz |
 |---|---|---|---|---|---|
 | NW-039 | Enum-Werte definieren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | Alle aktuell benoetigten Enum-Werte sind geklaert: Kundentyp, Hauttyp, Produktkategorie, Bestellkanal, Zahlungsstatus, Bestellstatus, Rolle, Chargenstatus, Lagerort, Paketstatus, Versandoption, Abo-Box-Status, Retourenstatus, Produktzustand und Erstattungsart. |
-| NW-040 | Auth, Hosting und Deployment klaeren | P0 - Klaerung | validated | docs/spec.md Offene Klaerungen | Framework-Setup erledigt: Next.js, TypeScript, Prisma, SQLite. Auth, Hosting und Deployment werden bewusst spaeter geklaert und blockieren die naechsten Fachfeatures nicht. |
+| NW-040 | Auth, Hosting und Deployment klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 nutzt einen einfachen lokalen Login mit Mitarbeiter/Rolle und gemeinsamem Login-Code aus `.env`. Die App laeuft lokal und wird im Browser ueber `localhost` oder eine lokale Netzwerk-URL geoeffnet; echtes externes Hosting bleibt spaeter. |
 | NW-041 | Versandlabel- und Tracking-Integration klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 arbeitet manuell: Versandlabel ausserhalb der App, Trackingnummer und Versand-/Zustelldaten in der App pflegen. |
 | NW-042 | Allergen-Scope fuer V1 klaeren | P0 - Klaerung | done | docs/spec.md Offene Klaerungen | V1 bekommt einen verpflichtenden Allergen-Bestaetigungsworkflow bei allergenbehafteten Produkten. |
 

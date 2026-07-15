@@ -241,7 +241,7 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 
 ## 8. Offene Klaerungen
 
-- Gewuenschter Tech-Stack und Hosting.
+- Keine fachlichen V1-Klaerungen offen.
 
 ## 9. Geklaerte Enum-Werte
 
@@ -302,6 +302,13 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 | Feld | Werte |
 |---|---|
 | Versandlabel und Tracking V1 | Manuell; Versandlabel wird ausserhalb der App erstellt, Trackingnummer und Versand-/Zustelldaten werden in der App gepflegt |
+
+### Auth und Betrieb
+
+| Feld | Werte |
+|---|---|
+| V1-Login | Einfacher lokaler Login mit Mitarbeiter-Auswahl, Rolle und gemeinsamem Login-Code aus `.env` |
+| V1-Betrieb | Lokal gestartete Web-App, im Browser ueber `http://localhost:3000` oder eine lokale Netzwerk-URL erreichbar |
 
 ### Retoure
 

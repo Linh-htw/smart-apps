@@ -603,3 +603,17 @@ Admin bekommt alle vorhandenen Verwaltungs- und Arbeitsbereiche inklusive Tages-
 - `NW-033`, `NW-034` und `NW-035` sind im Backlog auf `done` gesetzt.
 - Packer sehen weiterhin keine Preise, Umsaetze, Zahlungsstatus oder vollstaendige Kundendaten.
 - Die Umsetzung bleibt eine Rollenansicht ohne echte Authentifizierung; Auth bleibt Teil der offenen technischen Entscheidung `NW-040`.
+
+## 2026-07-15 - NW-040 Lokaler Login und Browser-Betrieb fuer V1
+
+**Kontext:** Die fachliche V1 ist umgesetzt. Fuer die lokale Nutzung soll die offene Rollen-Auswahl durch einen einfachen Login ersetzt werden. Die App laeuft weiterhin lokal, soll aber normal ueber eine URL im Browser geoeffnet werden koennen.
+
+### Entscheidung
+V1 nutzt einen einfachen lokalen Login mit Mitarbeiter-Auswahl und gemeinsamem `APP_LOGIN_CODE` aus der lokalen `.env`. Nach erfolgreicher Anmeldung wird die Mitarbeiter-ID in einem HTTP-only Cookie gespeichert; die Rolle wird serverseitig aus der Datenbank gelesen. Ohne angelegte Mitarbeitende bleibt die Admin-Ersteinrichtung offen, damit die erste Person angelegt werden kann.
+
+Die App wird lokal gestartet und im Browser ueber `http://localhost:3000` oder eine lokale Netzwerk-URL geoeffnet. Externes Hosting und staerkere Authentifizierung werden nicht in V1 umgesetzt.
+
+### Konsequenzen
+- `NW-040` ist im Backlog auf `done` gesetzt.
+- Es wird kein echter Login-Code versioniert; `.env.example` dokumentiert nur den Variablennamen.
+- Die Loesung ist fuer lokale Nutzung gedacht und keine vollwertige Internet-Authentifizierung.

@@ -1,4 +1,6 @@
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
 import { Fragment } from "react";
 import { prisma } from "@/lib/prisma";
@@ -50,6 +52,8 @@ import {
 } from "@/lib/subscription-options";
 
 export const dynamic = "force-dynamic";
+
+const loginCookieName = "nw_mitarbeiter_id";
 
 function nullableText(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
@@ -610,10 +614,6 @@ function getKnappheitsPrioritaetslabel(position: {
   return position.bestellung.kunde.stammkunde
     ? "Stammkunde"
     : "B2C-Neukunde";
-}
-
-function getQueryValue(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
 }
 
 async function aktualisiereStammkundeStatus(
@@ -1579,11 +1579,47 @@ async function bucheRetoureInBestand(formData: FormData) {
   revalidatePath("/");
 }
 
-type HomeProps = {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-};
+async function loginMitarbeiter(formData: FormData) {
+  "use server";
 
-export default async function Home({ searchParams }: HomeProps) {
+  const mitarbeiterId = requiredInt(formData.get("loginMitarbeiterId"));
+  const loginCode = formData.get("loginCode")?.toString() ?? "";
+  const configuredLoginCode = process.env.APP_LOGIN_CODE;
+
+  if (!mitarbeiterId || !configuredLoginCode || loginCode !== configuredLoginCode) {
+    return;
+  }
+
+  const mitarbeiter = await prisma.mitarbeiter.findUnique({
+    where: { id: mitarbeiterId },
+    select: { id: true },
+  });
+
+  if (!mitarbeiter) {
+    return;
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.set(loginCookieName, mitarbeiter.id.toString(), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+  });
+
+  redirect("/");
+}
+
+async function logoutMitarbeiter() {
+  "use server";
+
+  const cookieStore = await cookies();
+  cookieStore.delete(loginCookieName);
+
+  redirect("/");
+}
+
+export default async function Home() {
   await aktualisiereAlleStammkunden();
 
   const kunden = await prisma.kunde.findMany({
@@ -1666,15 +1702,15 @@ export default async function Home({ searchParams }: HomeProps) {
     },
     orderBy: [{ jahr: "desc" }, { monat: "desc" }],
   });
-  const params = searchParams ? await searchParams : {};
+  const cookieStore = await cookies();
   const selectedMitarbeiterId = requiredInt(
-    getQueryValue(params.mitarbeiterId) ?? null,
+    cookieStore.get(loginCookieName)?.value ?? null,
   );
   const selectedMitarbeiter =
     mitarbeiter.find((person) => person.id === selectedMitarbeiterId) ??
-    mitarbeiter.find((person) => person.rolle === "Admin") ??
-    mitarbeiter[0] ??
     null;
+  const isBootstrapMode = mitarbeiter.length === 0;
+  const isAuthenticated = isBootstrapMode || selectedMitarbeiter !== null;
   const activeRolle: Rolle =
     selectedMitarbeiter && isRolle(selectedMitarbeiter.rolle)
       ? selectedMitarbeiter.rolle
@@ -1894,12 +1930,58 @@ export default async function Home({ searchParams }: HomeProps) {
   const today = new Date().toISOString().slice(0, 10);
   const currentMonth = new Date().toISOString().slice(0, 7);
 
+  if (!isAuthenticated) {
+    return (
+      <main className="workspace">
+        <header className="workspace-header">
+          <div>
+            <p className="eyebrow">NW-040</p>
+            <h1>Login</h1>
+          </div>
+          <p className="summary">Lokale Rollen-Anmeldung fuer die App</p>
+        </header>
+
+        <section className="workspace-overview" aria-labelledby="login-heading">
+          <form action={loginMitarbeiter} className="panel form-panel">
+            <h2 id="login-heading">Anmelden</h2>
+
+            <label>
+              Mitarbeiter
+              <select name="loginMitarbeiterId" required>
+                {mitarbeiter.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.name} - {person.rolle}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              Login-Code
+              <input name="loginCode" required type="password" />
+            </label>
+
+            {!process.env.APP_LOGIN_CODE ? (
+              <p className="empty-state">
+                APP_LOGIN_CODE ist noch nicht in der lokalen .env gesetzt.
+              </p>
+            ) : null}
+
+            <button disabled={!process.env.APP_LOGIN_CODE} type="submit">
+              Anmelden
+            </button>
+          </form>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="workspace">
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-013 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036 / NW-037
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-013 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036 / NW-037 / NW-040
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -1923,7 +2005,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 : "Admin · Ersteinrichtung"}
             </h2>
             <p>
-              Die Auswahl steuert serverseitig, welche Arbeitsbereiche diese
+              Die Anmeldung steuert serverseitig, welche Arbeitsbereiche diese
               Ansicht anzeigt.
             </p>
           </div>
@@ -1934,8 +2016,12 @@ export default async function Home({ searchParams }: HomeProps) {
               die Admin-Ansicht aktiv.
             </p>
           ) : (
-            <form className="role-switcher">
-              <label>
+            <form action={logoutMitarbeiter} className="role-switcher">
+              <p className="note-text">
+                Angemeldet als {selectedMitarbeiter?.name} mit Rolle{" "}
+                {activeRolle}.
+              </p>
+              <label hidden>
                 Mitarbeiter
                 <select
                   name="mitarbeiterId"
@@ -1948,7 +2034,7 @@ export default async function Home({ searchParams }: HomeProps) {
                   ))}
                 </select>
               </label>
-              <button type="submit">Ansicht wechseln</button>
+              <button type="submit">Abmelden</button>
             </form>
           )}
         </div>
