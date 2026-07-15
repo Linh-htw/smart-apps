@@ -143,6 +143,8 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-019` ergaenzt `AboAbwicklung` als Monatslauf mit eindeutiger Kombination aus Jahr und Monat. Die Abwicklung wird in V1 manuell per Button ausgeloest, nicht automatisch per Cronjob. Voraussetzung sind mindestens eine aktive Abo-Box und genau vier mit `In Abo-Box enthalten` markierte Produkte. Pro aktiver Abo-Box wird eine `Abo`-Bestellung mit Status `verbindlich` und Zahlungsstatus `bezahlt` angelegt; je Abo-Produkt entsteht eine Bestellposition mit Menge 1 per FIFO-Zuteilung. Die Lagerreservierung wird im selben Transaktionsschritt verbindlich gebucht. Wenn fuer eine Position keine freigegebene FIFO-Charge mit freier Menge vorhanden ist, wird der gesamte Monatslauf nicht angelegt.
 
+`NW-037` ergaenzt die Abo-Pausierungsregel. `AboBox.pausiertVon` und `AboBox.pausiertBis` speichern die konkreten Pausenmonate als Monatsanker. Der Zeitraum darf maximal zwei aufeinanderfolgende Monate umfassen und muss bis einschliesslich 15. des Vormonats erfasst werden. Die Abo-Abwicklung ueberspringt aktive Abo-Boxen, wenn der Abwicklungsmonat im Pausenfenster liegt. Nach Ablauf der Pause wird keine automatische Statusaenderung vorgenommen; die Arbeitsansicht zeigt Nina eine Warnung zur Pruefung.
+
 ## Offene technische Entscheidungen
 
 - Authentifizierung und Rollenmodell

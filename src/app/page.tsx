@@ -197,6 +197,76 @@ function getAboAbwicklungsdatum(jahr: number, monat: number) {
   return new Date(jahr, monat - 1, 15);
 }
 
+function getMonatsdatum(monat: { jahr: number; monat: number }) {
+  return new Date(monat.jahr, monat.monat - 1, 1);
+}
+
+function getMonatsabstand(start: Date, ende: Date) {
+  return (
+    (ende.getFullYear() - start.getFullYear()) * 12 +
+    ende.getMonth() -
+    start.getMonth()
+  );
+}
+
+function getPausenAnmeldefrist(pausiertVon: Date) {
+  return new Date(pausiertVon.getFullYear(), pausiertVon.getMonth() - 1, 15);
+}
+
+function isPausenzeitraumGueltig(pausiertVon: Date, pausiertBis: Date) {
+  const abstand = getMonatsabstand(pausiertVon, pausiertBis);
+  return abstand >= 0 && abstand <= 1;
+}
+
+function isPausenanmeldungFristgerecht(
+  pausiertVon: Date,
+  now = new Date(),
+) {
+  const heute = new Date(now);
+  heute.setHours(0, 0, 0, 0);
+
+  const frist = getPausenAnmeldefrist(pausiertVon);
+  frist.setHours(0, 0, 0, 0);
+
+  return heute <= frist;
+}
+
+function isAboBoxImMonatPausiert(
+  aboBox: { pausiertVon: Date | null; pausiertBis: Date | null },
+  monat: { jahr: number; monat: number },
+) {
+  if (!aboBox.pausiertVon || !aboBox.pausiertBis) {
+    return false;
+  }
+
+  const zielmonat = getMonatsdatum(monat);
+
+  return zielmonat >= aboBox.pausiertVon && zielmonat <= aboBox.pausiertBis;
+}
+
+function getAboPausenwarnung(aboBox: {
+  pausiertBis: Date | null;
+}) {
+  if (!aboBox.pausiertBis) {
+    return null;
+  }
+
+  const naechsterMonatNachPause = new Date(
+    aboBox.pausiertBis.getFullYear(),
+    aboBox.pausiertBis.getMonth() + 1,
+    1,
+  );
+  const aktuellerMonat = new Date();
+  aktuellerMonat.setDate(1);
+  aktuellerMonat.setHours(0, 0, 0, 0);
+
+  if (aktuellerMonat < naechsterMonatNachPause) {
+    return null;
+  }
+
+  return "Abo-Pause ist abgelaufen, Status mit Kunde pruefen";
+}
+
 function getMhdWarnung(charge: {
   mhd: Date;
   status: string;
@@ -658,10 +728,27 @@ async function createAboBox(formData: FormData) {
   const lieferadresse = formData.get("aboBoxLieferadresse")?.toString().trim() ?? "";
   const status = formData.get("aboBoxStatus")?.toString() ?? "";
   const startdatum = requiredDate(formData.get("aboBoxStartdatum"));
-  const pausiertSeit = nullableDate(formData.get("aboBoxPausiertSeit"));
+  const pausiertVonMonat = requiredMonth(formData.get("aboBoxPausiertVon"));
+  const pausiertBisMonat = requiredMonth(formData.get("aboBoxPausiertBis"));
   const kuendigungsdatum = nullableDate(formData.get("aboBoxKuendigungsdatum"));
+  const pausiertVon = pausiertVonMonat
+    ? getMonatsdatum(pausiertVonMonat)
+    : null;
+  const pausiertBis = pausiertBisMonat
+    ? getMonatsdatum(pausiertBisMonat)
+    : null;
 
   if (!kundeId || !lieferadresse || !isAboBoxStatus(status) || !startdatum) {
+    return;
+  }
+
+  if (
+    (pausiertVon || pausiertBis) &&
+    (!pausiertVon ||
+      !pausiertBis ||
+      !isPausenzeitraumGueltig(pausiertVon, pausiertBis) ||
+      !isPausenanmeldungFristgerecht(pausiertVon))
+  ) {
     return;
   }
 
@@ -680,7 +767,9 @@ async function createAboBox(formData: FormData) {
       lieferadresse,
       status,
       startdatum,
-      pausiertSeit: status === "pausiert" ? pausiertSeit : null,
+      pausiertSeit: pausiertVon ? new Date() : null,
+      pausiertVon,
+      pausiertBis,
       kuendigungsdatum: status === "gekuendigt" ? kuendigungsdatum : null,
     },
   });
@@ -738,6 +827,14 @@ async function createAboAbwicklung(formData: FormData) {
         return;
       }
 
+      const abzuwickelndeAboBoxen = aktiveAboBoxen.filter(
+        (aboBox) => !isAboBoxImMonatPausiert(aboBox, monat),
+      );
+
+      if (abzuwickelndeAboBoxen.length === 0) {
+        return;
+      }
+
       const brauchtAllergenbestaetigung = aboProdukte.some((produkt) =>
         Boolean(produkt.allergene?.trim()),
       );
@@ -761,7 +858,7 @@ async function createAboAbwicklung(formData: FormData) {
       const freieMengen = new Map(
         chargenFuerAbo.map((charge) => [charge.id, getFreieMenge(charge)]),
       );
-      const positionenProAboBox = aktiveAboBoxen.map((aboBox) => {
+      const positionenProAboBox = abzuwickelndeAboBoxen.map((aboBox) => {
         const positionen = aboProdukte.map((produkt) => {
           const charge = chargenFuerAbo.find(
             (candidate) =>
@@ -1677,7 +1774,23 @@ export default async function Home({ searchParams }: HomeProps) {
       pakete: pakete.filter((paket) => paket.bestellungId === bestellung.id),
     }))
     .filter((eintrag) => eintrag.positionen.length > 0);
+  const aktuellerAbwicklungsmonat = {
+    jahr: new Date().getFullYear(),
+    monat: new Date().getMonth() + 1,
+  };
   const aktiveAboBoxen = aboBoxen.filter((aboBox) => aboBox.status === "aktiv");
+  const pausierteAboBoxenAktuellerMonat = aktiveAboBoxen.filter((aboBox) =>
+    isAboBoxImMonatPausiert(aboBox, aktuellerAbwicklungsmonat),
+  );
+  const aktiveAboBoxenAktuellerMonat = aktiveAboBoxen.filter(
+    (aboBox) => !isAboBoxImMonatPausiert(aboBox, aktuellerAbwicklungsmonat),
+  );
+  const aboPausenwarnungen = aboBoxen
+    .map((aboBox) => ({
+      aboBox,
+      warnung: getAboPausenwarnung(aboBox),
+    }))
+    .filter((eintrag) => eintrag.warnung !== null);
   const aboBoxProdukte = produkte.filter((produkt) => produkt.inAboBoxEnthalten);
   const aboProdukteMitAllergenen = aboBoxProdukte.filter((produkt) =>
     Boolean(produkt.allergene?.trim()),
@@ -1692,7 +1805,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <header className="workspace-header">
         <div>
           <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036
+            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036 / NW-037
           </p>
           <h1>Arbeitsansicht</h1>
         </div>
@@ -2215,7 +2328,15 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
             <div className="metric-tile">
               <span>Aktive Abo-Boxen</span>
-              <strong>{aktiveAboBoxen.length}</strong>
+              <strong>{aktiveAboBoxenAktuellerMonat.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Abo-Pausen</span>
+              <strong>{pausierteAboBoxenAktuellerMonat.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Abo-Pausen pruefen</span>
+              <strong>{aboPausenwarnungen.length}</strong>
             </div>
             <div className="metric-tile">
               <span>Abo-Produktauswahl</span>
@@ -2379,6 +2500,30 @@ export default async function Home({ searchParams }: HomeProps) {
                   <div className="task-meta">
                     <span className="status-pill">Vorabinfo</span>
                     <strong>Stammkunden informieren</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+
+          {aboPausenwarnungen.length === 0 ? null : (
+            <div className="task-list">
+              {aboPausenwarnungen.slice(0, 6).map(({ aboBox, warnung }) => (
+                <article className="task-item" key={aboBox.id}>
+                  <div>
+                    <h3>Abo-Box #{aboBox.id}</h3>
+                    <p>
+                      {aboBox.kunde.name} - Pause bis{" "}
+                      {aboBox.pausiertBis ? formatMonth(
+                        aboBox.pausiertBis.getFullYear(),
+                        aboBox.pausiertBis.getMonth() + 1,
+                      ) : "unbekannt"}
+                    </p>
+                    <p className="warning-text">{warnung}</p>
+                  </div>
+                  <div className="task-meta">
+                    <span className="status-pill">Abo-Pause</span>
+                    <strong>Status pruefen</strong>
                   </div>
                 </article>
               ))}
@@ -2762,8 +2907,13 @@ export default async function Home({ searchParams }: HomeProps) {
 
                 <div className="field-row">
                   <label>
-                    Pausiert seit
-                    <input name="aboBoxPausiertSeit" type="date" />
+                    Pause von
+                    <input name="aboBoxPausiertVon" type="month" />
+                  </label>
+
+                  <label>
+                    Pause bis
+                    <input name="aboBoxPausiertBis" type="month" />
                   </label>
 
                   <label>
@@ -2773,8 +2923,9 @@ export default async function Home({ searchParams }: HomeProps) {
                 </div>
 
                 <p className="note-text">
-                  Aktuelle Abo-Produktauswahl: {aboBoxProdukte.length}/4
-                  markiert.
+                  Pausen gelten fuer maximal zwei aufeinanderfolgende Monate
+                  und muessen bis zum 15. des Vormonats erfasst sein.
+                  Aktuelle Abo-Produktauswahl: {aboBoxProdukte.length}/4 markiert.
                 </p>
 
                 <button type="submit">Abo-Box speichern</button>
@@ -2798,7 +2949,9 @@ export default async function Home({ searchParams }: HomeProps) {
 
               <dl>
                 <dt>Aktive Abo-Boxen</dt>
-                <dd>{aktiveAboBoxen.length}</dd>
+                <dd>{aktiveAboBoxenAktuellerMonat.length}</dd>
+                <dt>Im aktuellen Monat pausiert</dt>
+                <dd>{pausierteAboBoxenAktuellerMonat.length}</dd>
                 <dt>Abo-Produkte</dt>
                 <dd>{aboBoxProdukte.length}/4</dd>
               </dl>
@@ -2836,7 +2989,8 @@ export default async function Home({ searchParams }: HomeProps) {
               {!kannAboAbwickeln ? (
                 <p className="empty-state">
                   Abwicklung braucht mindestens eine aktive Abo-Box und genau
-                  vier markierte Abo-Produkte.
+                  vier markierte Abo-Produkte. Abo-Boxen mit Pause im
+                  Abwicklungsmonat werden uebersprungen.
                 </p>
               ) : null}
 
@@ -2888,8 +3042,24 @@ export default async function Home({ searchParams }: HomeProps) {
                       <dd>{aboBox.lieferadresse}</dd>
                       {aboBox.pausiertSeit ? (
                         <>
-                          <dt>Pausiert seit</dt>
+                          <dt>Pause erfasst</dt>
                           <dd>{formatDate(aboBox.pausiertSeit)}</dd>
+                        </>
+                      ) : null}
+                      {aboBox.pausiertVon && aboBox.pausiertBis ? (
+                        <>
+                          <dt>Pausenzeitraum</dt>
+                          <dd>
+                            {formatMonth(
+                              aboBox.pausiertVon.getFullYear(),
+                              aboBox.pausiertVon.getMonth() + 1,
+                            )}{" "}
+                            bis{" "}
+                            {formatMonth(
+                              aboBox.pausiertBis.getFullYear(),
+                              aboBox.pausiertBis.getMonth() + 1,
+                            )}
+                          </dd>
                         </>
                       ) : null}
                       {aboBox.kuendigungsdatum ? (

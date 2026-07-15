@@ -567,3 +567,15 @@ Die monatliche Abo-Abwicklung wird in V1 manuell per Button gestartet. Die App s
 - Ein Cronjob oder automatischer Hintergrundlauf wird fuer V1 nicht eingefuehrt.
 - Der Monatslauf ist transaktional: Wenn aktive Abo-Boxen, genau vier Abo-Produkte, Allergenbestaetigung oder FIFO-Bestand fehlen, wird nichts teilweise angelegt.
 - Versandlabel und Pakete bleiben weiterhin manuell, passend zur V1-Entscheidung fuer Versandlabel und Tracking.
+
+## 2026-07-15 - NW-037 Abo-Pausierung mit konkreten Monaten
+
+**Kontext:** `GR-15` verlangt eine Abo-Pausierung fuer maximal zwei Monate und Anmeldung bis zum 15. des Vormonats. Geklaert wurde, dass eine Pause immer ab einem konkreten Kalendermonat gilt und der Kunde die gewuenschte Dauer nennt.
+
+### Entscheidung
+Die App speichert fuer Abo-Boxen `pausiertVon` und `pausiertBis` als konkrete Pausenmonate. Der Pausenzeitraum darf hoechstens zwei aufeinanderfolgende Monate umfassen und muss bis einschliesslich 15. des Vormonats erfasst werden. Die monatliche Abo-Abwicklung ueberspringt aktive Abo-Boxen, deren Pausenfenster den Abwicklungsmonat enthaelt.
+
+### Konsequenzen
+- `NW-037` ist im Backlog auf `done` gesetzt.
+- Nach Ablauf der Pause wird keine Abo-Box automatisch umgestellt.
+- Die aktive Arbeitsansicht zeigt Nina eine Warnung, damit sie den Status mit dem Kunden pruefen kann.

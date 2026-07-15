@@ -227,6 +227,8 @@ model AboBox {
   status           String
   startdatum       DateTime
   pausiertSeit     DateTime?
+  pausiertVon      DateTime?
+  pausiertBis      DateTime?
   kuendigungsdatum DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -237,6 +239,8 @@ model AboBox {
   @@index([status])
   @@index([startdatum])
   @@index([pausiertSeit])
+  @@index([pausiertVon])
+  @@index([pausiertBis])
   @@index([kuendigungsdatum])
 }
 

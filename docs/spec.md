@@ -105,6 +105,8 @@ Der Kernnutzen liegt in einer aktiven Arbeitsansicht: offene Aufgaben, Zahlungss
 | Status | Enum |
 | Startdatum | Date |
 | Pausiert seit | Date |
+| Pausiert von | Date |
+| Pausiert bis | Date |
 | Kuendigungsdatum | Date |
 
 ### Verkaufsevent
@@ -223,7 +225,7 @@ Aufgeloeste n:m-Beziehungen:
 | GR-12 | Acht Wochen vor MHD: 20 %-Rabattvorschlag. Dreissig Tage vor MHD: 50 %-Rabattvorschlag. Preis wird erst nach manueller Bestaetigung durch Nina geaendert. |
 | GR-13 | B2C ab 39,00 EUR versandkostenfrei, darunter 4,50 EUR. B2B- und Abo-Bestellungen immer versandkostenfrei. |
 | GR-14 | Abo-Bestellungen werden am 15. jedes Monats gesammelt abgewickelt, inklusive Versandlabel, konsolidierter Packliste und Lagerabbuchung. |
-| GR-15 | Abo-Pausierung maximal zwei aufeinanderfolgende Monate und Anmeldung bis zum 15. des Vormonats. |
+| GR-15 | Abo-Pausierung gilt ab einem konkreten Kalendermonat. Kunden nennen die gewuenschte Pausendauer; maximal erlaubt sind zwei aufeinanderfolgende Monate. Die Pause muss bis einschliesslich 15. des Vormonats erfasst sein. Nach Ablauf der Pause wird die Abo-Box nicht automatisch umgestellt; Nina erhaelt eine Warnung zur Statuspruefung. |
 | GR-16 | Nina waehlt monatlich genau vier Produkte fuer die Abo-Box aus. Enthalten sind die Produkte, die mit `In Abo-Box enthalten` markiert sind. Diese Auswahl gilt fuer alle aktiven Abo-Boxen; kundenspezifische Abo-Box-Inhalte werden in V1 nicht modelliert. |
 
 ## 7. Aufgeloeste Widersprueche
