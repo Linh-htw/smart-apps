@@ -307,7 +307,7 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 
 | Feld | Werte |
 |---|---|
-| V1-Login | Einfacher lokaler Login mit Mitarbeiter-Auswahl, Rolle und gemeinsamem Login-Code aus `.env` |
+| V1-Login | Einfacher Demo-Login mit Mitarbeiter-Auswahl und Rolle, ohne Passwort oder Code |
 | V1-Betrieb | Lokal gestartete Web-App, im Browser ueber `http://localhost:3000` oder eine lokale Netzwerk-URL erreichbar |
 
 ### Retoure

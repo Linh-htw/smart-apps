@@ -20,7 +20,6 @@ Diese Entscheidung gilt fuer den aktuellen Projektstand und kann spaeter neu bew
 - Runtime- und Build-Abhaengigkeiten sind exakt gepinnt, damit `npm install` keine unerwarteten Minor-/Patch-Upgrades in das lokale Geruest zieht.
 - `prisma/schema.prisma` nutzt SQLite ueber `DATABASE_URL`.
 - `.env.example` dokumentiert die lokale Standard-URL: `DATABASE_URL="file:./dev.db"`.
-- `.env.example` dokumentiert `APP_LOGIN_CODE` als lokalen gemeinsamen Login-Code. Ein echter Code wird nicht versioniert.
 - `src/lib/prisma.ts` stellt einen wiederverwendbaren Prisma Client bereit und verhindert in der lokalen Next.js-Entwicklung unnoetige Mehrfachinstanzen.
 - Prisma-Migrationen werden versioniert; die lokale SQLite-Datei `prisma/dev.db` bleibt ignoriert.
 
@@ -108,7 +107,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-033`, `NW-034` und `NW-035` schliessen die rollenbezogenen V1-Sichten ab. Admin hat Zugriff auf alle vorhandenen Verwaltungs- und Arbeitsbereiche inklusive Tages-Packliste. Werkstatt-Hilfe sieht nur den Chargenarbeitsbereich. Packer sieht ausschliesslich die Tages-Packliste mit Name, Lieferadresse, Produkten, Menge, Charge, MHD und Paketstatus; Preise, Umsaetze, Zahlungsstatus und vollstaendige Kundendaten werden dort nicht gerendert. Diese Trennung bleibt eine serverseitige Rollenansicht und ersetzt weiterhin keine echte Authentifizierung.
 
-`NW-040` klaert Auth und Betrieb fuer V1. Sobald Mitarbeitende angelegt sind, zeigt die App eine Login-Seite. Der Login besteht aus Mitarbeiter-Auswahl und gemeinsamem `APP_LOGIN_CODE` aus der lokalen `.env`; nach erfolgreicher Anmeldung wird die Mitarbeiter-ID in einem HTTP-only Cookie gespeichert und die Rolle serverseitig aus der Datenbank gelesen. Die App laeuft lokal und wird im Browser ueber `http://localhost:3000` oder im lokalen Netzwerk ueber die vom Dev-Server angezeigte Netzwerk-URL geoeffnet. Externes Hosting, Deployment-Pipeline und staerkere Authentifizierung bleiben spaetere Haertung.
+`NW-040` klaert Auth und Betrieb fuer V1. Sobald Mitarbeitende angelegt sind, zeigt die App fuer die Pruefungsabgabe eine Login-Seite mit Mitarbeiter-Auswahl. Nach erfolgreicher Auswahl wird die Mitarbeiter-ID in einem HTTP-only Cookie gespeichert und die Rolle serverseitig aus der Datenbank gelesen. Es gibt in V1 bewusst kein Passwort und keinen Login-Code, damit der Dozent die lokale App ohne Geheimwissen pruefen kann. Die App laeuft lokal und wird im Browser ueber `http://localhost:3000` oder im lokalen Netzwerk ueber die vom Dev-Server angezeigte Netzwerk-URL geoeffnet. Externes Hosting, Deployment-Pipeline und staerkere Authentifizierung bleiben spaetere Haertung.
 
 `NW-003` ergaenzt `Charge` mit Produkt-Relation, verantwortlicher Werkstatt-Hilfe, Herstellungsdatum, MHD, produzierter Menge und Status. Chargenstatus wird zentral gegen `freigegeben` und `gesperrt` validiert. Lagerbestand und Bestandsmengen werden erst mit `NW-004` modelliert.
 

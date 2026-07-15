@@ -1583,10 +1583,8 @@ async function loginMitarbeiter(formData: FormData) {
   "use server";
 
   const mitarbeiterId = requiredInt(formData.get("loginMitarbeiterId"));
-  const loginCode = formData.get("loginCode")?.toString() ?? "";
-  const configuredLoginCode = process.env.APP_LOGIN_CODE;
 
-  if (!mitarbeiterId || !configuredLoginCode || loginCode !== configuredLoginCode) {
+  if (!mitarbeiterId) {
     return;
   }
 
@@ -1956,20 +1954,12 @@ export default async function Home() {
               </select>
             </label>
 
-            <label>
-              Login-Code
-              <input name="loginCode" required type="password" />
-            </label>
+            <p className="note-text">
+              Demo-Modus fuer die lokale Pruefungsabgabe: Mitarbeiter auswaehlen
+              und Rolle testen.
+            </p>
 
-            {!process.env.APP_LOGIN_CODE ? (
-              <p className="empty-state">
-                APP_LOGIN_CODE ist noch nicht in der lokalen .env gesetzt.
-              </p>
-            ) : null}
-
-            <button disabled={!process.env.APP_LOGIN_CODE} type="submit">
-              Anmelden
-            </button>
+            <button type="submit">Anmelden</button>
           </form>
         </section>
       </main>

@@ -604,16 +604,16 @@ Admin bekommt alle vorhandenen Verwaltungs- und Arbeitsbereiche inklusive Tages-
 - Packer sehen weiterhin keine Preise, Umsaetze, Zahlungsstatus oder vollstaendige Kundendaten.
 - Die Umsetzung bleibt eine Rollenansicht ohne echte Authentifizierung; Auth bleibt Teil der offenen technischen Entscheidung `NW-040`.
 
-## 2026-07-15 - NW-040 Lokaler Login und Browser-Betrieb fuer V1
+## 2026-07-15 - NW-040 Demo-Login und Browser-Betrieb fuer V1
 
-**Kontext:** Die fachliche V1 ist umgesetzt. Fuer die lokale Nutzung soll die offene Rollen-Auswahl durch einen einfachen Login ersetzt werden. Die App laeuft weiterhin lokal, soll aber normal ueber eine URL im Browser geoeffnet werden koennen.
+**Kontext:** Die fachliche V1 ist umgesetzt. Die App ist eine Pruefungsleistung und soll vom Dozenten lokal ohne geheime Zugangsdaten geprueft werden koennen. Gleichzeitig soll die Rollenlogik demonstrierbar bleiben.
 
 ### Entscheidung
-V1 nutzt einen einfachen lokalen Login mit Mitarbeiter-Auswahl und gemeinsamem `APP_LOGIN_CODE` aus der lokalen `.env`. Nach erfolgreicher Anmeldung wird die Mitarbeiter-ID in einem HTTP-only Cookie gespeichert; die Rolle wird serverseitig aus der Datenbank gelesen. Ohne angelegte Mitarbeitende bleibt die Admin-Ersteinrichtung offen, damit die erste Person angelegt werden kann.
+V1 nutzt einen einfachen Demo-Login mit Mitarbeiter-Auswahl ohne Passwort oder Code. Nach erfolgreicher Auswahl wird die Mitarbeiter-ID in einem HTTP-only Cookie gespeichert; die Rolle wird serverseitig aus der Datenbank gelesen. Ohne angelegte Mitarbeitende bleibt die Admin-Ersteinrichtung offen, damit die erste Person angelegt werden kann.
 
 Die App wird lokal gestartet und im Browser ueber `http://localhost:3000` oder eine lokale Netzwerk-URL geoeffnet. Externes Hosting und staerkere Authentifizierung werden nicht in V1 umgesetzt.
 
 ### Konsequenzen
 - `NW-040` ist im Backlog auf `done` gesetzt.
-- Es wird kein echter Login-Code versioniert; `.env.example` dokumentiert nur den Variablennamen.
-- Die Loesung ist fuer lokale Nutzung gedacht und keine vollwertige Internet-Authentifizierung.
+- Der Dozent kann Rollen direkt testen, ohne einen geheimen Login-Code zu kennen.
+- Die Loesung ist fuer lokale Pruefung gedacht und keine vollwertige Internet-Authentifizierung.
