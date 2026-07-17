@@ -617,3 +617,18 @@ Die App wird lokal gestartet und im Browser ueber `http://localhost:3000` oder e
 - `NW-040` ist im Backlog auf `done` gesetzt.
 - Der Dozent kann Rollen direkt testen, ohne einen geheimen Login-Code zu kennen.
 - Die Loesung ist fuer lokale Pruefung gedacht und keine vollwertige Internet-Authentifizierung.
+
+## 2026-07-17 - Arbeitsoberflaeche in Tabs gegliedert
+
+**Kontext:** Die bisherige Arbeitsoberflaeche zeigte alle Verwaltungs- und Arbeitsbereiche untereinander auf einer Seite. Das war fuer die Bedienung unuebersichtlich, obwohl die fachlichen Bereiche bereits rollenbasiert getrennt waren.
+
+### Entscheidung
+Die App nutzt eine rollenbasierte Tab-Navigation. Die vorhandenen Bereiche werden in `Dashboard`, `Packliste`, `Kunden`, `Produkte`, `Bestellungen`, `Abo-Boxen`, `Lager` und `Mitarbeitende` gegliedert. Der aktive Tab wird ueber `?tab=` in der URL gesteuert und weiterhin serverseitig anhand der Rolle gefiltert.
+
+Zusaetzlich wurde die zentrale Akzentfarbe der UI von Gruen auf `#B23F00` Dunkelorange umgestellt.
+
+### Konsequenzen
+- Die Startseite bleibt technisch eine servergerenderte Next.js-Seite, wird aber fuer Nutzer in fachliche Arbeitsbereiche aufgeteilt.
+- Rollenrechte bleiben unveraendert: Nicht berechtigte Tabs werden nicht gerendert.
+- Die Navigation ist per URL direkt aufrufbar, z. B. `/?tab=produkte`.
+- Farbwerte werden zentral in `src/app/globals.css` gepflegt.

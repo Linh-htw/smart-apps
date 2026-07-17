@@ -61,7 +61,24 @@ Hinweis fuer Windows: Generierte Artefakte wie `.next` und `node_modules/.prisma
 | Framework | Next.js mit React und TypeScript | Erlaubt eine kompakte Full-Stack-Web-App mit serverseitiger Validierung und arbeitsorientierter UI in einem Projekt. |
 | Datenbank | SQLite ueber Prisma | Passt fuer lokale Solo-Entwicklung, relationale Entitaeten und schnelle Iteration ohne zusaetzlichen Datenbankbetrieb. |
 | Backend | Next.js-Serverlogik mit serverseitiger Validierung und Rechtepruefung | Rollen, Bestand, Reservierungen und Zahlungen duerfen nicht nur im Frontend geprueft werden. |
-| Frontend | Arbeitsorientiertes Dashboard statt Marketing-UI | Hauptnutzen ist schnelle Bearbeitung offener Aufgaben. |
+| Frontend | Arbeitsorientierte, rollenbasierte Tab-Oberflaeche statt Marketing-UI | Hauptnutzen ist schnelle Bearbeitung offener Aufgaben ohne ueberladene Ein-Seiten-Ansicht. |
+
+## Frontend-Struktur
+
+Die Arbeitsoberflaeche ist in rollenbasierte Tabs gegliedert. Sichtbar sind nur Tabs, fuer die die aktive Rolle serverseitig berechtigt ist:
+
+- **Dashboard:** offene Aufgaben, Warnungen und naechste Schritte.
+- **Packliste:** Packer-Sicht mit packrelevanten Daten.
+- **Kunden:** Kundenanlage und Kundenliste.
+- **Produkte:** Produktanlage und Produktliste.
+- **Bestellungen:** Bestellungen, Bestellpositionen, Pakete und Retouren.
+- **Abo-Boxen:** Abo-Boxen und monatliche Abo-Abwicklung.
+- **Lager:** Chargen, Lagerbestand, Verkaufsevents und Event-Positionen.
+- **Mitarbeitende:** Mitarbeiteranlage und Mitarbeiterliste.
+
+Tabs werden ueber den Query-Parameter `tab` gesteuert, z. B. `/?tab=kunden`. Das haelt die Navigation serverseitig, teilbar und ohne zusaetzlichen Client-State.
+
+Die zentrale UI-Akzentfarbe ist `#B23F00` Dunkelorange. Abgeleitete Hover- und Soft-Tones werden in `src/app/globals.css` ueber CSS-Variablen gepflegt.
 
 ## Fachliche Module
 

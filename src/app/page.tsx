@@ -55,6 +55,22 @@ export const dynamic = "force-dynamic";
 
 const loginCookieName = "nw_mitarbeiter_id";
 
+type WorkspaceTab =
+  | "arbeit"
+  | "packliste"
+  | "kunden"
+  | "produkte"
+  | "bestellungen"
+  | "abo"
+  | "lager"
+  | "mitarbeitende";
+
+type TabItem = {
+  id: WorkspaceTab;
+  label: string;
+  visible: boolean;
+};
+
 function nullableText(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
   return text ? text : null;
@@ -1617,7 +1633,12 @@ async function logoutMitarbeiter() {
   redirect("/");
 }
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
   await aktualisiereAlleStammkunden();
 
   const kunden = await prisma.kunde.findMany({
@@ -1720,6 +1741,30 @@ export default async function Home() {
   const canManageInventory = canAccess(activeRolle, "manageInventory");
   const canCreateBatches = canAccess(activeRolle, "createBatches");
   const canViewPacklists = canAccess(activeRolle, "viewPacklists");
+  const tabs: TabItem[] = [
+    { id: "arbeit", label: "Dashboard", visible: canManageOrders },
+    { id: "packliste", label: "Packliste", visible: canViewPacklists },
+    { id: "kunden", label: "Kunden", visible: canManageCustomers },
+    { id: "produkte", label: "Produkte", visible: canManageProducts },
+    { id: "bestellungen", label: "Bestellungen", visible: canManageOrders },
+    { id: "abo", label: "Abo-Boxen", visible: canManageOrders },
+    {
+      id: "lager",
+      label: "Lager",
+      visible: canCreateBatches || canManageInventory,
+    },
+    {
+      id: "mitarbeitende",
+      label: "Mitarbeitende",
+      visible: canManageEmployees,
+    },
+  ];
+  const visibleTabs = tabs.filter((tab) => tab.visible);
+  const requestedTab = params?.tab;
+  const activeTab =
+    visibleTabs.find((tab) => tab.id === requestedTab)?.id ??
+    visibleTabs[0]?.id ??
+    "arbeit";
   const aktiveBestellungen = bestellungen.filter(
     (bestellung) => bestellung.status !== "storniert",
   );
@@ -1970,19 +2015,8 @@ export default async function Home() {
     <main className="workspace">
       <header className="workspace-header">
         <div>
-          <p className="eyebrow">
-            NW-001 / NW-002 / NW-003 / NW-004 / NW-005 / NW-007 / NW-008 / NW-009 / NW-010 / NW-011 / NW-013 / NW-014 / NW-015 / NW-016 / NW-017 / NW-018 / NW-019 / NW-020 / NW-025 / NW-027 / NW-029 / NW-030 / NW-032 / NW-036 / NW-037 / NW-040
-          </p>
           <h1>Arbeitsansicht</h1>
         </div>
-        <p className="summary">
-          {kunden.length} Kunden · {produkte.length} Produkte ·{" "}
-          {bestellungen.length} Bestellungen · {chargen.length} Chargen ·{" "}
-          {bestellpositionen.length} Positionen · {lagerbestaende.length} Lagerbestaende ·{" "}
-          {verkaufsevents.length} Verkaufsevents Â· {pakete.length} Pakete -{" "}
-          {retouren.length} Retouren - {aboBoxen.length} Abo-Boxen -{" "}
-          {aboAbwicklungen.length} Abo-Abwicklungen - {mitarbeiter.length} Mitarbeitende
-        </p>
       </header>
 
       <section className="workspace-overview" aria-labelledby="rolle-heading">
@@ -2030,7 +2064,22 @@ export default async function Home() {
         </div>
       </section>
 
-      {canCreateBatches ? (
+      {visibleTabs.length > 1 ? (
+        <nav className="workspace-tabs" aria-label="Arbeitsbereiche">
+          {visibleTabs.map((tab) => (
+            <a
+              aria-current={activeTab === tab.id ? "page" : undefined}
+              className={activeTab === tab.id ? "tab-link active" : "tab-link"}
+              href={`/?tab=${tab.id}`}
+              key={tab.id}
+            >
+              {tab.label}
+            </a>
+          ))}
+        </nav>
+      ) : null}
+
+      {canCreateBatches && activeTab === "lager" ? (
         <section className="layout-grid feature-section">
           <form action={createCharge} className="panel form-panel">
             <h2>Charge anlegen</h2>
@@ -2138,7 +2187,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageInventory ? (
+      {canManageInventory && activeTab === "lager" ? (
         <section className="layout-grid feature-section">
           <form action={createLagerbestand} className="panel form-panel">
             <h2>Lagerbestand erfassen</h2>
@@ -2231,7 +2280,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageInventory ? (
+      {canManageInventory && activeTab === "lager" ? (
         <section className="layout-grid feature-section">
           <form action={createVerkaufsevent} className="panel form-panel">
             <h2>Verkaufsevent anlegen</h2>
@@ -2292,7 +2341,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageInventory ? (
+      {canManageInventory && activeTab === "lager" ? (
         <section className="layout-grid feature-section">
           <form action={createVerkaufseventPosition} className="panel form-panel">
             <h2>Event-Position erfassen</h2>
@@ -2382,7 +2431,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canViewPacklists ? (
+      {canViewPacklists && activeTab === "packliste" ? (
         <section className="workspace-overview" aria-labelledby="packliste-heading">
           <div className="panel overview-panel">
             <div className="overview-header">
@@ -2444,7 +2493,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageOrders ? (
+      {canManageOrders && activeTab === "arbeit" ? (
         <section className="workspace-overview" aria-labelledby="arbeit-heading">
         <div className="panel overview-panel">
           <div className="overview-header">
@@ -2739,7 +2788,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageCustomers ? (
+      {canManageCustomers && activeTab === "kunden" ? (
         <section className="layout-grid">
         <form action={createKunde} className="panel form-panel">
           <h2>Kunde anlegen</h2>
@@ -2875,7 +2924,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageEmployees ? (
+      {canManageEmployees && activeTab === "mitarbeitende" ? (
         <section className="layout-grid feature-section">
         <form action={createMitarbeiter} className="panel form-panel">
           <h2>Mitarbeiter anlegen</h2>
@@ -2957,7 +3006,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageOrders ? (
+      {canManageOrders && activeTab === "bestellungen" ? (
         <section className="layout-grid feature-section">
         <form action={createBestellung} className="panel form-panel">
           <h2>Bestellung anlegen</h2>
@@ -3063,7 +3112,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageOrders ? (
+      {canManageOrders && activeTab === "abo" ? (
         <section className="layout-grid feature-section">
           <form action={createAboBox} className="panel form-panel">
             <h2>Abo-Box anlegen</h2>
@@ -3283,7 +3332,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageOrders ? (
+      {canManageOrders && activeTab === "bestellungen" ? (
         <section className="layout-grid feature-section">
           <form action={createBestellposition} className="panel form-panel">
             <h2>Bestellposition anlegen</h2>
@@ -3398,7 +3447,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageOrders ? (
+      {canManageOrders && activeTab === "bestellungen" ? (
         <section className="layout-grid feature-section">
           <form action={createPaket} className="panel form-panel">
             <h2>Paket anlegen</h2>
@@ -3617,7 +3666,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageOrders ? (
+      {canManageOrders && activeTab === "bestellungen" ? (
         <section className="layout-grid feature-section">
           <form action={createRetoure} className="panel form-panel">
             <h2>Retoure anlegen</h2>
@@ -3750,7 +3799,7 @@ export default async function Home() {
         </section>
       ) : null}
 
-      {canManageProducts ? (
+      {canManageProducts && activeTab === "produkte" ? (
         <section className="layout-grid feature-section">
         <form action={createProdukt} className="panel form-panel">
           <h2>Produkt anlegen</h2>

@@ -5,9 +5,9 @@
   --muted: #617080;
   --surface: #ffffff;
   --border: #d8dee6;
-  --accent: #1f7a5a;
-  --accent-strong: #155f45;
-  --soft: #eef6f2;
+  --accent: #b23f00;
+  --accent-strong: #8f3300;
+  --soft: #fff1e8;
   --warning: #7a4e13;
 }
 
@@ -90,6 +90,38 @@ p {
 .workspace-overview {
   width: min(1180px, 100%);
   margin: 0 auto 24px;
+}
+
+.workspace-tabs {
+  width: min(1180px, 100%);
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.tab-link {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--foreground);
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 10px 14px;
+  text-decoration: none;
+}
+
+.tab-link:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.tab-link.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .feature-section {
