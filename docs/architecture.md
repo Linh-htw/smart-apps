@@ -71,7 +71,9 @@ Die Arbeitsoberflaeche ist in rollenbasierte Tabs gegliedert. Sichtbar sind nur 
 - **Packliste:** Packer-Sicht mit packrelevanten Daten.
 - **Kunden:** Kundenanlage und Kundenliste.
 - **Produkte:** Produktanlage und Produktliste.
-- **Bestellungen:** Bestellungen, Bestellpositionen, Pakete und Retouren.
+- **Bestellungen:** Bestellanlage, Bestellliste und Produkte zur Bestellung.
+- **Versand:** Pakete, Versandoption, Versandkosten, Tracking und Zustellung.
+- **Retouren:** Retourenanlage, Retourenliste und Bestandsbuchung angenommener Retouren.
 - **Abo-Boxen:** Abo-Boxen und monatliche Abo-Abwicklung.
 - **Lager:** Chargen, Lagerbestand, Verkaufsevents und Event-Positionen.
 - **Mitarbeitende:** Mitarbeiteranlage und Mitarbeiterliste.

@@ -61,6 +61,8 @@ type WorkspaceTab =
   | "kunden"
   | "produkte"
   | "bestellungen"
+  | "versand"
+  | "retouren"
   | "abo"
   | "lager"
   | "mitarbeitende";
@@ -1747,6 +1749,8 @@ export default async function Home({
     { id: "kunden", label: "Kunden", visible: canManageCustomers },
     { id: "produkte", label: "Produkte", visible: canManageProducts },
     { id: "bestellungen", label: "Bestellungen", visible: canManageOrders },
+    { id: "versand", label: "Versand", visible: canManageOrders },
+    { id: "retouren", label: "Retouren", visible: canManageOrders },
     { id: "abo", label: "Abo-Boxen", visible: canManageOrders },
     {
       id: "lager",
@@ -3447,7 +3451,7 @@ export default async function Home({
         </section>
       ) : null}
 
-      {canManageOrders && activeTab === "bestellungen" ? (
+      {canManageOrders && activeTab === "versand" ? (
         <section className="layout-grid feature-section">
           <form action={createPaket} className="panel form-panel">
             <h2>Paket anlegen</h2>
@@ -3666,7 +3670,7 @@ export default async function Home({
         </section>
       ) : null}
 
-      {canManageOrders && activeTab === "bestellungen" ? (
+      {canManageOrders && activeTab === "retouren" ? (
         <section className="layout-grid feature-section">
           <form action={createRetoure} className="panel form-panel">
             <h2>Retoure anlegen</h2>

@@ -623,7 +623,7 @@ Die App wird lokal gestartet und im Browser ueber `http://localhost:3000` oder e
 **Kontext:** Die bisherige Arbeitsoberflaeche zeigte alle Verwaltungs- und Arbeitsbereiche untereinander auf einer Seite. Das war fuer die Bedienung unuebersichtlich, obwohl die fachlichen Bereiche bereits rollenbasiert getrennt waren.
 
 ### Entscheidung
-Die App nutzt eine rollenbasierte Tab-Navigation. Die vorhandenen Bereiche werden in `Dashboard`, `Packliste`, `Kunden`, `Produkte`, `Bestellungen`, `Abo-Boxen`, `Lager` und `Mitarbeitende` gegliedert. Der aktive Tab wird ueber `?tab=` in der URL gesteuert und weiterhin serverseitig anhand der Rolle gefiltert.
+Die App nutzt eine rollenbasierte Tab-Navigation. Die vorhandenen Bereiche werden in `Dashboard`, `Packliste`, `Kunden`, `Produkte`, `Bestellungen`, `Versand`, `Retouren`, `Abo-Boxen`, `Lager` und `Mitarbeitende` gegliedert. Der aktive Tab wird ueber `?tab=` in der URL gesteuert und weiterhin serverseitig anhand der Rolle gefiltert.
 
 Zusaetzlich wurde die zentrale Akzentfarbe der UI von Gruen auf `#B23F00` Dunkelorange umgestellt.
 
