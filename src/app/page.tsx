@@ -752,6 +752,38 @@ async function createKunde(formData: FormData) {
   redirectAfterSave("bestellungen", "kunde", kunde.id);
 }
 
+async function updateKunde(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("kundeId"));
+  const typ = formData.get("typ")?.toString() ?? "";
+  const name = formData.get("name")?.toString().trim() ?? "";
+  const hauttyp = nullableText(formData.get("hauttyp"));
+
+  if (!id || !name || !isKundentyp(typ) || (hauttyp && !isHauttyp(hauttyp))) {
+    return;
+  }
+
+  await prisma.kunde.update({
+    where: { id },
+    data: {
+      typ,
+      name,
+      firmenname: nullableText(formData.get("firmenname")),
+      ustId: nullableText(formData.get("ustId")),
+      email: nullableText(formData.get("email")),
+      instagramHandle: nullableText(formData.get("instagramHandle")),
+      adresse: nullableText(formData.get("adresse")),
+      zahlungsziel: nullableNumber(formData.get("zahlungsziel")),
+      stammkunde: formData.get("stammkunde") === "on",
+      vorlieben: nullableText(formData.get("vorlieben")),
+      hauttyp,
+    },
+  });
+
+  redirectAfterSave("kunden", "kunde", id);
+}
+
 async function createProdukt(formData: FormData) {
   "use server";
 
@@ -794,6 +826,51 @@ async function createProdukt(formData: FormData) {
   redirectAfterSave("lager", "produkt", produkt.id);
 }
 
+async function updateProdukt(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("produktId"));
+  const name = formData.get("produktName")?.toString().trim() ?? "";
+  const kategorie = formData.get("kategorie")?.toString() ?? "";
+  const preisB2c = requiredDecimal(formData.get("preisB2c"));
+  const preisB2b = requiredDecimal(formData.get("preisB2b"));
+  const b2cPuffermenge = requiredDecimal(formData.get("b2cPuffermenge"));
+  const standardMhdDauerMonate = requiredInt(
+    formData.get("standardMhdDauerMonate"),
+  );
+
+  if (
+    !id ||
+    !name ||
+    !isProduktkategorie(kategorie) ||
+    !preisB2c ||
+    !preisB2b ||
+    !b2cPuffermenge ||
+    !standardMhdDauerMonate ||
+    standardMhdDauerMonate < 1
+  ) {
+    return;
+  }
+
+  await prisma.produkt.update({
+    where: { id },
+    data: {
+      name,
+      kategorie,
+      vegan: formData.get("vegan") === "on",
+      inhaltsstoffe: nullableText(formData.get("inhaltsstoffe")),
+      allergene: nullableText(formData.get("allergene")),
+      preisB2c,
+      preisB2b,
+      b2cPuffermenge,
+      standardMhdDauerMonate,
+      inAboBoxEnthalten: formData.get("inAboBoxEnthalten") === "on",
+    },
+  });
+
+  redirectAfterSave("produkte", "produkt", id);
+}
+
 async function createBestellung(formData: FormData) {
   "use server";
 
@@ -832,6 +909,49 @@ async function createBestellung(formData: FormData) {
   });
 
   redirectAfterSave("bestellungen", "bestellung", bestellung.id);
+}
+
+async function updateBestellung(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("bestellungId"));
+  const kundeId = requiredInt(formData.get("kundeId"));
+  const datum = requiredDate(formData.get("datum"));
+  const kanal = formData.get("kanal")?.toString() ?? "";
+  const zahlungsstatus = formData.get("zahlungsstatus")?.toString() ?? "";
+
+  if (
+    !id ||
+    !kundeId ||
+    !datum ||
+    !isBestellkanal(kanal) ||
+    !isZahlungsstatus(zahlungsstatus)
+  ) {
+    return;
+  }
+
+  const kunde = await prisma.kunde.findUnique({
+    where: { id: kundeId },
+    select: { id: true },
+  });
+
+  if (!kunde) {
+    return;
+  }
+
+  await prisma.bestellung.update({
+    where: { id },
+    data: {
+      kundeId,
+      datum,
+      kanal,
+      lieferadresse: nullableText(formData.get("lieferadresse")),
+      zahlungsstatus,
+      status: getBestellstatusForZahlung(zahlungsstatus),
+    },
+  });
+
+  redirectAfterSave("bestellungen", "bestellung", id);
 }
 
 async function createAboBox(formData: FormData) {
@@ -888,6 +1008,64 @@ async function createAboBox(formData: FormData) {
   });
 
   redirectAfterSave("abo", "aboBox", aboBox.id);
+}
+
+async function updateAboBox(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("aboBoxId"));
+  const kundeId = requiredInt(formData.get("aboBoxKundeId"));
+  const lieferadresse = formData.get("aboBoxLieferadresse")?.toString().trim() ?? "";
+  const status = formData.get("aboBoxStatus")?.toString() ?? "";
+  const startdatum = requiredDate(formData.get("aboBoxStartdatum"));
+  const pausiertVonMonat = requiredMonth(formData.get("aboBoxPausiertVon"));
+  const pausiertBisMonat = requiredMonth(formData.get("aboBoxPausiertBis"));
+  const kuendigungsdatum = nullableDate(formData.get("aboBoxKuendigungsdatum"));
+  const pausiertVon = pausiertVonMonat
+    ? getMonatsdatum(pausiertVonMonat)
+    : null;
+  const pausiertBis = pausiertBisMonat
+    ? getMonatsdatum(pausiertBisMonat)
+    : null;
+
+  if (!id || !kundeId || !lieferadresse || !isAboBoxStatus(status) || !startdatum) {
+    return;
+  }
+
+  if (
+    (pausiertVon || pausiertBis) &&
+    (!pausiertVon ||
+      !pausiertBis ||
+      !isPausenzeitraumGueltig(pausiertVon, pausiertBis) ||
+      !isPausenanmeldungFristgerecht(pausiertVon))
+  ) {
+    return;
+  }
+
+  const kunde = await prisma.kunde.findUnique({
+    where: { id: kundeId },
+    select: { id: true },
+  });
+
+  if (!kunde) {
+    return;
+  }
+
+  await prisma.aboBox.update({
+    where: { id },
+    data: {
+      kundeId,
+      lieferadresse,
+      status,
+      startdatum,
+      pausiertSeit: pausiertVon ? new Date() : null,
+      pausiertVon,
+      pausiertBis,
+      kuendigungsdatum: status === "gekuendigt" ? kuendigungsdatum : null,
+    },
+  });
+
+  redirectAfterSave("abo", "aboBox", id);
 }
 
 async function createAboAbwicklung(formData: FormData) {
@@ -1283,6 +1461,60 @@ async function createCharge(formData: FormData) {
   redirectAfterSave("lager", "charge", charge.id);
 }
 
+async function updateCharge(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("chargeId"));
+  const produktId = requiredInt(formData.get("chargenProduktId"));
+  const mitarbeiterId = requiredInt(formData.get("chargenMitarbeiterId"));
+  const herstellungsdatum = requiredDate(formData.get("herstellungsdatum"));
+  const mhd = requiredDate(formData.get("mhd"));
+  const produzierteMenge = requiredInt(formData.get("produzierteMenge"));
+  const status = formData.get("chargenStatus")?.toString() ?? "";
+
+  if (
+    !id ||
+    !produktId ||
+    !mitarbeiterId ||
+    !herstellungsdatum ||
+    !mhd ||
+    !produzierteMenge ||
+    produzierteMenge < 1 ||
+    !isChargenstatus(status)
+  ) {
+    return;
+  }
+
+  const [produkt, mitarbeiter] = await Promise.all([
+    prisma.produkt.findUnique({
+      where: { id: produktId },
+      select: { id: true },
+    }),
+    prisma.mitarbeiter.findUnique({
+      where: { id: mitarbeiterId },
+      select: { id: true, rolle: true },
+    }),
+  ]);
+
+  if (!produkt || !mitarbeiter || mitarbeiter.rolle !== "Werkstatt-Hilfe") {
+    return;
+  }
+
+  await prisma.charge.update({
+    where: { id },
+    data: {
+      produktId,
+      mitarbeiterId,
+      herstellungsdatum,
+      mhd,
+      produzierteMenge,
+      status,
+    },
+  });
+
+  redirectAfterSave("lager", "charge", id);
+}
+
 async function createLagerbestand(formData: FormData) {
   "use server";
 
@@ -1335,6 +1567,39 @@ async function createLagerbestand(formData: FormData) {
   redirectAfterSave("lager", "lagerbestand", lagerbestand.id);
 }
 
+async function updateLagerbestand(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("lagerbestandId"));
+  const lagerort = formData.get("lagerort")?.toString() ?? "";
+  const mengeVoruebergehendReserviert = requiredNonNegativeInt(
+    formData.get("mengeVoruebergehendReserviert"),
+  );
+  const mengeVerbindlichReserviert = requiredNonNegativeInt(
+    formData.get("mengeVerbindlichReserviert"),
+  );
+
+  if (
+    !id ||
+    !isLagerort(lagerort) ||
+    mengeVoruebergehendReserviert === null ||
+    mengeVerbindlichReserviert === null
+  ) {
+    return;
+  }
+
+  await prisma.lagerbestand.update({
+    where: { id },
+    data: {
+      lagerort,
+      mengeVoruebergehendReserviert,
+      mengeVerbindlichReserviert,
+    },
+  });
+
+  redirectAfterSave("lager", "lagerbestand", id);
+}
+
 async function createVerkaufsevent(formData: FormData) {
   "use server";
 
@@ -1353,6 +1618,28 @@ async function createVerkaufsevent(formData: FormData) {
   });
 
   redirectAfterSave("lager", "verkaufsevent", verkaufsevent.id);
+}
+
+async function updateVerkaufsevent(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("verkaufseventId"));
+  const datum = requiredDate(formData.get("verkaufseventDatum"));
+  const ort = formData.get("verkaufseventOrt")?.toString().trim() ?? "";
+
+  if (!id || !datum || !ort) {
+    return;
+  }
+
+  await prisma.verkaufsevent.update({
+    where: { id },
+    data: {
+      datum,
+      ort,
+    },
+  });
+
+  redirectAfterSave("lager", "verkaufsevent", id);
 }
 
 async function createVerkaufseventPosition(formData: FormData) {
@@ -1597,6 +1884,45 @@ async function createRetoure(formData: FormData) {
   });
 
   redirectAfterSave("retouren", "retoure", retoure.id);
+}
+
+async function updateRetoure(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("retoureId"));
+  const produktzustand = formData.get("produktzustand")?.toString() ?? "";
+  const status = formData.get("retourenstatus")?.toString() ?? "";
+  const erstattungsart = formData.get("erstattungsart")?.toString() ?? "";
+
+  if (
+    !id ||
+    !isProduktzustand(produktzustand) ||
+    !isRetourenstatus(status) ||
+    !isErstattungsart(erstattungsart)
+  ) {
+    return;
+  }
+
+  const retoure = await prisma.retoure.findUnique({
+    where: { id },
+    select: { id: true, bestandsbuchungAm: true },
+  });
+
+  if (!retoure || retoure.bestandsbuchungAm) {
+    return;
+  }
+
+  await prisma.retoure.update({
+    where: { id },
+    data: {
+      grund: nullableText(formData.get("retourengrund")),
+      produktzustand,
+      status,
+      erstattungsart,
+    },
+  });
+
+  redirectAfterSave("retouren", "retoure", id);
 }
 
 async function bucheRetoureInBestand(formData: FormData) {
@@ -2675,6 +3001,96 @@ export default async function Home({
                       <dd>{charge.mitarbeiter.name}</dd>
                     </dl>
                     <span className="status-pill">{charge.status}</span>
+                    <details className="edit-section">
+                      <summary>Bearbeiten</summary>
+                      <form action={updateCharge} className="inline-form">
+                        <input name="chargeId" type="hidden" value={charge.id} />
+
+                        <label>
+                          Produkt
+                          <select
+                            name="chargenProduktId"
+                            defaultValue={charge.produktId}
+                            required
+                          >
+                            {produkte.map((produkt) => (
+                              <option key={produkt.id} value={produkt.id}>
+                                {produkt.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Werkstatt-Hilfe
+                          <select
+                            name="chargenMitarbeiterId"
+                            defaultValue={charge.mitarbeiterId}
+                            required
+                          >
+                            {werkstattMitarbeiter.map((person) => (
+                              <option key={person.id} value={person.id}>
+                                {person.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <div className="field-row">
+                          <label>
+                            Herstellungsdatum
+                            <input
+                              defaultValue={charge.herstellungsdatum
+                                .toISOString()
+                                .slice(0, 10)}
+                              name="herstellungsdatum"
+                              required
+                              type="date"
+                            />
+                          </label>
+
+                          <label>
+                            MHD
+                            <input
+                              defaultValue={charge.mhd.toISOString().slice(0, 10)}
+                              name="mhd"
+                              required
+                              type="date"
+                            />
+                          </label>
+                        </div>
+
+                        <div className="field-row">
+                          <label>
+                            Produzierte Menge
+                            <input
+                              defaultValue={charge.produzierteMenge}
+                              min="1"
+                              name="produzierteMenge"
+                              required
+                              type="number"
+                            />
+                          </label>
+
+                          <label>
+                            Status
+                            <select
+                              name="chargenStatus"
+                              defaultValue={charge.status}
+                              required
+                            >
+                              {chargenstatusWerte.map((status) => (
+                                <option key={status} value={status}>
+                                  {status}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+
+                        <button type="submit">Änderungen speichern</button>
+                      </form>
+                    </details>
                   </article>
                 ))}
               </div>
@@ -2775,6 +3191,53 @@ export default async function Home({
                       <dt>Verbindlich</dt>
                       <dd>{bestand.mengeVerbindlichReserviert}</dd>
                     </dl>
+                    <details className="edit-section">
+                      <summary>Bearbeiten</summary>
+                      <form action={updateLagerbestand} className="inline-form">
+                        <input name="lagerbestandId" type="hidden" value={bestand.id} />
+
+                        <label>
+                          Lagerort
+                          <select
+                            name="lagerort"
+                            defaultValue={bestand.lagerort}
+                            required
+                          >
+                            {lagerorte.map((lagerort) => (
+                              <option key={lagerort} value={lagerort}>
+                                {lagerort}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <div className="field-row">
+                          <label>
+                            Vorübergehend reserviert
+                            <input
+                              defaultValue={bestand.mengeVoruebergehendReserviert}
+                              min="0"
+                              name="mengeVoruebergehendReserviert"
+                              required
+                              type="number"
+                            />
+                          </label>
+
+                          <label>
+                            Verbindlich reserviert
+                            <input
+                              defaultValue={bestand.mengeVerbindlichReserviert}
+                              min="0"
+                              name="mengeVerbindlichReserviert"
+                              required
+                              type="number"
+                            />
+                          </label>
+                        </div>
+
+                        <button type="submit">Änderungen speichern</button>
+                      </form>
+                    </details>
                   </article>
                 ))}
               </div>
@@ -2843,6 +3306,33 @@ export default async function Home({
                         ))}
                       </dl>
                     )}
+                    <details className="edit-section">
+                      <summary>Bearbeiten</summary>
+                      <form action={updateVerkaufsevent} className="inline-form">
+                        <input name="verkaufseventId" type="hidden" value={event.id} />
+
+                        <label>
+                          Datum
+                          <input
+                            defaultValue={event.datum.toISOString().slice(0, 10)}
+                            name="verkaufseventDatum"
+                            required
+                            type="date"
+                          />
+                        </label>
+
+                        <label>
+                          Ort
+                          <input
+                            defaultValue={event.ort}
+                            name="verkaufseventOrt"
+                            required
+                          />
+                        </label>
+
+                        <button type="submit">Änderungen speichern</button>
+                      </form>
+                    </details>
                   </article>
                 ))}
               </div>
@@ -3464,6 +3954,102 @@ export default async function Home({
                   {kunde.stammkunde ? (
                     <span className="status-pill">Stammkunde</span>
                   ) : null}
+                  <details className="edit-section">
+                    <summary>Bearbeiten</summary>
+                    <form action={updateKunde} className="inline-form">
+                      <input name="kundeId" type="hidden" value={kunde.id} />
+
+                      <label>
+                        Name
+                        <input defaultValue={kunde.name} name="name" required />
+                      </label>
+
+                      <div className="field-row">
+                        <label>
+                          Kundentyp
+                          <select name="typ" defaultValue={kunde.typ} required>
+                            {kundentypen.map((typ) => (
+                              <option key={typ} value={typ}>
+                                {typ}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Hauttyp
+                          <select name="hauttyp" defaultValue={kunde.hauttyp ?? ""}>
+                            <option value="">Nicht erfasst</option>
+                            {hauttypen.map((hauttyp) => (
+                              <option key={hauttyp} value={hauttyp}>
+                                {formatUiValue(hauttyp)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+
+                      <div className="field-row">
+                        <label>
+                          Firmenname
+                          <input defaultValue={kunde.firmenname ?? ""} name="firmenname" />
+                        </label>
+
+                        <label>
+                          USt-ID
+                          <input defaultValue={kunde.ustId ?? ""} name="ustId" />
+                        </label>
+                      </div>
+
+                      <div className="field-row">
+                        <label>
+                          E-Mail
+                          <input defaultValue={kunde.email ?? ""} name="email" type="email" />
+                        </label>
+
+                        <label>
+                          Instagram
+                          <input
+                            defaultValue={kunde.instagramHandle ?? ""}
+                            name="instagramHandle"
+                          />
+                        </label>
+                      </div>
+
+                      <label>
+                        Adresse
+                        <textarea defaultValue={kunde.adresse ?? ""} name="adresse" rows={3} />
+                      </label>
+
+                      <div className="field-row">
+                        <label>
+                          Zahlungsziel in Tagen
+                          <input
+                            defaultValue={kunde.zahlungsziel ?? ""}
+                            min="0"
+                            name="zahlungsziel"
+                            type="number"
+                          />
+                        </label>
+
+                        <label className="checkbox-label">
+                          <input
+                            defaultChecked={kunde.stammkunde}
+                            name="stammkunde"
+                            type="checkbox"
+                          />
+                          Stammkunde
+                        </label>
+                      </div>
+
+                      <label>
+                        Vorlieben
+                        <textarea defaultValue={kunde.vorlieben ?? ""} name="vorlieben" rows={3} />
+                      </label>
+
+                      <button type="submit">Änderungen speichern</button>
+                    </form>
+                  </details>
                 </article>
               ))}
             </div>
@@ -3748,6 +4334,72 @@ export default async function Home({
                       </>
                     ) : null}
                   </dl>
+                  <details className="edit-section">
+                    <summary>Bearbeiten</summary>
+                    <form action={updateBestellung} className="inline-form">
+                      <input name="bestellungId" type="hidden" value={bestellung.id} />
+
+                      <label>
+                        Kunde
+                        <select name="kundeId" defaultValue={bestellung.kundeId} required>
+                          {kunden.map((kunde) => (
+                            <option key={kunde.id} value={kunde.id}>
+                              {kunde.name} ({kunde.typ})
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <div className="field-row">
+                        <label>
+                          Datum
+                          <input
+                            defaultValue={bestellung.datum.toISOString().slice(0, 10)}
+                            name="datum"
+                            required
+                            type="date"
+                          />
+                        </label>
+
+                        <label>
+                          Kanal
+                          <select name="kanal" defaultValue={bestellung.kanal} required>
+                            {bestellkanaele.map((kanal) => (
+                              <option key={kanal} value={kanal}>
+                                {kanal}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+
+                      <label>
+                        Zahlungsstatus
+                        <select
+                          name="zahlungsstatus"
+                          defaultValue={bestellung.zahlungsstatus}
+                          required
+                        >
+                          {zahlungsstatusWerte.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label>
+                        Lieferadresse
+                        <textarea
+                          defaultValue={bestellung.lieferadresse ?? ""}
+                          name="lieferadresse"
+                          rows={3}
+                        />
+                      </label>
+
+                      <button type="submit">Änderungen speichern</button>
+                    </form>
+                  </details>
                 </article>
               ))}
             </div>
@@ -3980,6 +4632,107 @@ export default async function Home({
                         </>
                       ) : null}
                     </dl>
+                    <details className="edit-section">
+                      <summary>Bearbeiten</summary>
+                      <form action={updateAboBox} className="inline-form">
+                        <input name="aboBoxId" type="hidden" value={aboBox.id} />
+
+                        <label>
+                          Kunde
+                          <select
+                            name="aboBoxKundeId"
+                            defaultValue={aboBox.kundeId}
+                            required
+                          >
+                            {kunden.map((kunde) => (
+                              <option key={kunde.id} value={kunde.id}>
+                                {kunde.name} ({kunde.typ})
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Lieferadresse
+                          <textarea
+                            defaultValue={aboBox.lieferadresse}
+                            name="aboBoxLieferadresse"
+                            required
+                            rows={3}
+                          />
+                        </label>
+
+                        <div className="field-row">
+                          <label>
+                            Status
+                            <select
+                              name="aboBoxStatus"
+                              defaultValue={aboBox.status}
+                              required
+                            >
+                              {aboBoxStatusWerte.map((status) => (
+                                <option key={status} value={status}>
+                                  {formatUiValue(status)}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          <label>
+                            Startdatum
+                            <input
+                              defaultValue={aboBox.startdatum.toISOString().slice(0, 10)}
+                              name="aboBoxStartdatum"
+                              required
+                              type="date"
+                            />
+                          </label>
+                        </div>
+
+                        <div className="field-row">
+                          <label>
+                            Pause von
+                            <input
+                              defaultValue={
+                                aboBox.pausiertVon
+                                  ? aboBox.pausiertVon.toISOString().slice(0, 7)
+                                  : ""
+                              }
+                              name="aboBoxPausiertVon"
+                              type="month"
+                            />
+                          </label>
+
+                          <label>
+                            Pause bis
+                            <input
+                              defaultValue={
+                                aboBox.pausiertBis
+                                  ? aboBox.pausiertBis.toISOString().slice(0, 7)
+                                  : ""
+                              }
+                              name="aboBoxPausiertBis"
+                              type="month"
+                            />
+                          </label>
+
+                          <label>
+                            Kündigungsdatum
+                            <input
+                              defaultValue={
+                                aboBox.kuendigungsdatum
+                                  ? aboBox.kuendigungsdatum.toISOString().slice(0, 10)
+                                  : ""
+                              }
+                              name="aboBoxKuendigungsdatum"
+                              type="date"
+                            />
+                          </label>
+                        </div>
+
+                        <button type="submit">Änderungen speichern</button>
+                      </form>
+                    </details>
                   </article>
                 ))}
               </div>
@@ -4288,62 +5041,65 @@ export default async function Home({
                       ) : null}
                     </dl>
                     <span className="status-pill">{paket.status}</span>
-                    <form action={updatePaketstatus} className="inline-form">
-                      <input name="paketId" type="hidden" value={paket.id} />
+                    <details className="edit-section">
+                      <summary>Bearbeiten</summary>
+                      <form action={updatePaketstatus} className="inline-form">
+                        <input name="paketId" type="hidden" value={paket.id} />
 
-                      <label>
-                        Paketstatus aktualisieren
-                        <select
-                          name="paketStatus"
-                          defaultValue={paket.status}
-                          required
-                        >
-                          {paketstatusWerte.map((status) => (
-                            <option key={status} value={status}>
-                              {status}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label>
-                        Trackingnummer
-                        <input
-                          defaultValue={paket.trackingnummer ?? ""}
-                          name="trackingnummer"
-                        />
-                      </label>
-
-                      <div className="field-row">
                         <label>
-                          Versanddatum
-                          <input
-                            defaultValue={
-                              paket.versanddatum
-                                ? paket.versanddatum.toISOString().slice(0, 10)
-                                : ""
-                            }
-                            name="versanddatum"
-                            type="date"
-                          />
+                          Paketstatus
+                          <select
+                            name="paketStatus"
+                            defaultValue={paket.status}
+                            required
+                          >
+                            {paketstatusWerte.map((status) => (
+                              <option key={status} value={status}>
+                                {status}
+                              </option>
+                            ))}
+                          </select>
                         </label>
 
                         <label>
-                          Zustelldatum
+                          Trackingnummer
                           <input
-                            defaultValue={
-                              paket.zustelldatum
-                                ? paket.zustelldatum.toISOString().slice(0, 10)
-                                : ""
-                            }
-                            name="zustelldatum"
-                            type="date"
+                            defaultValue={paket.trackingnummer ?? ""}
+                            name="trackingnummer"
                           />
                         </label>
-                      </div>
 
-                      <button type="submit">Status speichern</button>
-                    </form>
+                        <div className="field-row">
+                          <label>
+                            Versanddatum
+                            <input
+                              defaultValue={
+                                paket.versanddatum
+                                  ? paket.versanddatum.toISOString().slice(0, 10)
+                                  : ""
+                              }
+                              name="versanddatum"
+                              type="date"
+                            />
+                          </label>
+
+                          <label>
+                            Zustelldatum
+                            <input
+                              defaultValue={
+                                paket.zustelldatum
+                                  ? paket.zustelldatum.toISOString().slice(0, 10)
+                                  : ""
+                              }
+                              name="zustelldatum"
+                              type="date"
+                            />
+                          </label>
+                        </div>
+
+                        <button type="submit">Änderungen speichern</button>
+                      </form>
+                    </details>
                   </article>
                 ))}
               </div>
@@ -4501,6 +5257,72 @@ export default async function Home({
                     <span className="status-pill">
                       {formatUiValue(retoure.status)}
                     </span>
+                    {!retoure.bestandsbuchungAm ? (
+                      <details className="edit-section">
+                        <summary>Bearbeiten</summary>
+                        <form action={updateRetoure} className="inline-form">
+                          <input name="retoureId" type="hidden" value={retoure.id} />
+
+                          <label>
+                            Grund
+                            <textarea
+                              defaultValue={retoure.grund ?? ""}
+                              name="retourengrund"
+                              rows={3}
+                            />
+                          </label>
+
+                          <div className="field-row">
+                            <label>
+                              Produktzustand
+                              <select
+                                name="produktzustand"
+                                defaultValue={retoure.produktzustand}
+                                required
+                              >
+                                {produktzustandWerte.map((zustand) => (
+                                  <option key={zustand} value={zustand}>
+                                    {formatUiValue(zustand)}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+
+                            <label>
+                              Status
+                              <select
+                                name="retourenstatus"
+                                defaultValue={retoure.status}
+                                required
+                              >
+                                {retourenstatusWerte.map((status) => (
+                                  <option key={status} value={status}>
+                                    {formatUiValue(status)}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          </div>
+
+                          <label>
+                            Erstattungsart
+                            <select
+                              name="erstattungsart"
+                              defaultValue={retoure.erstattungsart}
+                              required
+                            >
+                              {erstattungsarten.map((art) => (
+                                <option key={art} value={art}>
+                                  {formatUiValue(art)}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          <button type="submit">Änderungen speichern</button>
+                        </form>
+                      </details>
+                    ) : null}
                     {retoure.status === "Angenommen" &&
                     !retoure.bestandsbuchungAm ? (
                       <form action={bucheRetoureInBestand} className="inline-form">
@@ -4635,6 +5457,123 @@ export default async function Home({
                   {produkt.inhaltsstoffe ? (
                     <p className="note-text">{produkt.inhaltsstoffe}</p>
                   ) : null}
+                  <details className="edit-section">
+                    <summary>Bearbeiten</summary>
+                    <form action={updateProdukt} className="inline-form">
+                      <input name="produktId" type="hidden" value={produkt.id} />
+
+                      <label>
+                        Name
+                        <input
+                          defaultValue={produkt.name}
+                          name="produktName"
+                          required
+                        />
+                      </label>
+
+                      <div className="field-row">
+                        <label>
+                          Kategorie
+                          <select
+                            name="kategorie"
+                            defaultValue={produkt.kategorie}
+                            required
+                          >
+                            {produktkategorien.map((kategorie) => (
+                              <option key={kategorie} value={kategorie}>
+                                {formatUiValue(kategorie)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        <label>
+                          Standard-MHD in Monaten
+                          <input
+                            defaultValue={produkt.standardMhdDauerMonate}
+                            min="1"
+                            name="standardMhdDauerMonate"
+                            required
+                            type="number"
+                          />
+                        </label>
+                      </div>
+
+                      <div className="field-row">
+                        <label>
+                          Preis B2C
+                          <input
+                            defaultValue={produkt.preisB2c.toString()}
+                            min="0"
+                            name="preisB2c"
+                            required
+                            step="0.01"
+                            type="number"
+                          />
+                        </label>
+
+                        <label>
+                          Preis B2B
+                          <input
+                            defaultValue={produkt.preisB2b.toString()}
+                            min="0"
+                            name="preisB2b"
+                            required
+                            step="0.01"
+                            type="number"
+                          />
+                        </label>
+                      </div>
+
+                      <label>
+                        B2C-Puffermenge
+                        <input
+                          defaultValue={produkt.b2cPuffermenge.toString()}
+                          min="0"
+                          name="b2cPuffermenge"
+                          required
+                          step="0.01"
+                          type="number"
+                        />
+                      </label>
+
+                      <label>
+                        Inhaltsstoffe
+                        <textarea
+                          defaultValue={produkt.inhaltsstoffe ?? ""}
+                          name="inhaltsstoffe"
+                          rows={3}
+                        />
+                      </label>
+
+                      <label>
+                        Allergene
+                        <input defaultValue={produkt.allergene ?? ""} name="allergene" />
+                      </label>
+
+                      <div className="field-row">
+                        <label className="checkbox-label">
+                          <input
+                            defaultChecked={produkt.vegan}
+                            name="vegan"
+                            type="checkbox"
+                          />
+                          Vegan
+                        </label>
+
+                        <label className="checkbox-label">
+                          <input
+                            defaultChecked={produkt.inAboBoxEnthalten}
+                            name="inAboBoxEnthalten"
+                            type="checkbox"
+                          />
+                          In Abo-Box enthalten
+                        </label>
+                      </div>
+
+                      <button type="submit">Änderungen speichern</button>
+                    </form>
+                  </details>
                 </article>
               ))}
             </div>

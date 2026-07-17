@@ -695,3 +695,15 @@ Sichtbare deutsche UI-Texte werden mit echten Umlauten geschrieben. Technische B
 - Die Oberfläche liest sich natürlicher und konsistenter.
 - Bestehende Daten und Validierungen bleiben kompatibel.
 - Neue sichtbare UI- und UX-Doku-Texte sollen echte Umlaute verwenden.
+
+## 2026-07-17 - Korrekturen über Bearbeiten-Bereiche
+
+**Kontext:** Beim manuellen Testen und bei der Prüfungsabgabe können Eingabefehler in Stammdaten und Arbeitsdaten entstehen. Ohne Bearbeiten-Funktion müssten Nutzer fehlerhafte Datensätze ignorieren oder neu anlegen.
+
+### Entscheidung
+Listen-Karten bekommen aufklappbare Bearbeiten-Bereiche für Kunden, Produkte, Bestellungen, Mitarbeitende, Chargen, Lagerbestand, Verkaufsevents, Abo-Boxen, Pakete und noch nicht gebuchte Retouren. Buchungsrelevante Detailpositionen wie Bestellpositionen, Event-Positionen und Abo-Abwicklungen bleiben nicht frei rückwirkend bearbeitbar, weil sie FIFO, Reservierungen und Bestandsbuchungen beeinflussen.
+
+### Konsequenzen
+- Testdaten können direkt in der App korrigiert werden.
+- Die UI bleibt ruhig, weil Bearbeiten-Formulare erst nach Klick sichtbar sind.
+- Bereits gebuchte oder bestandswirksame Vorgänge werden nicht nachträglich inkonsistent gemacht.

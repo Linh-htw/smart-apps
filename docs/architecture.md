@@ -69,13 +69,13 @@ Die Arbeitsoberflaeche ist in rollenbasierte Tabs gegliedert. Sichtbar sind nur 
 
 - **Übersicht:** priorisierte Startseite mit dringenden Aufgaben, Blockaden, nächstem Klick, Warnungen und offenen Aufgaben.
 - **Packen:** Packer-Sicht mit packrelevanten Daten.
-- **Kunden:** Kundenanlage und Kundenliste.
-- **Produkte:** Produktanlage und Produktliste.
-- **Bestellungen:** Bestellanlage, Bestellliste und Produkte zur Bestellung.
-- **Versand & Pakete:** Pakete, Versandoption, Versandkosten, Tracking und Zustellung.
-- **Retouren:** Retourenanlage, Retourenliste und Bestandsbuchung angenommener Retouren.
-- **Abo-Boxen:** Abo-Boxen und monatliche Abo-Abwicklung.
-- **Lager & Chargen:** Chargen, Lagerbestand, Verkaufsevents und Event-Positionen.
+- **Kunden:** Kundenanlage, Bearbeitung und Kundenliste.
+- **Produkte:** Produktanlage, Bearbeitung und Produktliste.
+- **Bestellungen:** Bestellanlage, Bearbeitung, Bestellliste und Produkte zur Bestellung.
+- **Versand & Pakete:** Pakete, Versandoption, Versandkosten, Tracking, Zustellung und Bearbeitung.
+- **Retouren:** Retourenanlage, Bearbeitung vor Bestandsbuchung, Retourenliste und Bestandsbuchung angenommener Retouren.
+- **Abo-Boxen:** Abo-Boxen, Bearbeitung und monatliche Abo-Abwicklung.
+- **Lager & Chargen:** Chargen, Lagerbestand, Verkaufsevents, Bearbeitung und Event-Positionen.
 - **Mitarbeitende:** Mitarbeiteranlage, Bearbeitung und Mitarbeiterliste.
 
 Tabs werden ueber den Query-Parameter `tab` gesteuert, z. B. `/?tab=kunden`. Das haelt die Navigation serverseitig, teilbar und ohne zusätzlichen Client-State.
