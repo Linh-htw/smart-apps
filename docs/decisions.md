@@ -644,3 +644,15 @@ Die App zeigt in den bestellnahen Tabs einen gefuehrten Bestellablauf. Er fuehrt
 - Die bestehenden Server Actions und Validierungen bleiben unveraendert.
 - Nutzer sehen vor der Datenerfassung, welche Voraussetzung fehlt und welcher Schritt als naechstes sinnvoll ist.
 - Der Ablauf bleibt serverseitig berechnet und benoetigt keinen zusaetzlichen Client-State.
+
+## 2026-07-17 - Dashboard priorisiert Handlungen
+
+**Kontext:** Nach Tab-Aufteilung und gefuehrtem Bestellablauf zeigte das Dashboard weiterhin viele Kennzahlen und Aufgabenlisten, aber nicht klar genug, was sofort wichtig ist, was blockiert und welcher Klick als naechstes sinnvoll ist.
+
+### Entscheidung
+Das Dashboard erhaelt Fokus-Karten fuer `Dringend`, `Blockiert` und `Naechster Klick`. Die Karten werden aus bestehenden Warnungen, offenen Aufgaben, fehlenden Voraussetzungen und dem gefuehrten Bestellablauf berechnet.
+
+### Konsequenzen
+- Nutzer sehen zuerst die wichtigste Handlung statt nur Kennzahlen.
+- Die bestehenden Aufgabenlisten und Metriken bleiben erhalten, ruecken aber unter die Priorisierung.
+- Die Priorisierung bleibt serverseitig und nutzt keine neue Datenquelle.
