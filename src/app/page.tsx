@@ -574,12 +574,7 @@ function getReservierteMenge(charge: {
 function getReservierungsLagerort(charge: {
   lagerbestaende: Array<{ lagerort: string }>;
 }) {
-  return (
-    charge.lagerbestaende.find((bestand) => bestand.lagerort === "Versandbereit")
-      ?.lagerort ??
-    charge.lagerbestaende[0]?.lagerort ??
-    "Versandbereit"
-  );
+  return charge.lagerbestaende[0]?.lagerort ?? "Werkstatt";
 }
 
 function getFreieMenge(charge: {
@@ -1651,24 +1646,6 @@ async function bucheRetoureInBestand(formData: FormData) {
                 retoure.bestellposition.menge,
             ),
           },
-        });
-      }
-
-      if (buchung === "Restposten") {
-        await tx.lagerbestand.upsert({
-          where: {
-            chargeId_lagerort: {
-              chargeId: retoure.bestellposition.chargeId,
-              lagerort: "Restposten",
-            },
-          },
-          create: {
-            chargeId: retoure.bestellposition.chargeId,
-            lagerort: "Restposten",
-            mengeVoruebergehendReserviert: 0,
-            mengeVerbindlichReserviert: 0,
-          },
-          update: { lagerort: "Restposten" },
         });
       }
     }

@@ -263,7 +263,7 @@ Es gilt ein zweistufiges Prinzip: zuerst Stammkunden, dann B2C-Neukunden; innerh
 
 | Feld | Werte |
 |---|---|
-| Lagerort | Werkstatt, Versandbereit, Restposten |
+| Lagerort | Werkstatt, Markt-Truck, Zuhause |
 
 ### Charge
 

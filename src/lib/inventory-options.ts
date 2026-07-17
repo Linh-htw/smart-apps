@@ -1,4 +1,4 @@
-export const lagerorte = ["Werkstatt", "Versandbereit", "Restposten"] as const;
+export const lagerorte = ["Werkstatt", "Markt-Truck", "Zuhause"] as const;
 
 export type Lagerort = (typeof lagerorte)[number];
 

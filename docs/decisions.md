@@ -230,7 +230,7 @@ Chargenstatus nutzt für V1 die Werte `freigegeben` und `gesperrt`. `aufgebrauch
 **Kontext:** Nach der Chargenverwaltung braucht die App Lagerorte und getrennte Reservierungsmengen je Charge. Der Lagerort war bisher in `NW-039` offen.
 
 ### Entscheidung
-Lagerorte nutzen für V1 die Werte `Werkstatt`, `Versandbereit` und `Restposten`. Die App ergaenzt ein Prisma-Modell `Lagerbestand` je Charge und Lagerort mit `mengeVorübergehendReserviert` und `mengeVerbindlichReserviert`. Pro Charge und Lagerort gibt es genau einen Datensatz; erneutes Speichern aktualisiert die Reservierungsmengen.
+Lagerorte nutzen für V1 die physischen Werte `Werkstatt`, `Markt-Truck` und `Zuhause`. `Versandbereit` und `Restposten` werden nicht als Lagerorte modelliert, weil sie Prozess- beziehungsweise Buchungszustände sind. Die App ergaenzt ein Prisma-Modell `Lagerbestand` je Charge und Lagerort mit `mengeVorübergehendReserviert` und `mengeVerbindlichReserviert`. Pro Charge und Lagerort gibt es genau einen Datensatz; erneutes Speichern aktualisiert die Reservierungsmengen.
 
 ### Konsequenzen
 - `NW-004` ist im Backlog auf `done` gesetzt.
@@ -500,7 +500,7 @@ Die App ergaenzt ein Prisma-Modell `Retoure`. Retouren werden nur für Bestellpo
 **Kontext:** `GR-08` definiert, wie angenommene Retouren je nach Produktzustand und MHD-Restlaufzeit zu behandeln sind. Das aktuelle Lagerbestand-Modell speichert Reservierungen je Charge und Lagerort; physische Mengen liegen weiterhin an der Charge.
 
 ### Entscheidung
-Die App ergaenzt an `Retoure` die Felder `bestandsbuchung` und `bestandsbuchungAm`. Angenommene Retouren können einmalig gebucht werden. Ungeöffnete Ware mit mehr als 28 Tagen MHD-Restlaufzeit reduziert die verbindliche Reservierung der urspruenglichen Charge. Ungeöffnete Ware mit 28 Tagen oder weniger MHD-Restlaufzeit reduziert ebenfalls die verbindliche Reservierung und markiert die Charge ueber einen `Restposten`-Lagerbestand. Nicht ungeöffnete Ware wird als `Ausgebucht` dokumentiert.
+Die App ergaenzt an `Retoure` die Felder `bestandsbuchung` und `bestandsbuchungAm`. Angenommene Retouren können einmalig gebucht werden. Ungeöffnete Ware mit mehr als 28 Tagen MHD-Restlaufzeit reduziert die verbindliche Reservierung der urspruenglichen Charge. Ungeöffnete Ware mit 28 Tagen oder weniger MHD-Restlaufzeit reduziert ebenfalls die verbindliche Reservierung und wird als `Restposten`-Buchung dokumentiert, ohne den physischen Lagerort der Charge zu ändern. Nicht ungeöffnete Ware wird als `Ausgebucht` dokumentiert.
 
 ### Konsequenzen
 - `NW-031` ist im Backlog auf `done` gesetzt.
