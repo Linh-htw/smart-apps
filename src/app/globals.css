@@ -154,6 +154,35 @@ p {
   background: var(--accent-strong);
 }
 
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -4px 0 18px;
+}
+
+.filter-link {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 11px;
+  text-decoration: none;
+}
+
+.filter-link:hover {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+}
+
+.filter-link.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
 .feature-section {
   margin-top: 24px;
 }

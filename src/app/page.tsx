@@ -1686,7 +1686,12 @@ async function logoutMitarbeiter() {
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Promise<{ focus?: string; saved?: string; tab?: string }>;
+  searchParams?: Promise<{
+    filter?: string;
+    focus?: string;
+    saved?: string;
+    tab?: string;
+  }>;
 }) {
   const params = await searchParams;
   await aktualisiereAlleStammkunden();
@@ -1904,6 +1909,11 @@ export default async function Home({
     savedKey === entity && focusedId === id;
   const savedClassName = (baseClassName: string, entity: string, id: number) =>
     isFocused(entity, id) ? `${baseClassName} just-saved` : baseClassName;
+  const activeFilter = params?.filter ?? "alle";
+  const filterHref = (tab: WorkspaceTab, filter: string) =>
+    filter === "alle" ? `/?tab=${tab}` : `/?tab=${tab}&filter=${filter}`;
+  const filterLinkClassName = (filter: string) =>
+    activeFilter === filter ? "filter-link active" : "filter-link";
   const aktiveBestellungen = bestellungen.filter(
     (bestellung) => bestellung.status !== "storniert",
   );
@@ -2280,6 +2290,102 @@ export default async function Home({
       level: "next",
     },
   ];
+  const filteredBestellungen = bestellungen.filter((bestellung) => {
+    if (activeFilter === "offen") {
+      return bestellung.status !== "storniert" && bestellung.status !== "abgeschlossen";
+    }
+
+    if (activeFilter === "ausstehend") {
+      return bestellung.zahlungsstatus === "ausstehend";
+    }
+
+    if (activeFilter === "verbindlich") {
+      return bestellung.status === "verbindlich";
+    }
+
+    if (activeFilter === "abgeschlossen") {
+      return bestellung.status === "abgeschlossen";
+    }
+
+    return true;
+  });
+  const filteredBestellpositionen = bestellpositionen.filter((position) => {
+    if (activeFilter === "offen") {
+      return (
+        position.bestellung.status !== "storniert" &&
+        position.bestellung.status !== "abgeschlossen"
+      );
+    }
+
+    if (activeFilter === "ausstehend") {
+      return position.bestellung.zahlungsstatus === "ausstehend";
+    }
+
+    if (activeFilter === "verbindlich") {
+      return position.bestellung.status === "verbindlich";
+    }
+
+    if (activeFilter === "abgeschlossen") {
+      return position.bestellung.status === "abgeschlossen";
+    }
+
+    return true;
+  });
+  const filteredPacklistenBestellungen = packlistenBestellungen.filter(
+    ({ pakete }) => {
+      if (activeFilter === "ohne-paket") {
+        return pakete.length === 0;
+      }
+
+      if (activeFilter === "mit-paket") {
+        return pakete.length > 0;
+      }
+
+      return true;
+    },
+  );
+  const filteredPakete = pakete.filter((paket) => {
+    if (
+      activeFilter === "Vorbereitet" ||
+      activeFilter === "Gepackt" ||
+      activeFilter === "Versendet" ||
+      activeFilter === "Zugestellt"
+    ) {
+      return paket.status === activeFilter;
+    }
+
+    return true;
+  });
+  const filteredRetouren = retouren.filter((retoure) => {
+    if (activeFilter === "offen") {
+      return retoure.status !== "Abgelehnt" && retoure.status !== "Abgeschlossen";
+    }
+
+    if (activeFilter === "angenommen") {
+      return retoure.status === "Angenommen";
+    }
+
+    if (activeFilter === "abgeschlossen") {
+      return retoure.status === "Abgeschlossen";
+    }
+
+    return true;
+  });
+  const filteredChargen = chargen.filter((charge) => {
+    if (activeFilter === "frei") {
+      return getFreieMenge(charge) > 0;
+    }
+
+    if (activeFilter === "mhd-kritisch") {
+      return getMhdWarnung(charge)?.level === "critical";
+    }
+
+    if (activeFilter === "gesperrt") {
+      return charge.status === "gesperrt";
+    }
+
+    return true;
+  });
 
   if (!isAuthenticated) {
     return (
@@ -2528,11 +2634,31 @@ export default async function Home({
 
           <section className="panel list-panel" aria-labelledby="chargen-heading">
             <h2 id="chargen-heading">Chargen</h2>
-            {chargen.length === 0 ? (
+            <div className="filter-bar" aria-label="Chargen filtern">
+              <a className={filterLinkClassName("alle")} href={filterHref("lager", "alle")}>
+                Alle
+              </a>
+              <a className={filterLinkClassName("frei")} href={filterHref("lager", "frei")}>
+                Freier Bestand
+              </a>
+              <a
+                className={filterLinkClassName("mhd-kritisch")}
+                href={filterHref("lager", "mhd-kritisch")}
+              >
+                MHD kritisch
+              </a>
+              <a
+                className={filterLinkClassName("gesperrt")}
+                href={filterHref("lager", "gesperrt")}
+              >
+                Gesperrt
+              </a>
+            </div>
+            {filteredChargen.length === 0 ? (
               <p className="empty-state">Noch keine Chargen erfasst.</p>
             ) : (
               <div className="customer-list">
-                {chargen.map((charge) => (
+                {filteredChargen.map((charge) => (
                   <article
                     className={savedClassName("customer-card", "charge", charge.id)}
                     key={charge.id}
@@ -2834,15 +2960,36 @@ export default async function Home({
                 <h2 id="packliste-heading">Tages-Packliste</h2>
               </div>
               <p className="summary">
-                {packlistenBestellungen.length} Bestellungen
+                {filteredPacklistenBestellungen.length} Bestellungen
               </p>
             </div>
 
-            {packlistenBestellungen.length === 0 ? (
+            <div className="filter-bar" aria-label="Packliste filtern">
+              <a
+                className={filterLinkClassName("alle")}
+                href={filterHref("packliste", "alle")}
+              >
+                Alle
+              </a>
+              <a
+                className={filterLinkClassName("ohne-paket")}
+                href={filterHref("packliste", "ohne-paket")}
+              >
+                Ohne Paket
+              </a>
+              <a
+                className={filterLinkClassName("mit-paket")}
+                href={filterHref("packliste", "mit-paket")}
+              >
+                Mit Paket
+              </a>
+            </div>
+
+            {filteredPacklistenBestellungen.length === 0 ? (
               <p className="empty-state">Keine Packaufgaben vorhanden.</p>
             ) : (
               <div className="packlist">
-                {packlistenBestellungen.map(({ bestellung, positionen, pakete }) => (
+                {filteredPacklistenBestellungen.map(({ bestellung, positionen, pakete }) => (
                   <article className="packlist-order" key={bestellung.id}>
                     <div className="packlist-header">
                       <div>
@@ -3484,11 +3631,43 @@ export default async function Home({
 
         <section className="panel list-panel" aria-labelledby="bestellungen-heading">
           <h2 id="bestellungen-heading">Bestellungen</h2>
-          {bestellungen.length === 0 ? (
+          <div className="filter-bar" aria-label="Bestellungen filtern">
+            <a
+              className={filterLinkClassName("alle")}
+              href={filterHref("bestellungen", "alle")}
+            >
+              Alle
+            </a>
+            <a
+              className={filterLinkClassName("offen")}
+              href={filterHref("bestellungen", "offen")}
+            >
+              Offen
+            </a>
+            <a
+              className={filterLinkClassName("ausstehend")}
+              href={filterHref("bestellungen", "ausstehend")}
+            >
+              Zahlung offen
+            </a>
+            <a
+              className={filterLinkClassName("verbindlich")}
+              href={filterHref("bestellungen", "verbindlich")}
+            >
+              Verbindlich
+            </a>
+            <a
+              className={filterLinkClassName("abgeschlossen")}
+              href={filterHref("bestellungen", "abgeschlossen")}
+            >
+              Abgeschlossen
+            </a>
+          </div>
+          {filteredBestellungen.length === 0 ? (
             <p className="empty-state">Noch keine Bestellungen erfasst.</p>
           ) : (
             <div className="customer-list">
-              {bestellungen.map((bestellung) => (
+              {filteredBestellungen.map((bestellung) => (
                 <article
                   className={savedClassName(
                     "customer-card",
@@ -3849,11 +4028,11 @@ export default async function Home({
 
           <section className="panel list-panel" aria-labelledby="positionen-heading">
             <h2 id="positionen-heading">Bestellpositionen</h2>
-            {bestellpositionen.length === 0 ? (
+            {filteredBestellpositionen.length === 0 ? (
               <p className="empty-state">Noch keine Bestellpositionen erfasst.</p>
             ) : (
               <div className="customer-list">
-                {bestellpositionen.map((position) => (
+                {filteredBestellpositionen.map((position) => (
                   <article
                     className={savedClassName(
                       "customer-card",
@@ -3993,11 +4172,25 @@ export default async function Home({
 
           <section className="panel list-panel" aria-labelledby="pakete-heading">
             <h2 id="pakete-heading">Pakete</h2>
-            {pakete.length === 0 ? (
+            <div className="filter-bar" aria-label="Pakete filtern">
+              <a className={filterLinkClassName("alle")} href={filterHref("versand", "alle")}>
+                Alle
+              </a>
+              {paketstatusWerte.map((status) => (
+                <a
+                  className={filterLinkClassName(status)}
+                  href={filterHref("versand", status)}
+                  key={status}
+                >
+                  {status}
+                </a>
+              ))}
+            </div>
+            {filteredPakete.length === 0 ? (
               <p className="empty-state">Noch keine Pakete erfasst.</p>
             ) : (
               <div className="customer-list">
-                {pakete.map((paket) => (
+                {filteredPakete.map((paket) => (
                   <article
                     className={savedClassName("customer-card", "paket", paket.id)}
                     key={paket.id}
@@ -4187,11 +4380,37 @@ export default async function Home({
 
           <section className="panel list-panel" aria-labelledby="retouren-heading">
             <h2 id="retouren-heading">Retouren</h2>
-            {retouren.length === 0 ? (
+            <div className="filter-bar" aria-label="Retouren filtern">
+              <a
+                className={filterLinkClassName("alle")}
+                href={filterHref("retouren", "alle")}
+              >
+                Alle
+              </a>
+              <a
+                className={filterLinkClassName("offen")}
+                href={filterHref("retouren", "offen")}
+              >
+                Offen
+              </a>
+              <a
+                className={filterLinkClassName("angenommen")}
+                href={filterHref("retouren", "angenommen")}
+              >
+                Angenommen
+              </a>
+              <a
+                className={filterLinkClassName("abgeschlossen")}
+                href={filterHref("retouren", "abgeschlossen")}
+              >
+                Abgeschlossen
+              </a>
+            </div>
+            {filteredRetouren.length === 0 ? (
               <p className="empty-state">Noch keine Retouren erfasst.</p>
             ) : (
               <div className="customer-list">
-                {retouren.map((retoure) => (
+                {filteredRetouren.map((retoure) => (
                   <article
                     className={savedClassName("customer-card", "retoure", retoure.id)}
                     key={retoure.id}

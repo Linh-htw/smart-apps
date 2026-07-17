@@ -668,3 +668,15 @@ Erfolgreiche Speichern-Aktionen leiten auf den fachlich passenden naechsten Tab 
 - Nutzer bekommen sofort sichtbares Feedback nach dem Speichern.
 - Der naechste Arbeitsschritt ist direkt verlinkt.
 - Die Umsetzung bleibt serverseitig und nutzt Query-Parameter statt zusaetzlichem Client-State.
+
+## 2026-07-17 - Arbeitslisten bekommen Schnellfilter
+
+**Kontext:** Mit wachsender Datenmenge werden lange Listen schwer scanbar. Besonders wichtig sind operative Sichten wie offene Bestellungen, offene Zahlungen, Packaufgaben ohne Paket, kritische MHD-Chargen, Paketstatus und offene Retouren.
+
+### Entscheidung
+Die App ergaenzt serverseitige Schnellfilter in den relevanten Tabs. Filter werden ueber den Query-Parameter `filter` gesteuert und als Link-Leiste oberhalb der jeweiligen Liste angezeigt.
+
+### Konsequenzen
+- Listen bleiben auch bei mehr Daten schneller scanbar.
+- Filterzustaende sind per URL teilbar.
+- Es wird kein zusaetzlicher Client-State eingefuehrt.
