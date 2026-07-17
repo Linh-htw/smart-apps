@@ -1792,17 +1792,17 @@ export default async function Home({
   const canCreateBatches = canAccess(activeRolle, "createBatches");
   const canViewPacklists = canAccess(activeRolle, "viewPacklists");
   const tabs: TabItem[] = [
-    { id: "arbeit", label: "Dashboard", visible: canManageOrders },
-    { id: "packliste", label: "Packliste", visible: canViewPacklists },
+    { id: "arbeit", label: "Uebersicht", visible: canManageOrders },
+    { id: "packliste", label: "Packen", visible: canViewPacklists },
     { id: "kunden", label: "Kunden", visible: canManageCustomers },
     { id: "produkte", label: "Produkte", visible: canManageProducts },
     { id: "bestellungen", label: "Bestellungen", visible: canManageOrders },
-    { id: "versand", label: "Versand", visible: canManageOrders },
+    { id: "versand", label: "Versand & Pakete", visible: canManageOrders },
     { id: "retouren", label: "Retouren", visible: canManageOrders },
     { id: "abo", label: "Abo-Boxen", visible: canManageOrders },
     {
       id: "lager",
-      label: "Lager",
+      label: "Lager & Chargen",
       visible: canCreateBatches || canManageInventory,
     },
     {

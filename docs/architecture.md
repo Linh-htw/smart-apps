@@ -67,15 +67,15 @@ Hinweis fuer Windows: Generierte Artefakte wie `.next` und `node_modules/.prisma
 
 Die Arbeitsoberflaeche ist in rollenbasierte Tabs gegliedert. Sichtbar sind nur Tabs, fuer die die aktive Rolle serverseitig berechtigt ist:
 
-- **Dashboard:** priorisierte Startseite mit dringenden Aufgaben, Blockaden, naechstem Klick, Warnungen und offenen Aufgaben.
-- **Packliste:** Packer-Sicht mit packrelevanten Daten.
+- **Uebersicht:** priorisierte Startseite mit dringenden Aufgaben, Blockaden, naechstem Klick, Warnungen und offenen Aufgaben.
+- **Packen:** Packer-Sicht mit packrelevanten Daten.
 - **Kunden:** Kundenanlage und Kundenliste.
 - **Produkte:** Produktanlage und Produktliste.
 - **Bestellungen:** Bestellanlage, Bestellliste und Produkte zur Bestellung.
-- **Versand:** Pakete, Versandoption, Versandkosten, Tracking und Zustellung.
+- **Versand & Pakete:** Pakete, Versandoption, Versandkosten, Tracking und Zustellung.
 - **Retouren:** Retourenanlage, Retourenliste und Bestandsbuchung angenommener Retouren.
 - **Abo-Boxen:** Abo-Boxen und monatliche Abo-Abwicklung.
-- **Lager:** Chargen, Lagerbestand, Verkaufsevents und Event-Positionen.
+- **Lager & Chargen:** Chargen, Lagerbestand, Verkaufsevents und Event-Positionen.
 - **Mitarbeitende:** Mitarbeiteranlage und Mitarbeiterliste.
 
 Tabs werden ueber den Query-Parameter `tab` gesteuert, z. B. `/?tab=kunden`. Das haelt die Navigation serverseitig, teilbar und ohne zusaetzlichen Client-State.
