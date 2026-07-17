@@ -124,6 +124,36 @@ p {
   color: #ffffff;
 }
 
+.save-feedback {
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+}
+
+.save-feedback h2 {
+  margin-bottom: 8px;
+}
+
+.button-link {
+  border-radius: 6px;
+  background: var(--accent);
+  color: #ffffff;
+  flex: 0 0 auto;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 14px;
+  text-decoration: none;
+}
+
+.button-link:hover {
+  background: var(--accent-strong);
+}
+
 .feature-section {
   margin-top: 24px;
 }
@@ -359,6 +389,12 @@ button:disabled:hover {
   padding: 16px;
 }
 
+.customer-card.just-saved,
+.task-item.just-saved {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(178, 63, 0, 0.14);
+}
+
 .customer-card dl {
   display: grid;
   grid-template-columns: 110px 1fr;
@@ -524,6 +560,11 @@ button:disabled:hover {
   .workspace-header {
     display: grid;
     align-items: start;
+  }
+
+  .save-feedback {
+    align-items: stretch;
+    display: grid;
   }
 
   .layout-grid,

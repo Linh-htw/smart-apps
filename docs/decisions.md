@@ -656,3 +656,15 @@ Das Dashboard erhaelt Fokus-Karten fuer `Dringend`, `Blockiert` und `Naechster K
 - Nutzer sehen zuerst die wichtigste Handlung statt nur Kennzahlen.
 - Die bestehenden Aufgabenlisten und Metriken bleiben erhalten, ruecken aber unter die Priorisierung.
 - Die Priorisierung bleibt serverseitig und nutzt keine neue Datenquelle.
+
+## 2026-07-17 - Speichern fuehrt zum naechsten Arbeitsschritt
+
+**Kontext:** Nach Formularaktionen blieb die App bisher ohne sichtbares Feedback auf der aktuellen Ansicht. Nutzer mussten selbst erkennen, ob die Aktion erfolgreich war und welcher Schritt danach folgt.
+
+### Entscheidung
+Erfolgreiche Speichern-Aktionen leiten auf den fachlich passenden naechsten Tab weiter. Die URL enthaelt `saved` und bei neu angelegten Datensaetzen `focus`. Die Seite zeigt daraus einen Erfolgshinweis mit naechstem Schritt und hebt den gespeicherten Listeneintrag hervor.
+
+### Konsequenzen
+- Nutzer bekommen sofort sichtbares Feedback nach dem Speichern.
+- Der naechste Arbeitsschritt ist direkt verlinkt.
+- Die Umsetzung bleibt serverseitig und nutzt Query-Parameter statt zusaetzlichem Client-State.

@@ -90,6 +90,13 @@ type DashboardFocus = {
   level: "urgent" | "blocked" | "next";
 };
 
+type SaveFeedback = {
+  title: string;
+  detail: string;
+  nextHref: string;
+  nextLabel: string;
+};
+
 function nullableText(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
   return text ? text : null;
@@ -651,6 +658,17 @@ function getKnappheitsPrioritaetslabel(position: {
     : "B2C-Neukunde";
 }
 
+function redirectAfterSave(tab: WorkspaceTab, saved: string, focusId?: number) {
+  const params = new URLSearchParams({ tab, saved });
+
+  if (focusId) {
+    params.set("focus", focusId.toString());
+  }
+
+  revalidatePath("/");
+  redirect(`/?${params.toString()}`);
+}
+
 async function aktualisiereStammkundeStatus(
   tx: Prisma.TransactionClient,
   kundeId: number,
@@ -704,7 +722,7 @@ async function createKunde(formData: FormData) {
     return;
   }
 
-  await prisma.kunde.create({
+  const kunde = await prisma.kunde.create({
     data: {
       typ,
       name,
@@ -720,7 +738,7 @@ async function createKunde(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("bestellungen", "kunde", kunde.id);
 }
 
 async function createProdukt(formData: FormData) {
@@ -747,7 +765,7 @@ async function createProdukt(formData: FormData) {
     return;
   }
 
-  await prisma.produkt.create({
+  const produkt = await prisma.produkt.create({
     data: {
       name,
       kategorie,
@@ -762,7 +780,7 @@ async function createProdukt(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("lager", "produkt", produkt.id);
 }
 
 async function createBestellung(formData: FormData) {
@@ -791,7 +809,7 @@ async function createBestellung(formData: FormData) {
     return;
   }
 
-  await prisma.bestellung.create({
+  const bestellung = await prisma.bestellung.create({
     data: {
       kundeId,
       datum,
@@ -802,7 +820,7 @@ async function createBestellung(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("bestellungen", "bestellung", bestellung.id);
 }
 
 async function createAboBox(formData: FormData) {
@@ -845,7 +863,7 @@ async function createAboBox(formData: FormData) {
     return;
   }
 
-  await prisma.aboBox.create({
+  const aboBox = await prisma.aboBox.create({
     data: {
       kundeId,
       lieferadresse,
@@ -858,7 +876,7 @@ async function createAboBox(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("abo", "aboBox", aboBox.id);
 }
 
 async function createAboAbwicklung(formData: FormData) {
@@ -871,6 +889,8 @@ async function createAboAbwicklung(formData: FormData) {
   if (!monat) {
     return;
   }
+
+  let abwicklungId: number | null = null;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -982,6 +1002,7 @@ async function createAboAbwicklung(formData: FormData) {
           monat: monat.monat,
         },
       });
+      abwicklungId = abwicklung.id;
 
       for (const eintrag of positionenProAboBox) {
         if (!eintrag) {
@@ -1035,7 +1056,11 @@ async function createAboAbwicklung(formData: FormData) {
     return;
   }
 
-  revalidatePath("/");
+  if (!abwicklungId) {
+    return;
+  }
+
+  redirectAfterSave("abo", "aboAbwicklung", abwicklungId);
 }
 
 async function createBestellposition(formData: FormData) {
@@ -1106,6 +1131,8 @@ async function createBestellposition(formData: FormData) {
   const lagerort = getReservierungsLagerort(vorgeschlageneCharge);
   const isVerbindlich = bestellung.zahlungsstatus === "bezahlt";
 
+  let bestellpositionId: number | null = null;
+
   await prisma.$transaction(async (tx) => {
     if (brauchtAllergenbestaetigung && allergenBestaetigt) {
       await tx.bestellung.update({
@@ -1114,7 +1141,7 @@ async function createBestellposition(formData: FormData) {
       });
     }
 
-    await tx.bestellposition.create({
+    const bestellposition = await tx.bestellposition.create({
       data: {
         bestellungId,
         produktId,
@@ -1122,6 +1149,7 @@ async function createBestellposition(formData: FormData) {
         menge,
       },
     });
+    bestellpositionId = bestellposition.id;
 
     await tx.lagerbestand.upsert({
       where: {
@@ -1142,7 +1170,7 @@ async function createBestellposition(formData: FormData) {
     });
   });
 
-  revalidatePath("/");
+  redirectAfterSave("versand", "bestellposition", bestellpositionId ?? undefined);
 }
 
 async function createMitarbeiter(formData: FormData) {
@@ -1155,7 +1183,7 @@ async function createMitarbeiter(formData: FormData) {
     return;
   }
 
-  await prisma.mitarbeiter.create({
+  const mitarbeiter = await prisma.mitarbeiter.create({
     data: {
       name,
       rolle,
@@ -1165,7 +1193,7 @@ async function createMitarbeiter(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("mitarbeitende", "mitarbeiter", mitarbeiter.id);
 }
 
 async function createCharge(formData: FormData) {
@@ -1205,7 +1233,7 @@ async function createCharge(formData: FormData) {
     return;
   }
 
-  await prisma.charge.create({
+  const charge = await prisma.charge.create({
     data: {
       produktId,
       mitarbeiterId,
@@ -1216,7 +1244,7 @@ async function createCharge(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("lager", "charge", charge.id);
 }
 
 async function createLagerbestand(formData: FormData) {
@@ -1249,7 +1277,7 @@ async function createLagerbestand(formData: FormData) {
     return;
   }
 
-  await prisma.lagerbestand.upsert({
+  const lagerbestand = await prisma.lagerbestand.upsert({
     where: {
       chargeId_lagerort: {
         chargeId,
@@ -1268,7 +1296,7 @@ async function createLagerbestand(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("lager", "lagerbestand", lagerbestand.id);
 }
 
 async function createVerkaufsevent(formData: FormData) {
@@ -1281,14 +1309,14 @@ async function createVerkaufsevent(formData: FormData) {
     return;
   }
 
-  await prisma.verkaufsevent.create({
+  const verkaufsevent = await prisma.verkaufsevent.create({
     data: {
       datum,
       ort,
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("lager", "verkaufsevent", verkaufsevent.id);
 }
 
 async function createVerkaufseventPosition(formData: FormData) {
@@ -1342,7 +1370,7 @@ async function createVerkaufseventPosition(formData: FormData) {
     return;
   }
 
-  await prisma.verkaufseventPosition.create({
+  const verkaufseventPosition = await prisma.verkaufseventPosition.create({
     data: {
       verkaufseventId,
       chargeId,
@@ -1351,7 +1379,7 @@ async function createVerkaufseventPosition(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("lager", "verkaufseventPosition", verkaufseventPosition.id);
 }
 
 async function createPaket(formData: FormData) {
@@ -1399,8 +1427,10 @@ async function createPaket(formData: FormData) {
     return;
   }
 
+  let paketId: number | null = null;
+
   await prisma.$transaction(async (tx) => {
-    await tx.paket.create({
+    const paket = await tx.paket.create({
       data: {
         bestellungId,
         mitarbeiterId,
@@ -1412,6 +1442,7 @@ async function createPaket(formData: FormData) {
         zustelldatum,
       },
     });
+    paketId = paket.id;
 
     if (status === "Zugestellt") {
       await tx.bestellung.update({
@@ -1422,7 +1453,7 @@ async function createPaket(formData: FormData) {
     }
   });
 
-  revalidatePath("/");
+  redirectAfterSave("versand", "paket", paketId ?? undefined);
 }
 
 async function updatePaketstatus(formData: FormData) {
@@ -1480,7 +1511,7 @@ async function updatePaketstatus(formData: FormData) {
     }
   });
 
-  revalidatePath("/");
+  redirectAfterSave("versand", "paket", paket.id);
 }
 
 async function createRetoure(formData: FormData) {
@@ -1519,7 +1550,7 @@ async function createRetoure(formData: FormData) {
     return;
   }
 
-  await prisma.retoure.create({
+  const retoure = await prisma.retoure.create({
     data: {
       bestellpositionId,
       grund: nullableText(formData.get("retourengrund")),
@@ -1529,7 +1560,7 @@ async function createRetoure(formData: FormData) {
     },
   });
 
-  revalidatePath("/");
+  redirectAfterSave("retouren", "retoure", retoure.id);
 }
 
 async function bucheRetoureInBestand(formData: FormData) {
@@ -1611,7 +1642,7 @@ async function bucheRetoureInBestand(formData: FormData) {
     });
   });
 
-  revalidatePath("/");
+  redirectAfterSave("retouren", "retoure", retoure.id);
 }
 
 async function loginMitarbeiter(formData: FormData) {
@@ -1655,7 +1686,7 @@ async function logoutMitarbeiter() {
 export default async function Home({
   searchParams,
 }: {
-  searchParams?: Promise<{ tab?: string }>;
+  searchParams?: Promise<{ focus?: string; saved?: string; tab?: string }>;
 }) {
   const params = await searchParams;
   await aktualisiereAlleStammkunden();
@@ -1786,6 +1817,93 @@ export default async function Home({
     visibleTabs.find((tab) => tab.id === requestedTab)?.id ??
     visibleTabs[0]?.id ??
     "arbeit";
+  const savedKey = params?.saved ?? "";
+  const focusedId = requiredInt(params?.focus ?? null);
+  const saveFeedbackMessages: Record<string, SaveFeedback> = {
+    kunde: {
+      title: "Kunde gespeichert",
+      detail: "Du kannst jetzt direkt eine Bestellung fuer diesen Kunden anlegen.",
+      nextHref: "/?tab=bestellungen",
+      nextLabel: "Bestellung anlegen",
+    },
+    produkt: {
+      title: "Produkt gespeichert",
+      detail: "Als naechstes braucht das Produkt eine Charge und Bestand.",
+      nextHref: "/?tab=lager",
+      nextLabel: "Charge anlegen",
+    },
+    bestellung: {
+      title: "Bestellung gespeichert",
+      detail: "Fuege jetzt die Produkte zur Bestellung hinzu.",
+      nextHref: "/?tab=bestellungen",
+      nextLabel: "Produkte hinzufuegen",
+    },
+    bestellposition: {
+      title: "Produkt zur Bestellung hinzugefuegt",
+      detail: "Wenn die Bestellung vollstaendig ist, kann der Versand vorbereitet werden.",
+      nextHref: "/?tab=versand",
+      nextLabel: "Versand vorbereiten",
+    },
+    paket: {
+      title: "Paket gespeichert",
+      detail: "Tracking und Zustellung koennen im Versandbereich weiter gepflegt werden.",
+      nextHref: "/?tab=versand",
+      nextLabel: "Versand pruefen",
+    },
+    retoure: {
+      title: "Retoure gespeichert",
+      detail: "Angenommene Retouren koennen hier in den Bestand gebucht werden.",
+      nextHref: "/?tab=retouren",
+      nextLabel: "Retoure pruefen",
+    },
+    mitarbeiter: {
+      title: "Mitarbeiter gespeichert",
+      detail: "Die Rolle steuert, welche Arbeitsbereiche sichtbar sind.",
+      nextHref: "/?tab=mitarbeitende",
+      nextLabel: "Mitarbeitende pruefen",
+    },
+    charge: {
+      title: "Charge gespeichert",
+      detail: "Erfasse jetzt den Lagerbestand fuer diese Charge.",
+      nextHref: "/?tab=lager",
+      nextLabel: "Lagerbestand erfassen",
+    },
+    lagerbestand: {
+      title: "Lagerbestand gespeichert",
+      detail: "Der Bestand kann jetzt fuer Bestellpositionen verwendet werden.",
+      nextHref: "/?tab=bestellungen",
+      nextLabel: "Zur Bestellung",
+    },
+    verkaufsevent: {
+      title: "Verkaufsevent gespeichert",
+      detail: "Erfasse jetzt, welche Chargen zum Event mitgenommen werden.",
+      nextHref: "/?tab=lager",
+      nextLabel: "Event-Position erfassen",
+    },
+    verkaufseventPosition: {
+      title: "Event-Position gespeichert",
+      detail: "Die mitgenommene Menge ist fuer andere Kanaele blockiert.",
+      nextHref: "/?tab=lager",
+      nextLabel: "Lager pruefen",
+    },
+    aboBox: {
+      title: "Abo-Box gespeichert",
+      detail: "Die Box wird bei der monatlichen Abo-Abwicklung beruecksichtigt.",
+      nextHref: "/?tab=abo",
+      nextLabel: "Abo-Abwicklung pruefen",
+    },
+    aboAbwicklung: {
+      title: "Abo-Abwicklung gespeichert",
+      detail: "Die Abo-Bestellungen und Positionen wurden angelegt.",
+      nextHref: "/?tab=versand",
+      nextLabel: "Versand vorbereiten",
+    },
+  };
+  const saveFeedback = saveFeedbackMessages[savedKey] ?? null;
+  const isFocused = (entity: string, id: number) =>
+    savedKey === entity && focusedId === id;
+  const savedClassName = (baseClassName: string, entity: string, id: number) =>
+    isFocused(entity, id) ? `${baseClassName} just-saved` : baseClassName;
   const aktiveBestellungen = bestellungen.filter(
     (bestellung) => bestellung.status !== "storniert",
   );
@@ -2269,6 +2387,21 @@ export default async function Home({
         </nav>
       ) : null}
 
+      {saveFeedback ? (
+        <section className="workspace-overview" aria-live="polite">
+          <div className="save-feedback">
+            <div>
+              <p className="eyebrow">Gespeichert</p>
+              <h2>{saveFeedback.title}</h2>
+              <p>{saveFeedback.detail}</p>
+            </div>
+            <a className="button-link" href={saveFeedback.nextHref}>
+              {saveFeedback.nextLabel}
+            </a>
+          </div>
+        </section>
+      ) : null}
+
       {canManageOrders &&
       (activeTab === "arbeit" ||
         activeTab === "bestellungen" ||
@@ -2400,7 +2533,10 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {chargen.map((charge) => (
-                  <article className="customer-card" key={charge.id}>
+                  <article
+                    className={savedClassName("customer-card", "charge", charge.id)}
+                    key={charge.id}
+                  >
                     <div>
                       <h3>Charge #{charge.id}</h3>
                       <p>
@@ -2492,7 +2628,14 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {lagerbestaende.map((bestand) => (
-                  <article className="customer-card" key={bestand.id}>
+                  <article
+                    className={savedClassName(
+                      "customer-card",
+                      "lagerbestand",
+                      bestand.id,
+                    )}
+                    key={bestand.id}
+                  >
                     <div>
                       <h3>{bestand.lagerort}</h3>
                       <p>
@@ -2547,7 +2690,14 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {verkaufsevents.map((event) => (
-                  <article className="customer-card" key={event.id}>
+                  <article
+                    className={savedClassName(
+                      "customer-card",
+                      "verkaufsevent",
+                      event.id,
+                    )}
+                    key={event.id}
+                  >
                     <div>
                       <h3>{event.ort}</h3>
                       <p>
@@ -2644,7 +2794,14 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {verkaufseventPositionen.map((position) => (
-                  <article className="customer-card" key={position.id}>
+                  <article
+                    className={savedClassName(
+                      "customer-card",
+                      "verkaufseventPosition",
+                      position.id,
+                    )}
+                    key={position.id}
+                  >
                     <div>
                       <h3>{position.verkaufsevent.ort}</h3>
                       <p>
@@ -3129,7 +3286,10 @@ export default async function Home({
           ) : (
             <div className="customer-list">
               {kunden.map((kunde) => (
-                <article className="customer-card" key={kunde.id}>
+                  <article
+                    className={savedClassName("customer-card", "kunde", kunde.id)}
+                    key={kunde.id}
+                  >
                   <div>
                     <h3>{kunde.name}</h3>
                     <p>
@@ -3222,7 +3382,14 @@ export default async function Home({
           ) : (
             <div className="customer-list">
               {mitarbeiter.map((person) => (
-                <article className="customer-card" key={person.id}>
+                <article
+                  className={savedClassName(
+                    "customer-card",
+                    "mitarbeiter",
+                    person.id,
+                  )}
+                  key={person.id}
+                >
                   <div>
                     <h3>{person.name}</h3>
                     <p>{person.rolle}</p>
@@ -3322,7 +3489,14 @@ export default async function Home({
           ) : (
             <div className="customer-list">
               {bestellungen.map((bestellung) => (
-                <article className="customer-card" key={bestellung.id}>
+                <article
+                  className={savedClassName(
+                    "customer-card",
+                    "bestellung",
+                    bestellung.id,
+                  )}
+                  key={bestellung.id}
+                >
                   <div>
                     <h3>Bestellung #{bestellung.id}</h3>
                     <p>
@@ -3509,7 +3683,14 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {aboAbwicklungen.slice(0, 6).map((abwicklung) => (
-                  <article className="customer-card" key={abwicklung.id}>
+                  <article
+                    className={savedClassName(
+                      "customer-card",
+                      "aboAbwicklung",
+                      abwicklung.id,
+                    )}
+                    key={abwicklung.id}
+                  >
                     <div>
                       <h3>{formatMonth(abwicklung.jahr, abwicklung.monat)}</h3>
                       <p>{formatDate(abwicklung.ausgefuehrtAm)}</p>
@@ -3530,7 +3711,10 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {aboBoxen.map((aboBox) => (
-                  <article className="customer-card" key={aboBox.id}>
+                  <article
+                    className={savedClassName("customer-card", "aboBox", aboBox.id)}
+                    key={aboBox.id}
+                  >
                     <div>
                       <h3>Abo-Box #{aboBox.id}</h3>
                       <p>
@@ -3670,7 +3854,14 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {bestellpositionen.map((position) => (
-                  <article className="customer-card" key={position.id}>
+                  <article
+                    className={savedClassName(
+                      "customer-card",
+                      "bestellposition",
+                      position.id,
+                    )}
+                    key={position.id}
+                  >
                     <div>
                       <h3>Bestellung #{position.bestellung.id}</h3>
                       <p>
@@ -3807,7 +3998,10 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {pakete.map((paket) => (
-                  <article className="customer-card" key={paket.id}>
+                  <article
+                    className={savedClassName("customer-card", "paket", paket.id)}
+                    key={paket.id}
+                  >
                     <div>
                       <h3>Paket #{paket.id}</h3>
                       <p>
@@ -3998,7 +4192,10 @@ export default async function Home({
             ) : (
               <div className="customer-list">
                 {retouren.map((retoure) => (
-                  <article className="customer-card" key={retoure.id}>
+                  <article
+                    className={savedClassName("customer-card", "retoure", retoure.id)}
+                    key={retoure.id}
+                  >
                     <div>
                       <h3>Retoure #{retoure.id}</h3>
                       <p>
@@ -4137,7 +4334,10 @@ export default async function Home({
           ) : (
             <div className="customer-list">
               {produkte.map((produkt) => (
-                <article className="customer-card" key={produkt.id}>
+                <article
+                  className={savedClassName("customer-card", "produkt", produkt.id)}
+                  key={produkt.id}
+                >
                   <div>
                     <h3>{produkt.name}</h3>
                     <p>

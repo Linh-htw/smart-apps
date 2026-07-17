@@ -84,6 +84,8 @@ Der Bestellprozess wird zusaetzlich als gefuehrter Ablauf in den bestellnahen Ta
 
 Das Dashboard fasst die wichtigsten Handlungen als Fokus-Karten zusammen: `Dringend`, `Blockiert` und `Naechster Klick`. Diese Karten werden aus bestehenden Warnungen, offenen Aufgaben und dem gefuehrten Bestellablauf serverseitig berechnet.
 
+Nach erfolgreichen Speichern-Aktionen leitet die App auf den passenden naechsten Tab weiter und uebergibt `saved` sowie optional `focus` in der URL. Daraus rendert die Seite einen Erfolgshinweis mit naechstem Schritt und hebt den neu gespeicherten Eintrag in der Liste hervor.
+
 Die zentrale UI-Akzentfarbe ist `#B23F00` Dunkelorange. Abgeleitete Hover- und Soft-Tones werden in `src/app/globals.css` ueber CSS-Variablen gepflegt.
 
 ## Fachliche Module
