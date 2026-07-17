@@ -197,6 +197,22 @@ function formatDecimalInput(value: unknown) {
   return Number(value).toFixed(2);
 }
 
+function formatUiValue(value: string) {
+  const labels: Record<string, string> = {
+    Beschaedigt: "Beschädigt",
+    Geoeffnet: "Geöffnet",
+    "Geld zurueck": "Geld zurück",
+    "In Pruefung": "In Prüfung",
+    Oele: "Öle",
+    "oelige Haut": "ölige Haut",
+    Ungeoeffnet: "Ungeöffnet",
+    Zurueckgebucht: "Zurückgebucht",
+    gekuendigt: "gekündigt",
+  };
+
+  return labels[value] ?? value;
+}
+
 function getDaysSince(value: Date, now = new Date()) {
   const start = new Date(value);
   start.setHours(0, 0, 0, 0);
@@ -310,7 +326,7 @@ function getAboPausenwarnung(aboBox: {
     return null;
   }
 
-  return "Abo-Pause ist abgelaufen, Status mit Kunde pruefen";
+  return "Abo-Pause ist abgelaufen, Status mit Kunde prüfen";
 }
 
 function getMhdWarnung(charge: {
@@ -330,7 +346,7 @@ function getMhdWarnung(charge: {
       tageBisMhd,
       text:
         tageBisMhd < 0
-          ? "MHD ueberschritten, Restposten pruefen"
+          ? "MHD überschritten, Restposten prüfen"
           : "30 Tage oder weniger bis MHD, 50 % Rabatt vorschlagen",
     };
   }
@@ -368,7 +384,7 @@ function getReservierungswarnung(bestellung: {
   if (alterInTagen >= stornierbarAbTag) {
     return {
       level: "critical",
-      text: `Seit ${alterInTagen} Tagen unbezahlt, manuelle Stornierung pruefen`,
+      text: `Seit ${alterInTagen} Tagen unbezahlt, manuelle Stornierung prüfen`,
     };
   }
 
@@ -399,7 +415,7 @@ function getNextBestellschritt(bestellung: {
   }
 
   if (bestellung.zahlungsstatus === "ausstehend") {
-    return "Zahlung pruefen";
+    return "Zahlung prüfen";
   }
 
   return "Zur weiteren Bearbeitung vormerken";
@@ -1797,7 +1813,7 @@ export default async function Home({
   const canCreateBatches = canAccess(activeRolle, "createBatches");
   const canViewPacklists = canAccess(activeRolle, "viewPacklists");
   const tabs: TabItem[] = [
-    { id: "arbeit", label: "Uebersicht", visible: canManageOrders },
+    { id: "arbeit", label: "Übersicht", visible: canManageOrders },
     { id: "packliste", label: "Packen", visible: canViewPacklists },
     { id: "kunden", label: "Kunden", visible: canManageCustomers },
     { id: "produkte", label: "Produkte", visible: canManageProducts },
@@ -1827,55 +1843,55 @@ export default async function Home({
   const saveFeedbackMessages: Record<string, SaveFeedback> = {
     kunde: {
       title: "Kunde gespeichert",
-      detail: "Du kannst jetzt direkt eine Bestellung fuer diesen Kunden anlegen.",
+      detail: "Du kannst jetzt direkt eine Bestellung für diesen Kunden anlegen.",
       nextHref: "/?tab=bestellungen",
       nextLabel: "Bestellung anlegen",
     },
     produkt: {
       title: "Produkt gespeichert",
-      detail: "Als naechstes braucht das Produkt eine Charge und Bestand.",
+      detail: "Als nächstes braucht das Produkt eine Charge und Bestand.",
       nextHref: "/?tab=lager",
       nextLabel: "Charge anlegen",
     },
     bestellung: {
       title: "Bestellung gespeichert",
-      detail: "Fuege jetzt die Produkte zur Bestellung hinzu.",
+      detail: "Füge jetzt die Produkte zur Bestellung hinzu.",
       nextHref: "/?tab=bestellungen",
-      nextLabel: "Produkte hinzufuegen",
+      nextLabel: "Produkte hinzufügen",
     },
     bestellposition: {
-      title: "Produkt zur Bestellung hinzugefuegt",
-      detail: "Wenn die Bestellung vollstaendig ist, kann der Versand vorbereitet werden.",
+      title: "Produkt zur Bestellung hinzugefügt",
+      detail: "Wenn die Bestellung vollständig ist, kann der Versand vorbereitet werden.",
       nextHref: "/?tab=versand",
       nextLabel: "Versand vorbereiten",
     },
     paket: {
       title: "Paket gespeichert",
-      detail: "Tracking und Zustellung koennen im Versandbereich weiter gepflegt werden.",
+      detail: "Tracking und Zustellung können im Versandbereich weiter gepflegt werden.",
       nextHref: "/?tab=versand",
-      nextLabel: "Versand pruefen",
+      nextLabel: "Versand prüfen",
     },
     retoure: {
       title: "Retoure gespeichert",
-      detail: "Angenommene Retouren koennen hier in den Bestand gebucht werden.",
+      detail: "Angenommene Retouren können hier in den Bestand gebucht werden.",
       nextHref: "/?tab=retouren",
-      nextLabel: "Retoure pruefen",
+      nextLabel: "Retoure prüfen",
     },
     mitarbeiter: {
       title: "Mitarbeiter gespeichert",
       detail: "Die Rolle steuert, welche Arbeitsbereiche sichtbar sind.",
       nextHref: "/?tab=mitarbeitende",
-      nextLabel: "Mitarbeitende pruefen",
+      nextLabel: "Mitarbeitende prüfen",
     },
     charge: {
       title: "Charge gespeichert",
-      detail: "Erfasse jetzt den Lagerbestand fuer diese Charge.",
+      detail: "Erfasse jetzt den Lagerbestand für diese Charge.",
       nextHref: "/?tab=lager",
       nextLabel: "Lagerbestand erfassen",
     },
     lagerbestand: {
       title: "Lagerbestand gespeichert",
-      detail: "Der Bestand kann jetzt fuer Bestellpositionen verwendet werden.",
+      detail: "Der Bestand kann jetzt für Bestellpositionen verwendet werden.",
       nextHref: "/?tab=bestellungen",
       nextLabel: "Zur Bestellung",
     },
@@ -1887,15 +1903,15 @@ export default async function Home({
     },
     verkaufseventPosition: {
       title: "Event-Position gespeichert",
-      detail: "Die mitgenommene Menge ist fuer andere Kanaele blockiert.",
+      detail: "Die mitgenommene Menge ist für andere Kanäle blockiert.",
       nextHref: "/?tab=lager",
-      nextLabel: "Lager pruefen",
+      nextLabel: "Lager prüfen",
     },
     aboBox: {
       title: "Abo-Box gespeichert",
-      detail: "Die Box wird bei der monatlichen Abo-Abwicklung beruecksichtigt.",
+      detail: "Die Box wird bei der monatlichen Abo-Abwicklung berücksichtigt.",
       nextHref: "/?tab=abo",
-      nextLabel: "Abo-Abwicklung pruefen",
+      nextLabel: "Abo-Abwicklung prüfen",
     },
     aboAbwicklung: {
       title: "Abo-Abwicklung gespeichert",
@@ -2138,7 +2154,7 @@ export default async function Home({
     {
       label: "Produkt und Bestand vorbereiten",
       detail:
-        "Produkte, freigegebene Chargen und freie Mengen sind die Basis fuer Positionen.",
+        "Produkte, freigegebene Chargen und freie Mengen sind die Basis für Positionen.",
       href: hatProdukte ? "/?tab=lager" : "/?tab=produkte",
       action: hatProdukte ? "Zum Lager-Tab" : "Zum Produkte-Tab",
       status: hatFreieChargen
@@ -2159,10 +2175,10 @@ export default async function Home({
           : "blocked",
     },
     {
-      label: "Produkte zur Bestellung hinzufuegen",
+      label: "Produkte zur Bestellung hinzufügen",
       detail: "Die App weist die passende Charge automatisch per FIFO zu.",
       href: "/?tab=bestellungen",
-      action: "Position hinzufuegen",
+      action: "Position hinzufügen",
       status: hatBestellpositionen
         ? "done"
         : hatBestellungen && hatFreieChargen
@@ -2182,7 +2198,7 @@ export default async function Home({
     },
     {
       label: "Retoure bei Bedarf bearbeiten",
-      detail: "Retouren sind erst nach Zustellung und innerhalb der Frist moeglich.",
+      detail: "Retouren sind erst nach Zustellung und innerhalb der Frist möglich.",
       href: "/?tab=retouren",
       action: "Zum Retouren-Tab",
       status:
@@ -2207,21 +2223,21 @@ export default async function Home({
     stornierpruefungen.length > 0
       ? {
           label: "Dringend",
-          title: `${stornierpruefungen.length} Reservierung pruefen`,
+          title: `${stornierpruefungen.length} Reservierung prüfen`,
           detail:
-            "Unbezahlte Reservierungen haben die manuelle Prueffrist erreicht.",
+            "Unbezahlte Reservierungen haben die manuelle Prüffrist erreicht.",
           href: "/?tab=bestellungen",
-          action: "Bestellungen pruefen",
+          action: "Bestellungen prüfen",
           level: "urgent",
         }
       : allergenWarnungen.length > 0
         ? {
             label: "Dringend",
-            title: `${allergenWarnungen.length} Allergenbestaetigung offen`,
+            title: `${allergenWarnungen.length} Allergenbestätigung offen`,
             detail:
-              "Betroffene Bestellungen koennen ohne Bestaetigung nicht abgeschlossen werden.",
+              "Betroffene Bestellungen können ohne Bestätigung nicht abgeschlossen werden.",
             href: "/?tab=bestellungen",
-            action: "Bestaetigung erfassen",
+            action: "Bestätigung erfassen",
             level: "urgent",
           }
         : produktKnappheiten.length > 0
@@ -2229,9 +2245,9 @@ export default async function Home({
               label: "Dringend",
               title: `${produktKnappheiten.length} knappe Produkte`,
               detail:
-                "Priorisierung nach Stammkunden und Anfragezeitpunkt pruefen.",
+                "Priorisierung nach Stammkunden und Anfragezeitpunkt prüfen.",
               href: "/?tab=arbeit",
-              action: "Prioritaet pruefen",
+              action: "Priorität prüfen",
               level: "urgent",
             }
           : criticalMhdWarnungen.length > 0
@@ -2239,16 +2255,16 @@ export default async function Home({
                 label: "Dringend",
                 title: `${criticalMhdWarnungen.length} MHD-Warnungen`,
                 detail:
-                  "Restposten- oder Rabattentscheidung manuell bestaetigen.",
+                  "Restposten- oder Rabattentscheidung manuell bestätigen.",
                 href: "/?tab=lager",
-                action: "Chargen pruefen",
+                action: "Chargen prüfen",
                 level: "urgent",
               }
             : {
                 label: "Dringend",
                 title: "Keine kritischen Aufgaben",
                 detail:
-                  "Aktuell gibt es keine ueberfaellige Reservierung oder blockierende Warnung.",
+                  "Aktuell gibt es keine überfällige Reservierung oder blockierende Warnung.",
                 href: "/?tab=arbeit",
                 action: "Dashboard ansehen",
                 level: "urgent",
@@ -2267,7 +2283,7 @@ export default async function Home({
             label: "Blockiert",
             title: "Kein Packer angelegt",
             detail:
-              "Pakete koennen erst mit einem Mitarbeiter der Rolle Packer angelegt werden.",
+              "Pakete können erst mit einem Mitarbeiter der Rolle Packer angelegt werden.",
             href: "/?tab=mitarbeitende",
             action: "Packer anlegen",
             level: "blocked",
@@ -2276,13 +2292,13 @@ export default async function Home({
             label: "Blockiert",
             title: "Nichts blockiert",
             detail:
-              "Die vorhandenen Daten reichen fuer den naechsten Bestellschritt aus.",
+              "Die vorhandenen Daten reichen für den nächsten Bestellschritt aus.",
             href: currentWorkflowStep.href,
             action: currentWorkflowStep.action,
             level: "blocked",
           },
     {
-      label: "Naechster Klick",
+      label: "Nächster Klick",
       title: currentWorkflowStep.label,
       detail: currentWorkflowStep.detail,
       href: currentWorkflowStep.href,
@@ -2395,7 +2411,7 @@ export default async function Home({
             <p className="eyebrow">NW-040</p>
             <h1>Login</h1>
           </div>
-          <p className="summary">Lokale Rollen-Anmeldung fuer die App</p>
+          <p className="summary">Lokale Rollen-Anmeldung für die App</p>
         </header>
 
         <section className="workspace-overview" aria-labelledby="login-heading">
@@ -2414,7 +2430,7 @@ export default async function Home({
             </label>
 
             <p className="note-text">
-              Demo-Modus fuer die lokale Pruefungsabgabe: Mitarbeiter auswaehlen
+              Demo-Modus für die lokale Prüfungsabgabe: Mitarbeiter auswählen
               und Rolle testen.
             </p>
 
@@ -2517,7 +2533,7 @@ export default async function Home({
           <div className="panel workflow-panel">
             <div className="overview-header">
               <div>
-                <p className="eyebrow">Gefuehrter Ablauf</p>
+                <p className="eyebrow">Geführter Ablauf</p>
                 <h2 id="workflow-heading">Bestellung bearbeiten</h2>
               </div>
               <p className="summary">
@@ -2720,7 +2736,7 @@ export default async function Home({
 
                 <div className="field-row">
                   <label>
-                    Voruebergehend reserviert
+                    Vorübergehend reserviert
                     <input
                       defaultValue="0"
                       min="0"
@@ -2773,7 +2789,7 @@ export default async function Home({
                     <dl>
                       <dt>Produziert</dt>
                       <dd>{bestand.charge.produzierteMenge}</dd>
-                      <dt>Voruebergehend</dt>
+                      <dt>Vorübergehend</dt>
                       <dd>{bestand.mengeVoruebergehendReserviert}</dd>
                       <dt>Verbindlich</dt>
                       <dd>{bestand.mengeVerbindlichReserviert}</dd>
@@ -3068,7 +3084,7 @@ export default async function Home({
               <strong>{reservierungswarnungen.length}</strong>
             </div>
             <div className="metric-tile">
-              <span>Stornierung pruefen</span>
+              <span>Stornierung prüfen</span>
               <strong>{stornierpruefungen.length}</strong>
             </div>
             <div className="metric-tile">
@@ -3088,7 +3104,7 @@ export default async function Home({
               <strong>{mhdWarnungen.length}</strong>
             </div>
             <div className="metric-tile">
-              <span>Allergenbestaetigung offen</span>
+              <span>Allergenbestätigung offen</span>
               <strong>{allergenWarnungen.length}</strong>
             </div>
             <div className="metric-tile">
@@ -3112,7 +3128,7 @@ export default async function Home({
               <strong>{pausierteAboBoxenAktuellerMonat.length}</strong>
             </div>
             <div className="metric-tile">
-              <span>Abo-Pausen pruefen</span>
+              <span>Abo-Pausen prüfen</span>
               <strong>{aboPausenwarnungen.length}</strong>
             </div>
             <div className="metric-tile">
@@ -3130,7 +3146,7 @@ export default async function Home({
                   <div>
                     <h3>Bestellung #{bestellung.id}</h3>
                     <p>
-                      {bestellung.kunde.name} Â· {bestellung.kanal} Â·{" "}
+                      {bestellung.kunde.name} · {bestellung.kanal} ·{" "}
                       {formatDate(bestellung.datum)}
                     </p>
                     {getReservierungswarnung(bestellung) ? (
@@ -3167,7 +3183,7 @@ export default async function Home({
                     <p>
                       {knappheit.offeneB2cNachfrage} offen angefragt -{" "}
                       {knappheit.freieMenge} frei -{" "}
-                      {knappheit.physischVerfuegbar} physisch verfuegbar
+                      {knappheit.physischVerfuegbar} physisch verfügbar
                     </p>
                     <p className="warning-text">
                       Produkt knapp: Stammkunden zuerst, danach B2C-Neukunden
@@ -3183,7 +3199,7 @@ export default async function Home({
                         </span>
                       ),
                     )}
-                    <strong>Reihenfolge pruefen</strong>
+                    <strong>Reihenfolge prüfen</strong>
                   </div>
                 </article>
               ))}
@@ -3212,7 +3228,7 @@ export default async function Home({
                     <span className="status-pill">
                       {warnung?.rabatt} % Vorschlag
                     </span>
-                    <strong>Manuell bestaetigen</strong>
+                    <strong>Manuell bestätigen</strong>
                   </div>
                 </article>
               ))}
@@ -3232,12 +3248,12 @@ export default async function Home({
                         .join(", ")}
                     </p>
                     <p className="warning-text critical">
-                      Allergenliste muss vor Abschluss bestaetigt werden.
+                      Allergenliste muss vor Abschluss bestätigt werden.
                     </p>
                   </div>
                   <div className="task-meta">
                     <span className="status-pill">Allergene offen</span>
-                    <strong>Bestaetigung nachholen</strong>
+                    <strong>Bestätigung nachholen</strong>
                   </div>
                 </article>
               ))}
@@ -3280,7 +3296,7 @@ export default async function Home({
                         : "Keine abgeschlossene Bestellung dokumentiert"}
                     </p>
                     <p className="warning-text">
-                      Stammkunde seit 8 Monaten inaktiv, Kontakt pruefen.
+                      Stammkunde seit 8 Monaten inaktiv, Kontakt prüfen.
                     </p>
                   </div>
                   <div className="task-meta">
@@ -3332,7 +3348,7 @@ export default async function Home({
                   </div>
                   <div className="task-meta">
                     <span className="status-pill">Abo-Pause</span>
-                    <strong>Status pruefen</strong>
+                    <strong>Status prüfen</strong>
                   </div>
                 </article>
               ))}
@@ -3370,7 +3386,7 @@ export default async function Home({
                 <option value="">Nicht erfasst</option>
                 {hauttypen.map((hauttyp) => (
                   <option key={hauttyp} value={hauttyp}>
-                    {hauttyp}
+                    {formatUiValue(hauttyp)}
                   </option>
                 ))}
               </select>
@@ -3441,7 +3457,7 @@ export default async function Home({
                     <h3>{kunde.name}</h3>
                     <p>
                       {kunde.typ}
-                      {kunde.hauttyp ? ` · ${kunde.hauttyp}` : ""}
+                      {kunde.hauttyp ? ` · ${formatUiValue(kunde.hauttyp)}` : ""}
                     </p>
                   </div>
                   <dl>
@@ -3746,7 +3762,7 @@ export default async function Home({
                     <select name="aboBoxStatus" defaultValue="aktiv" required>
                       {aboBoxStatusWerte.map((status) => (
                         <option key={status} value={status}>
-                          {status}
+                          {formatUiValue(status)}
                         </option>
                       ))}
                     </select>
@@ -3775,14 +3791,14 @@ export default async function Home({
                   </label>
 
                   <label>
-                    Kuendigungsdatum
+                    Kündigungsdatum
                     <input name="aboBoxKuendigungsdatum" type="date" />
                   </label>
                 </div>
 
                 <p className="note-text">
-                  Pausen gelten fuer maximal zwei aufeinanderfolgende Monate
-                  und muessen bis zum 15. des Vormonats erfasst sein.
+                  Pausen gelten für maximal zwei aufeinanderfolgende Monate
+                  und müssen bis zum 15. des Vormonats erfasst sein.
                   Aktuelle Abo-Produktauswahl: {aboBoxProdukte.length}/4 markiert.
                 </p>
 
@@ -3840,7 +3856,7 @@ export default async function Home({
               {aboProdukteMitAllergenen.length > 0 ? (
                 <label className="checkbox-label">
                   <input name="aboAbwicklungAllergeneBestaetigt" type="checkbox" />
-                  Allergenlisten fuer Abo-Produkte liegen bestaetigt vor
+                  Allergenlisten für Abo-Produkte liegen bestätigt vor
                 </label>
               ) : null}
 
@@ -3848,7 +3864,7 @@ export default async function Home({
                 <p className="empty-state">
                   Abwicklung braucht mindestens eine aktive Abo-Box und genau
                   vier markierte Abo-Produkte. Abo-Boxen mit Pause im
-                  Abwicklungsmonat werden uebersprungen.
+                  Abwicklungsmonat werden übersprungen.
                 </p>
               ) : null}
 
@@ -3904,7 +3920,9 @@ export default async function Home({
                     <dl>
                       <dt>Status</dt>
                       <dd>
-                        <span className="status-pill">{aboBox.status}</span>
+                        <span className="status-pill">
+                          {formatUiValue(aboBox.status)}
+                        </span>
                       </dd>
                       <dt>Lieferadresse</dt>
                       <dd>{aboBox.lieferadresse}</dd>
@@ -3932,7 +3950,7 @@ export default async function Home({
                       ) : null}
                       {aboBox.kuendigungsdatum ? (
                         <>
-                          <dt>Kuendigung</dt>
+                          <dt>Kündigung</dt>
                           <dd>{formatDate(aboBox.kuendigungsdatum)}</dd>
                         </>
                       ) : null}
@@ -3964,7 +3982,7 @@ export default async function Home({
                         #{bestellung.id} · {bestellung.kunde.name} ·{" "}
                         {formatDate(bestellung.datum)}
                         {bestellung.allergeneBestaetigtAm
-                          ? " - Allergene bestaetigt"
+                          ? " - Allergene bestätigt"
                           : ""}
                       </option>
                     ))}
@@ -3995,7 +4013,7 @@ export default async function Home({
 
                 <label className="checkbox-label">
                   <input name="allergeneBestaetigt" type="checkbox" />
-                  Allergenliste gelesen und vom Kunden bestaetigt
+                  Allergenliste gelesen und vom Kunden bestätigt
                 </label>
 
                 <div className="fifo-box">
@@ -4013,7 +4031,7 @@ export default async function Home({
                         </div>
                         <div className="task-meta">
                           <span className="status-pill">
-                            {vorschlag.verfuegbar} verfuegbar
+                            {vorschlag.verfuegbar} verfügbar
                           </span>
                         </div>
                       </article>
@@ -4339,7 +4357,7 @@ export default async function Home({
                     <select name="produktzustand" defaultValue="Ungeoeffnet" required>
                       {produktzustandWerte.map((zustand) => (
                         <option key={zustand} value={zustand}>
-                          {zustand}
+                          {formatUiValue(zustand)}
                         </option>
                       ))}
                     </select>
@@ -4350,7 +4368,7 @@ export default async function Home({
                     <select name="retourenstatus" defaultValue="Angemeldet" required>
                       {retourenstatusWerte.map((status) => (
                         <option key={status} value={status}>
-                          {status}
+                          {formatUiValue(status)}
                         </option>
                       ))}
                     </select>
@@ -4362,14 +4380,14 @@ export default async function Home({
                   <select name="erstattungsart" defaultValue="Keine" required>
                     {erstattungsarten.map((art) => (
                       <option key={art} value={art}>
-                        {art}
+                        {formatUiValue(art)}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <p className="note-text">
-                  B2B- und Abo-Retouren werden nur fuer beschaedigte oder
+                  B2B- und Abo-Retouren werden nur für beschädigte oder
                   mangelhafte Produkte akzeptiert.
                 </p>
 
@@ -4428,14 +4446,14 @@ export default async function Home({
                       <dt>Charge</dt>
                       <dd>#{retoure.bestellposition.charge.id}</dd>
                       <dt>Zustand</dt>
-                      <dd>{retoure.produktzustand}</dd>
+                      <dd>{formatUiValue(retoure.produktzustand)}</dd>
                       <dt>Erstattung</dt>
-                      <dd>{retoure.erstattungsart}</dd>
+                      <dd>{formatUiValue(retoure.erstattungsart)}</dd>
                       {retoure.bestandsbuchung ? (
                         <>
                           <dt>Bestand</dt>
                           <dd>
-                            {retoure.bestandsbuchung}
+                            {formatUiValue(retoure.bestandsbuchung)}
                             {retoure.bestandsbuchungAm
                               ? ` am ${formatDate(retoure.bestandsbuchungAm)}`
                               : ""}
@@ -4449,7 +4467,9 @@ export default async function Home({
                         </>
                       ) : null}
                     </dl>
-                    <span className="status-pill">{retoure.status}</span>
+                    <span className="status-pill">
+                      {formatUiValue(retoure.status)}
+                    </span>
                     {retoure.status === "Angenommen" &&
                     !retoure.bestandsbuchungAm ? (
                       <form action={bucheRetoureInBestand} className="inline-form">
@@ -4481,7 +4501,7 @@ export default async function Home({
               <select name="kategorie" defaultValue="Seifen" required>
                 {produktkategorien.map((kategorie) => (
                   <option key={kategorie} value={kategorie}>
-                    {kategorie}
+                    {formatUiValue(kategorie)}
                   </option>
                 ))}
               </select>
@@ -4560,7 +4580,7 @@ export default async function Home({
                   <div>
                     <h3>{produkt.name}</h3>
                     <p>
-                      {produkt.kategorie}
+                      {formatUiValue(produkt.kategorie)}
                       {produkt.vegan ? " · vegan" : ""}
                       {produkt.inAboBoxEnthalten ? " · Abo-Box" : ""}
                     </p>
