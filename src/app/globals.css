@@ -263,7 +263,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent);
-  outline: 3px solid rgba(31, 122, 90, 0.14);
+  outline: 3px solid rgba(178, 63, 0, 0.16);
 }
 
 .checkbox-label {
@@ -375,6 +375,77 @@ button:disabled:hover {
   color: #9f1d1d;
 }
 
+.workflow-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.workflow-steps {
+  display: grid;
+  gap: 10px;
+}
+
+.workflow-step {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 14px;
+}
+
+.workflow-index {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.workflow-index.done,
+.workflow-index.current {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.workflow-index.optional {
+  background: var(--soft);
+  color: var(--accent-strong);
+}
+
+.workflow-status {
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+.workflow-status.current {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.workflow-status.blocked {
+  background: #eef1f4;
+  color: var(--muted);
+}
+
+.text-link {
+  display: inline-flex;
+  margin-top: 8px;
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.text-link:hover {
+  text-decoration: underline;
+}
+
 .packlist {
   display: grid;
   gap: 14px;
@@ -422,6 +493,7 @@ button:disabled:hover {
   .layout-grid,
   .field-row,
   .metric-grid,
+  .workflow-step,
   .task-item,
   .packlist-header,
   .packlist-item,

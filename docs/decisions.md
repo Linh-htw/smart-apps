@@ -632,3 +632,15 @@ Zusaetzlich wurde die zentrale Akzentfarbe der UI von Gruen auf `#B23F00` Dunkel
 - Rollenrechte bleiben unveraendert: Nicht berechtigte Tabs werden nicht gerendert.
 - Die Navigation ist per URL direkt aufrufbar, z. B. `/?tab=produkte`.
 - Farbwerte werden zentral in `src/app/globals.css` gepflegt.
+
+## 2026-07-17 - Bestellprozess als gefuehrter Ablauf
+
+**Kontext:** Nach der Tab-Aufteilung waren die Arbeitsbereiche getrennt, aber der fachliche Ablauf einer Bestellung musste weiterhin aus mehreren freien Formularen abgeleitet werden.
+
+### Entscheidung
+Die App zeigt in den bestellnahen Tabs einen gefuehrten Bestellablauf. Er fuehrt durch die Schritte Kunde erfassen, Produkt und Bestand vorbereiten, Bestellung anlegen, Produkte zur Bestellung hinzufuegen, Paket und Versand pflegen sowie Retoure bei Bedarf bearbeiten. Jeder Schritt zeigt seinen Status und verlinkt direkt zum passenden Tab.
+
+### Konsequenzen
+- Die bestehenden Server Actions und Validierungen bleiben unveraendert.
+- Nutzer sehen vor der Datenerfassung, welche Voraussetzung fehlt und welcher Schritt als naechstes sinnvoll ist.
+- Der Ablauf bleibt serverseitig berechnet und benoetigt keinen zusaetzlichen Client-State.

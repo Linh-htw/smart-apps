@@ -73,6 +73,14 @@ type TabItem = {
   visible: boolean;
 };
 
+type WorkflowStep = {
+  label: string;
+  detail: string;
+  href: string;
+  action: string;
+  status: "done" | "current" | "blocked" | "optional";
+};
+
 function nullableText(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
   return text ? text : null;
@@ -1976,6 +1984,78 @@ export default async function Home({
     aktiveAboBoxen.length > 0 && aboBoxProdukte.length === 4;
   const today = new Date().toISOString().slice(0, 10);
   const currentMonth = new Date().toISOString().slice(0, 7);
+  const hatKunden = kunden.length > 0;
+  const hatProdukte = produkte.length > 0;
+  const hatFreieChargen = chargenMitFreierMenge.length > 0;
+  const hatBestellungen = bestellungen.length > 0;
+  const hatBestellpositionen = bestellpositionen.length > 0;
+  const hatPakete = pakete.length > 0;
+  const orderWorkflowSteps: WorkflowStep[] = [
+    {
+      label: "Kunde erfassen",
+      detail: "Jede Bestellung braucht zuerst einen zugeordneten Kunden.",
+      href: "/?tab=kunden",
+      action: "Zum Kunden-Tab",
+      status: hatKunden ? "done" : "current",
+    },
+    {
+      label: "Produkt und Bestand vorbereiten",
+      detail:
+        "Produkte, freigegebene Chargen und freie Mengen sind die Basis fuer Positionen.",
+      href: hatProdukte ? "/?tab=lager" : "/?tab=produkte",
+      action: hatProdukte ? "Zum Lager-Tab" : "Zum Produkte-Tab",
+      status: hatFreieChargen
+        ? "done"
+        : hatKunden
+          ? "current"
+          : "blocked",
+    },
+    {
+      label: "Bestellung anlegen",
+      detail: "Kanal, Zahlung und Lieferadresse werden hier erfasst.",
+      href: "/?tab=bestellungen",
+      action: "Zum Bestell-Tab",
+      status: hatBestellungen
+        ? "done"
+        : hatKunden
+          ? "current"
+          : "blocked",
+    },
+    {
+      label: "Produkte zur Bestellung hinzufuegen",
+      detail: "Die App weist die passende Charge automatisch per FIFO zu.",
+      href: "/?tab=bestellungen",
+      action: "Position hinzufuegen",
+      status: hatBestellpositionen
+        ? "done"
+        : hatBestellungen && hatFreieChargen
+          ? "current"
+          : "blocked",
+    },
+    {
+      label: "Paket und Versand pflegen",
+      detail: "Packer, Versandkosten, Tracking und Zustellung werden separat gepflegt.",
+      href: "/?tab=versand",
+      action: "Zum Versand-Tab",
+      status: hatPakete
+        ? "done"
+        : hatBestellpositionen
+          ? "current"
+          : "blocked",
+    },
+    {
+      label: "Retoure bei Bedarf bearbeiten",
+      detail: "Retouren sind erst nach Zustellung und innerhalb der Frist moeglich.",
+      href: "/?tab=retouren",
+      action: "Zum Retouren-Tab",
+      status:
+        retouren.length > 0
+          ? "done"
+          : retourenfaehigePositionen.length > 0
+            ? "current"
+            : "optional",
+    },
+  ];
 
   if (!isAuthenticated) {
     return (
@@ -2081,6 +2161,53 @@ export default async function Home({
             </a>
           ))}
         </nav>
+      ) : null}
+
+      {canManageOrders &&
+      (activeTab === "arbeit" ||
+        activeTab === "bestellungen" ||
+        activeTab === "versand" ||
+        activeTab === "retouren") ? (
+        <section className="workspace-overview" aria-labelledby="workflow-heading">
+          <div className="panel workflow-panel">
+            <div className="overview-header">
+              <div>
+                <p className="eyebrow">Gefuehrter Ablauf</p>
+                <h2 id="workflow-heading">Bestellung bearbeiten</h2>
+              </div>
+              <p className="summary">
+                {orderWorkflowSteps.filter((step) => step.status === "done").length}/
+                {orderWorkflowSteps.length} Schritte bereit
+              </p>
+            </div>
+
+            <div className="workflow-steps">
+              {orderWorkflowSteps.map((step, index) => (
+                <article className="workflow-step" key={step.label}>
+                  <span className={`workflow-index ${step.status}`}>
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3>{step.label}</h3>
+                    <p>{step.detail}</p>
+                    <a className="text-link" href={step.href}>
+                      {step.action}
+                    </a>
+                  </div>
+                  <span className={`status-pill workflow-status ${step.status}`}>
+                    {step.status === "done"
+                      ? "Erledigt"
+                      : step.status === "current"
+                        ? "Jetzt"
+                        : step.status === "optional"
+                          ? "Optional"
+                          : "Wartet"}
+                  </span>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
       ) : null}
 
       {canCreateBatches && activeTab === "lager" ? (

@@ -80,6 +80,8 @@ Die Arbeitsoberflaeche ist in rollenbasierte Tabs gegliedert. Sichtbar sind nur 
 
 Tabs werden ueber den Query-Parameter `tab` gesteuert, z. B. `/?tab=kunden`. Das haelt die Navigation serverseitig, teilbar und ohne zusaetzlichen Client-State.
 
+Der Bestellprozess wird zusaetzlich als gefuehrter Ablauf in den bestellnahen Tabs dargestellt. Die Schritte sind: Kunde erfassen, Produkt und Bestand vorbereiten, Bestellung anlegen, Produkte zur Bestellung hinzufuegen, Paket und Versand pflegen sowie Retoure bei Bedarf bearbeiten. Jeder Schritt zeigt Status, kurze Orientierung und den direkten Sprung zum passenden Tab.
+
 Die zentrale UI-Akzentfarbe ist `#B23F00` Dunkelorange. Abgeleitete Hover- und Soft-Tones werden in `src/app/globals.css` ueber CSS-Variablen gepflegt.
 
 ## Fachliche Module
