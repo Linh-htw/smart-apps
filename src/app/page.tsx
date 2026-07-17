@@ -2510,11 +2510,7 @@ export default async function Home({
         </section>
       ) : null}
 
-      {canManageOrders &&
-      (activeTab === "arbeit" ||
-        activeTab === "bestellungen" ||
-        activeTab === "versand" ||
-        activeTab === "retouren") ? (
+      {canManageOrders && activeTab === "arbeit" ? (
         <section className="workspace-overview" aria-labelledby="workflow-heading">
           <div className="panel workflow-panel">
             <div className="overview-header">
