@@ -1212,6 +1212,31 @@ async function createMitarbeiter(formData: FormData) {
   redirectAfterSave("mitarbeitende", "mitarbeiter", mitarbeiter.id);
 }
 
+async function updateMitarbeiter(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("mitarbeiterId"));
+  const name = formData.get("mitarbeiterName")?.toString().trim() ?? "";
+  const rolle = formData.get("rolle")?.toString() ?? "";
+
+  if (!id || !name || !isRolle(rolle)) {
+    return;
+  }
+
+  await prisma.mitarbeiter.update({
+    where: { id },
+    data: {
+      name,
+      rolle,
+      zugriffsrechte: nullableText(formData.get("zugriffsrechte")),
+      email: nullableText(formData.get("mitarbeiterEmail")),
+      telefonnummer: nullableText(formData.get("telefonnummer")),
+    },
+  });
+
+  redirectAfterSave("mitarbeitende", "mitarbeiter", id);
+}
+
 async function createCharge(formData: FormData) {
   "use server";
 
@@ -3551,6 +3576,62 @@ export default async function Home({
                     ) : null}
                   </dl>
                   <span className="status-pill">{person.rolle}</span>
+                  <details className="edit-section">
+                    <summary>Bearbeiten</summary>
+                    <form action={updateMitarbeiter} className="inline-form">
+                      <input name="mitarbeiterId" type="hidden" value={person.id} />
+
+                      <label>
+                        Name
+                        <input
+                          defaultValue={person.name}
+                          name="mitarbeiterName"
+                          required
+                        />
+                      </label>
+
+                      <label>
+                        Rolle
+                        <select name="rolle" defaultValue={person.rolle} required>
+                          {rollen.map((rolle) => (
+                            <option key={rolle} value={rolle}>
+                              {rolle}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <div className="field-row">
+                        <label>
+                          E-Mail
+                          <input
+                            defaultValue={person.email ?? ""}
+                            name="mitarbeiterEmail"
+                            type="email"
+                          />
+                        </label>
+
+                        <label>
+                          Telefonnummer
+                          <input
+                            defaultValue={person.telefonnummer ?? ""}
+                            name="telefonnummer"
+                          />
+                        </label>
+                      </div>
+
+                      <label>
+                        Zugriffsrechte
+                        <textarea
+                          defaultValue={person.zugriffsrechte ?? ""}
+                          name="zugriffsrechte"
+                          rows={3}
+                        />
+                      </label>
+
+                      <button type="submit">Änderungen speichern</button>
+                    </form>
+                  </details>
                 </article>
               ))}
             </div>
