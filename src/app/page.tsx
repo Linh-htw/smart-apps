@@ -2315,10 +2315,6 @@ export default async function Home({
       return bestellung.zahlungsstatus === "ausstehend";
     }
 
-    if (activeFilter === "verbindlich") {
-      return bestellung.status === "verbindlich";
-    }
-
     if (activeFilter === "abgeschlossen") {
       return bestellung.status === "abgeschlossen";
     }
@@ -2337,10 +2333,6 @@ export default async function Home({
       return position.bestellung.zahlungsstatus === "ausstehend";
     }
 
-    if (activeFilter === "verbindlich") {
-      return position.bestellung.status === "verbindlich";
-    }
-
     if (activeFilter === "abgeschlossen") {
       return position.bestellung.status === "abgeschlossen";
     }
@@ -2353,17 +2345,15 @@ export default async function Home({
         return pakete.length === 0;
       }
 
-      if (activeFilter === "mit-paket") {
-        return pakete.length > 0;
-      }
-
       return true;
     },
   );
   const filteredPakete = pakete.filter((paket) => {
+    if (activeFilter === "offen") {
+      return paket.status === "Vorbereitet" || paket.status === "Gepackt";
+    }
+
     if (
-      activeFilter === "Vorbereitet" ||
-      activeFilter === "Gepackt" ||
       activeFilter === "Versendet" ||
       activeFilter === "Zugestellt"
     ) {
@@ -2388,10 +2378,6 @@ export default async function Home({
     return true;
   });
   const filteredChargen = chargen.filter((charge) => {
-    if (activeFilter === "frei") {
-      return getFreieMenge(charge) > 0;
-    }
-
     if (activeFilter === "mhd-kritisch") {
       return getMhdWarnung(charge)?.level === "critical";
     }
@@ -2653,9 +2639,6 @@ export default async function Home({
             <div className="filter-bar" aria-label="Chargen filtern">
               <a className={filterLinkClassName("alle")} href={filterHref("lager", "alle")}>
                 Alle
-              </a>
-              <a className={filterLinkClassName("frei")} href={filterHref("lager", "frei")}>
-                Freier Bestand
               </a>
               <a
                 className={filterLinkClassName("mhd-kritisch")}
@@ -2992,12 +2975,6 @@ export default async function Home({
                 href={filterHref("packliste", "ohne-paket")}
               >
                 Ohne Paket
-              </a>
-              <a
-                className={filterLinkClassName("mit-paket")}
-                href={filterHref("packliste", "mit-paket")}
-              >
-                Mit Paket
               </a>
             </div>
 
@@ -3667,12 +3644,6 @@ export default async function Home({
               Zahlung offen
             </a>
             <a
-              className={filterLinkClassName("verbindlich")}
-              href={filterHref("bestellungen", "verbindlich")}
-            >
-              Verbindlich
-            </a>
-            <a
               className={filterLinkClassName("abgeschlossen")}
               href={filterHref("bestellungen", "abgeschlossen")}
             >
@@ -4194,15 +4165,21 @@ export default async function Home({
               <a className={filterLinkClassName("alle")} href={filterHref("versand", "alle")}>
                 Alle
               </a>
-              {paketstatusWerte.map((status) => (
-                <a
-                  className={filterLinkClassName(status)}
-                  href={filterHref("versand", status)}
-                  key={status}
-                >
-                  {status}
-                </a>
-              ))}
+              <a className={filterLinkClassName("offen")} href={filterHref("versand", "offen")}>
+                Offen
+              </a>
+              <a
+                className={filterLinkClassName("Versendet")}
+                href={filterHref("versand", "Versendet")}
+              >
+                Versendet
+              </a>
+              <a
+                className={filterLinkClassName("Zugestellt")}
+                href={filterHref("versand", "Zugestellt")}
+              >
+                Zugestellt
+              </a>
             </div>
             {filteredPakete.length === 0 ? (
               <p className="empty-state">Noch keine Pakete erfasst.</p>

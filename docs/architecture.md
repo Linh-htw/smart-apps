@@ -86,7 +86,7 @@ Das Dashboard fasst die wichtigsten Handlungen als Fokus-Karten zusammen: `Dring
 
 Nach erfolgreichen Speichern-Aktionen leitet die App auf den passenden nächsten Tab weiter und übergibt `saved` sowie optional `focus` in der URL. Daraus rendert die Seite einen Erfolgshinweis mit nächstem Schritt und hebt den neu gespeicherten Eintrag in der Liste hervor.
 
-Arbeitslisten nutzen einfache URL-basierte Schnellfilter ueber `filter`, z. B. offene Bestellungen, offene Zahlungen, verbindliche Bestellungen, Packaufgaben ohne Paket, kritische MHD-Chargen, Paketstatus und offene Retouren. Die Filter bleiben serverseitig und sind direkt teilbar.
+Arbeitslisten nutzen einfache URL-basierte Schnellfilter ueber `filter`, z. B. offene Bestellungen, offene Zahlungen, Packaufgaben ohne Paket, kritische MHD-Chargen, offene Pakete und offene Retouren. Die Filter bleiben serverseitig, direkt teilbar und pro Tab bewusst auf wenige häufige Arbeitszustände begrenzt.
 
 Die zentrale UI-Akzentfarbe ist `#B23F00` Dunkelorange. Abgeleitete Hover- und Soft-Tones werden in `src/app/globals.css` ueber CSS-Variablen gepflegt.
 

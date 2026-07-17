@@ -674,12 +674,13 @@ Erfolgreiche Speichern-Aktionen leiten auf den fachlich passenden nächsten Tab 
 **Kontext:** Mit wachsender Datenmenge werden lange Listen schwer scanbar. Besonders wichtig sind operative Sichten wie offene Bestellungen, offene Zahlungen, Packaufgaben ohne Paket, kritische MHD-Chargen, Paketstatus und offene Retouren.
 
 ### Entscheidung
-Die App ergaenzt serverseitige Schnellfilter in den relevanten Tabs. Filter werden ueber den Query-Parameter `filter` gesteuert und als Link-Leiste oberhalb der jeweiligen Liste angezeigt.
+Die App ergaenzt serverseitige Schnellfilter in den relevanten Tabs. Filter werden ueber den Query-Parameter `filter` gesteuert und als Link-Leiste oberhalb der jeweiligen Liste angezeigt. Pro Tab bleiben nur wenige häufige Arbeitsfilter sichtbar, damit die Filterleiste nicht selbst zur Entscheidungslast wird.
 
 ### Konsequenzen
 - Listen bleiben auch bei mehr Daten schneller scanbar.
 - Filterzustaende sind per URL teilbar.
 - Es wird kein zusätzlicher Client-State eingefuehrt.
+- Spezielle Detailfilter werden nicht sichtbar angeboten, solange sie keinen klaren täglichen Arbeitsnutzen haben.
 
 ## 2026-07-17 - Sichtbare UI-Texte nutzen echte Umlaute
 
