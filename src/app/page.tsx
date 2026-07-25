@@ -2722,7 +2722,6 @@ export default async function Home({
       <main className="workspace">
         <header className="workspace-header">
           <div>
-            <p className="eyebrow">NW-040</p>
             <h1>Login</h1>
           </div>
           <p className="summary">Lokale Rollen-Anmeldung für die App</p>
@@ -2742,11 +2741,6 @@ export default async function Home({
                 ))}
               </select>
             </label>
-
-            <p className="note-text">
-              Demo-Modus für die lokale Prüfungsabgabe: Mitarbeiter auswählen
-              und Rolle testen.
-            </p>
 
             <button type="submit">Anmelden</button>
           </form>

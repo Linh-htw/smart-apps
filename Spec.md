@@ -191,7 +191,7 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 
 **GR-08 — Retouren-Rückbuchung:** Ungeöffnete Ware mit mehr als vier Wochen MHD-Restlaufzeit wird wieder dem Chargenbestand zugeführt, ungeöffnete Ware mit vier Wochen oder weniger wird als reduzierter Restposten geführt, und geöffnete oder beschädigte Ware wird vollständig ausgebucht und durch Ersatzlieferung oder Rückerstattung kompensiert.
 
-**GR-09 — Strikte Rollentrennung:** Zugriffsrechte sind strikt nach Rolle getrennt — Admin (Nina) hat Vollzugriff, Werkstatt-Hilfe darf ausschließlich Chargen anlegen, und der Packer darf nur seine Tages-Packliste mit Name, Lieferadresse, den zu packenden Produkten und der zugewiesenen Chargund sehen und den Paketstatus entsprechend setzen, jeweils ohne Zugriff auf Preise, Umsätze oder vollständige Kundendaten.
+**GR-09 — Strikte Rollentrennung:** Zugriffsrechte sind strikt nach Rolle getrennt — Admin (Nina) hat Vollzugriff, Werkstatt-Hilfe darf ausschließlich Chargen anlegen, und der Packer darf nur seine Tages-Packliste mit Name, Lieferadresse, den zu packenden Produkten und der zugewiesenen Charge sehen und den Paketstatus entsprechend setzen, jeweils ohne Zugriff auf Preise, Umsätze oder vollständige Kundendaten.
 
 **GR-10 — Allergen-Bestätigung:** Bei allergenbehafteten Produkten muss der Kunde vor Bestellabschluss mit Timestamp bestätigen, die Allergenliste gelesen zu haben, sonst kann die Bestellung nicht abgeschlossen werden.
 
@@ -212,12 +212,12 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 ### W-1: Wann ist eine Bestellung verbindlich?
 **Nina sagt:** Eine Bestellung sei verbindlich, sobald in der DM eine Zusage erfolgt.
 **Nina sagt kurz danach:** Verbindlich müsse eigentlich heißen, dass das Geld da ist.
-**Auflösung:** Es werden zwei Zustände unterschieden — *eingegangen* (DM-Zusage vorhanden, Ware reserviert, aber nicht verbindlich) und *verbindlich* (Zahlung bestätigt). Im Status *eingegangen* ist die Ware für andere Kunden gesperrt, bis Zahlung eingeht oder die Reservierung freigegeben wird (siehe GR-01).
+**Auflösung:** Es werden zwei Zustände unterschieden: *eingegangen* (DM-Zusage vorhanden, Ware reserviert, aber nicht verbindlich) und *verbindlich* (Zahlung bestätigt). Im Status *eingegangen* ist die Ware für andere Kunden gesperrt, bis Zahlung eingeht oder die Reservierung freigegeben wird (siehe GR-01).
 
 ### W-2: Automatisches Stornieren nach Fristablauf — ja oder nein?
 **Nina sagt zunächst:** Sie stimmt einer automatischen Stornierung nach 3 Tagen ohne Zahlung bei B2C zu.
 **Nina sagt kurz danach:** Sie sei eigentlich zwiegespalten, da manche Stammkunden zuverlässig, aber später zahlen.
-**Auflösung:** Das System storniert nicht automatisch, sondern warnt Nina nach Fristablauf und überlässt ihr die finale, manuelle Entscheidung — mit längeren Fristen für Stammkunden (siehe GR-02).
+**Auflösung:** Das System storniert nicht automatisch, sondern warnt Nina nach Fristablauf und überlässt ihr die finale, manuelle Entscheidung mit längeren Fristen für Stammkunden (siehe GR-02).
 
 ### W-3: Reihenfolge bei Produktknappheit
 **Nina sagt:** „Wer zuerst kommt, kriegt es.“
@@ -243,4 +243,3 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 - Rabattcodes
 - Automatische Versandkosten-Berechnung
 - Statistiken und Auswertungen (z. B. Bestseller)
-
