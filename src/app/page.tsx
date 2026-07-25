@@ -137,6 +137,11 @@ function requiredDecimal(value: FormDataEntryValue | null) {
   return Number.isFinite(number) && number >= 0 ? text : null;
 }
 
+function requiredNonNegativeWholeNumber(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim();
+  return text && /^\d+$/.test(text) ? text : null;
+}
+
 function requiredDate(value: FormDataEntryValue | null) {
   const text = value?.toString().trim();
   if (!text) {
@@ -791,7 +796,9 @@ async function createProdukt(formData: FormData) {
   const kategorie = formData.get("kategorie")?.toString() ?? "";
   const preisB2c = requiredDecimal(formData.get("preisB2c"));
   const preisB2b = requiredDecimal(formData.get("preisB2b"));
-  const b2cPuffermenge = requiredDecimal(formData.get("b2cPuffermenge"));
+  const b2cPuffermenge = requiredNonNegativeWholeNumber(
+    formData.get("b2cPuffermenge"),
+  );
   const standardMhdDauerMonate = requiredInt(
     formData.get("standardMhdDauerMonate"),
   );
@@ -834,7 +841,9 @@ async function updateProdukt(formData: FormData) {
   const kategorie = formData.get("kategorie")?.toString() ?? "";
   const preisB2c = requiredDecimal(formData.get("preisB2c"));
   const preisB2b = requiredDecimal(formData.get("preisB2b"));
-  const b2cPuffermenge = requiredDecimal(formData.get("b2cPuffermenge"));
+  const b2cPuffermenge = requiredNonNegativeWholeNumber(
+    formData.get("b2cPuffermenge"),
+  );
   const standardMhdDauerMonate = requiredInt(
     formData.get("standardMhdDauerMonate"),
   );
@@ -5383,7 +5392,7 @@ export default async function Home({
               min="0"
               name="b2cPuffermenge"
               required
-              step="0.01"
+              step="1"
               type="number"
             />
           </label>
@@ -5526,7 +5535,7 @@ export default async function Home({
                           min="0"
                           name="b2cPuffermenge"
                           required
-                          step="0.01"
+                          step="1"
                           type="number"
                         />
                       </label>

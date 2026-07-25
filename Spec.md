@@ -31,7 +31,7 @@
 | Allergene | String |
 | Preis B2C | Decimal |
 | Preis B2B | Decimal |
-| B2C-Puffermenge | Decimal |
+| B2C-Puffermenge | Integer |
 | Standard-MHD-Dauer (Monate) | Integer |
 | In Abo-Box enthalten | Boolean |
 
