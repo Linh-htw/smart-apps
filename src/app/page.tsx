@@ -73,21 +73,11 @@ type TabItem = {
   visible: boolean;
 };
 
-type WorkflowStep = {
-  label: string;
-  detail: string;
-  href: string;
-  action: string;
-  status: "done" | "current" | "blocked" | "optional";
-};
-
 type DashboardFocus = {
-  label: string;
   title: string;
   detail: string;
   href: string;
   action: string;
-  level: "urgent" | "blocked" | "next";
 };
 
 type SaveFeedback = {
@@ -2974,175 +2964,49 @@ export default async function Home({
     aktiveAboBoxen.length > 0 && aboBoxProdukte.length === 4;
   const today = new Date().toISOString().slice(0, 10);
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const hatKunden = kunden.length > 0;
-  const hatProdukte = produkte.length > 0;
-  const hatFreieChargen = chargenMitFreierMenge.length > 0;
-  const hatBestellungen = bestellungen.length > 0;
-  const hatBestellpositionen = bestellpositionen.length > 0;
-  const hatPakete = pakete.length > 0;
-  const orderWorkflowSteps: WorkflowStep[] = [
-    {
-      label: "Kunde erfassen",
-      detail: "Jede Bestellung braucht zuerst einen zugeordneten Kunden.",
-      href: "/?tab=kunden",
-      action: "Zum Kunden-Tab",
-      status: hatKunden ? "done" : "current",
-    },
-    {
-      label: "Produkt und Bestand vorbereiten",
-      detail:
-        "Produkte, freigegebene Chargen und freie Mengen sind die Basis für Positionen.",
-      href: hatProdukte ? "/?tab=lager" : "/?tab=produkte",
-      action: hatProdukte ? "Zum Lager-Tab" : "Zum Produkte-Tab",
-      status: hatFreieChargen
-        ? "done"
-        : hatKunden
-          ? "current"
-          : "blocked",
-    },
-    {
-      label: "Bestellung anlegen",
-      detail: "Kanal, Zahlung und Lieferadresse werden hier erfasst.",
-      href: "/?tab=bestellungen",
-      action: "Zum Bestell-Tab",
-      status: hatBestellungen
-        ? "done"
-        : hatKunden
-          ? "current"
-          : "blocked",
-    },
-    {
-      label: "Produkte zur Bestellung hinzufügen",
-      detail: "Die App weist die passende Charge automatisch per FIFO zu.",
-      href: "/?tab=bestellungen",
-      action: "Position hinzufügen",
-      status: hatBestellpositionen
-        ? "done"
-        : hatBestellungen && hatFreieChargen
-          ? "current"
-          : "blocked",
-    },
-    {
-      label: "Paket und Versand pflegen",
-      detail: "Packer, Versandkosten, Tracking und Zustellung werden separat gepflegt.",
-      href: "/?tab=versand",
-      action: "Zum Versand-Tab",
-      status: hatPakete
-        ? "done"
-        : hatBestellpositionen
-          ? "current"
-          : "blocked",
-    },
-    {
-      label: "Retoure bei Bedarf bearbeiten",
-      detail: "Retouren sind erst nach Zustellung und innerhalb der Frist möglich.",
-      href: "/?tab=retouren",
-      action: "Zum Retouren-Tab",
-      status:
-        retouren.length > 0
-          ? "done"
-          : retourenfaehigePositionen.length > 0
-            ? "current"
-            : "optional",
-    },
-  ];
-  const currentWorkflowStep =
-    orderWorkflowSteps.find((step) => step.status === "current") ??
-    orderWorkflowSteps.find((step) => step.status === "blocked") ??
-    orderWorkflowSteps[0];
-  const blockedWorkflowSteps = orderWorkflowSteps.filter(
-    (step) => step.status === "blocked",
-  );
   const criticalMhdWarnungen = mhdWarnungen.filter(
     ({ warnung }) => warnung?.level === "critical",
   );
-  const dashboardFocusItems: DashboardFocus[] = [
+  const urgentDashboardFocus: DashboardFocus =
     stornierpruefungen.length > 0
       ? {
-          label: "Dringend",
           title: `${stornierpruefungen.length} Reservierung prüfen`,
           detail:
             "Unbezahlte Reservierungen haben die manuelle Prüffrist erreicht.",
           href: "/?tab=bestellungen",
           action: "Bestellungen prüfen",
-          level: "urgent",
         }
       : allergenWarnungen.length > 0
         ? {
-            label: "Dringend",
             title: `${allergenWarnungen.length} Allergenbestätigung offen`,
             detail:
               "Betroffene Bestellungen können ohne Bestätigung nicht abgeschlossen werden.",
             href: "/?tab=bestellungen",
             action: "Bestätigung erfassen",
-            level: "urgent",
           }
         : produktKnappheiten.length > 0
           ? {
-              label: "Dringend",
               title: `${produktKnappheiten.length} knappe Produkte`,
               detail:
                 "Priorisierung nach Stammkunden und Anfragezeitpunkt prüfen.",
               href: "/?tab=arbeit",
               action: "Priorität prüfen",
-              level: "urgent",
             }
           : criticalMhdWarnungen.length > 0
             ? {
-                label: "Dringend",
                 title: `${criticalMhdWarnungen.length} MHD-Warnungen`,
                 detail:
                   "Restposten- oder Rabattentscheidung manuell bestätigen.",
                 href: "/?tab=lager",
                 action: "Chargen prüfen",
-                level: "urgent",
               }
             : {
-                label: "Dringend",
                 title: "Keine kritischen Aufgaben",
                 detail:
                   "Aktuell gibt es keine überfällige Reservierung oder blockierende Warnung.",
                 href: "/?tab=arbeit",
                 action: "Dashboard ansehen",
-                level: "urgent",
-              },
-    blockedWorkflowSteps.length > 0
-      ? {
-          label: "Blockiert",
-          title: blockedWorkflowSteps[0].label,
-          detail: blockedWorkflowSteps[0].detail,
-          href: blockedWorkflowSteps[0].href,
-          action: blockedWorkflowSteps[0].action,
-          level: "blocked",
-        }
-      : packerMitarbeiter.length === 0 && hatBestellpositionen
-        ? {
-            label: "Blockiert",
-            title: "Kein Packer angelegt",
-            detail:
-              "Pakete können erst mit einem Mitarbeiter der Rolle Packer angelegt werden.",
-            href: "/?tab=mitarbeitende",
-            action: "Packer anlegen",
-            level: "blocked",
-          }
-        : {
-            label: "Blockiert",
-            title: "Nichts blockiert",
-            detail:
-              "Die vorhandenen Daten reichen für den nächsten Bestellschritt aus.",
-            href: currentWorkflowStep.href,
-            action: currentWorkflowStep.action,
-            level: "blocked",
-          },
-    {
-      label: "Nächster Klick",
-      title: currentWorkflowStep.label,
-      detail: currentWorkflowStep.detail,
-      href: currentWorkflowStep.href,
-      action: currentWorkflowStep.action,
-      level: "next",
-    },
-  ];
+              };
   const filteredBestellungen = bestellungen.filter((bestellung) => {
     if (activeFilter === "offen") {
       return bestellung.status !== "storniert" && bestellung.status !== "abgeschlossen";
@@ -4071,18 +3935,14 @@ export default async function Home({
             <p className="summary">{aktiveBestellungen.length} offene Aufgaben</p>
           </div>
 
-          <div className="dashboard-focus-grid">
-            {dashboardFocusItems.map((item) => (
-              <article className={`dashboard-focus-card ${item.level}`} key={item.label}>
-                <p className="eyebrow">{item.label}</p>
-                <h3>{item.title}</h3>
-                <p>{item.detail}</p>
-                <a className="text-link" href={item.href}>
-                  {item.action}
-                </a>
-              </article>
-            ))}
-          </div>
+          <article className="dashboard-focus-card urgent">
+            <p className="eyebrow">Dringend</p>
+            <h3>{urgentDashboardFocus.title}</h3>
+            <p>{urgentDashboardFocus.detail}</p>
+            <a className="text-link" href={urgentDashboardFocus.href}>
+              {urgentDashboardFocus.action}
+            </a>
+          </article>
 
           <div className="metric-grid">
             <div className="metric-tile">

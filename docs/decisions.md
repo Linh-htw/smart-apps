@@ -884,3 +884,14 @@ Die sichtbare Schrittfolge wird aus der Uebersicht entfernt. Die kompakten Fokus
 ### Konsequenzen
 - Die Uebersicht wird kuerzer und ruhiger.
 - Fachfunktionen, Warnungen, Rollen und Kalibrierungsregeln bleiben unveraendert.
+
+## 2026-07-26 - Arbeitsansicht auf dringende Fokus-Karte reduzieren
+
+**Kontext:** Nach dem Entfernen des gefuehrten Ablaufs wiederholten die Karten `Blockiert` und `Naechster Klick` weiterhin allgemeine Orientierungshinweise. Fuer die taegliche Arbeit ist vor allem der konkrete dringende Handlungsbedarf relevant.
+
+### Entscheidung
+Die aktive Arbeitsansicht zeigt nur noch die breite Fokus-Karte `Dringend`. Sie priorisiert weiterhin ueberfaellige Reservierungen, offene Allergenbestaetigungen, Produktknappheit und kritische MHD-Warnungen. Die Karten `Blockiert` und `Naechster Klick` sowie ihre ausschliesslich dafuer benoetigte Ablauf-Logik entfallen.
+
+### Konsequenzen
+- Die Arbeitsansicht wird fokussierter und ruhiger.
+- Detaillierte Aufgaben-, Warnungs- und Kennzahlenbereiche bleiben erhalten.
