@@ -3141,6 +3141,14 @@ export default async function Home({
       return bestellung.zahlungsstatus === "ausstehend";
     }
 
+    if (activeFilter === "bezahlt") {
+      return (
+        bestellung.zahlungsstatus === "bezahlt" &&
+        bestellung.status !== "storniert" &&
+        bestellung.status !== "abgeschlossen"
+      );
+    }
+
     if (activeFilter === "archiv" || activeFilter === "abgeschlossen") {
       return bestellung.status === "abgeschlossen";
     }
@@ -3157,6 +3165,14 @@ export default async function Home({
 
     if (activeFilter === "ausstehend") {
       return position.bestellung.zahlungsstatus === "ausstehend";
+    }
+
+    if (activeFilter === "bezahlt") {
+      return (
+        position.bestellung.zahlungsstatus === "bezahlt" &&
+        position.bestellung.status !== "storniert" &&
+        position.bestellung.status !== "abgeschlossen"
+      );
     }
 
     if (activeFilter === "archiv" || activeFilter === "abgeschlossen") {
@@ -4847,6 +4863,12 @@ export default async function Home({
               href={filterHref("bestellungen", "ausstehend")}
             >
               Zahlung offen
+            </a>
+            <a
+              className={filterLinkClassName("bezahlt")}
+              href={filterHref("bestellungen", "bezahlt")}
+            >
+              Bezahlt
             </a>
             <a
               className={

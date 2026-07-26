@@ -850,3 +850,14 @@ Die Chargen- und Lagerbestandslisten im Tab `Lager & Chargen` erhalten einen ser
 - Nina kann alle Chargen und Lagerbestände eines Produkts gezielt anzeigen.
 - Der Filter bleibt beim Neuladen und beim Wechsel des Chargenstatusfilters erhalten.
 - FIFO-Zuteilung und gespeicherte Daten werden durch den reinen Anzeigefilter nicht veraendert.
+
+## 2026-07-26 - Aktive bezahlte Bestellungen filtern
+
+**Kontext:** Der Bestellungen-Tab unterschied bisher zwischen allen, offenen, zahlungsoffenen und archivierten Bestellungen. Fuer die Versandvorbereitung fehlte eine direkte Sicht auf bereits bezahlte, aber noch nicht abgeschlossene Bestellungen.
+
+### Entscheidung
+Der neue Filter `Bezahlt` zeigt Bestellungen mit Zahlungsstatus `bezahlt`, sofern sie weder storniert noch abgeschlossen sind. Die Bestellpositionsliste wird mit demselben Kriterium gefiltert.
+
+### Konsequenzen
+- Bezahlte Bestellungen in aktiver Bearbeitung sind direkt auffindbar.
+- Abgeschlossene Bestellungen bleiben im Archiv und erscheinen nicht zusaetzlich unter `Bezahlt`.
