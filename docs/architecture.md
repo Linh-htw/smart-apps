@@ -118,11 +118,11 @@ Sichtbare deutsche UI-Texte nutzen echte Umlaute. Technische Namen, Query-Parame
 
 ## Datenmodell
 
-Die Entitaeten und Beziehungen stehen in `docs/spec.md`. Prisma ist die technische Modellierungsschicht für Tabellen, Relationen und spätere Migrationen. Enum-Werte werden nicht frei erfunden, sondern aus `docs/spec.md` oder dokumentierten Entscheidungen abgeleitet.
+Die Entitaeten und Beziehungen stehen in `Spec.md` im Repo-Root. Prisma ist die technische Modellierungsschicht für Tabellen, Relationen und spätere Migrationen. Enum-Werte werden nicht frei erfunden, sondern aus `Spec.md` oder dokumentierten Entscheidungen abgeleitet.
 
 SQLite ist für den initialen V1-Aufbau ausreichend, weil das Projekt als Solo-Projekt startet und die fachlichen Regeln zuerst lokal korrekt modelliert werden müssen. Ein späterer Wechsel auf eine serverbasierte relationale Datenbank bleibt möglich, wenn Hosting oder paralleler Zugriff das erfordern.
 
-Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fachliche Tabellen, deren benoetigte Enum-Werte geklaert und zentral validiert sind. `NW-001` nutzt für Kunden `Kunde` als erstes fachliches Modell; Kundentyp und Hauttyp werden in der App gegen die Werte aus `docs/spec.md` validiert. `NW-002` ergaenzt `Produkt`; Produktkategorien werden zentral gegen `Seifen`, `Öle`, `Balsam` und `Bodylotions` validiert.
+Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fachliche Tabellen, deren benoetigte Enum-Werte geklaert und zentral validiert sind. `NW-001` nutzt für Kunden `Kunde` als erstes fachliches Modell; Kundentyp und Hauttyp werden in der App gegen die Werte aus `Spec.md` validiert. `NW-002` ergaenzt `Produkt`; Produktkategorien werden zentral gegen `Seifen`, `Öle`, `Balsam` und `Bodylotions` validiert.
 
 `NW-005` ergaenzt `Bestellung` mit Kunde-Relation, Bestellkanal, Zahlungsstatus, Bestellstatus, Datum und Lieferadresse. Die Bestellwerte werden zentral validiert.
 

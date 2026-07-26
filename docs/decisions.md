@@ -768,3 +768,15 @@ Die aktive Arbeitsansicht berücksichtigt nur Bestellungen in den Status `Eingeg
 - Der Paketstatus `Zugestellt` entfernt die zugehörige Bestellung automatisch aus den offenen Aufgaben.
 - Archivierte Bestellungen bleiben vollständig einsehbar.
 - Der bisherige URL-Filter `abgeschlossen` bleibt aus Kompatibilitätsgründen weiterhin auswertbar.
+
+## 2026-07-26 - Root-Spec als einzige fachliche Quelle konsolidiert
+
+**Kontext:** Im Repository lagen mit `Spec.md` und `docs/spec.md` zwei fachliche Spezifikationen, die sich durch spätere Ergänzungen teilweise unterschieden. Für die Abgabe soll die ursprüngliche Root-Spec die verbindliche Quelle sein.
+
+### Entscheidung
+`Spec.md` im Repository-Root ist die einzige fachliche Single Source of Truth. Die später geklärten V1-Inhalte aus `docs/spec.md` wurden in die Root-Spec übernommen und widersprüchliche Aussagen zu Abo-Abwicklung, Versandlabeln, Tracking, Login und Allergenbestätigung an die dokumentierten V1-Entscheidungen angeglichen. Die replizierte Datei `docs/spec.md` wird entfernt.
+
+### Konsequenzen
+- Fachliche Änderungen werden künftig ausschließlich in `Spec.md` vorgenommen.
+- `AGENTS.md`, README, Architektur, Backlog und Modus Operandi verweisen auf die Root-Spec.
+- Frühere Entscheidungen, die `docs/spec.md` als Quelle nannten, bleiben als historische Einträge erhalten und werden durch diese Entscheidung ersetzt.

@@ -4,10 +4,10 @@
 Interne Shop- und Kundenmanagement-App fuer Nina Wolff. Ziel ist eine zentrale Arbeitsoberflaeche fuer Bestellungen, Kunden, Chargen, Lagerbestand, Packlisten, Retouren, Abo-Boxen und rollenbasierte Mitarbeitenden-Zugriffe.
 
 ## Arbeitsmodell
-Solo-Projekt nach Modus Operandi. Markdown im Repo ist die Single Source of Truth. Es gibt keine Meeting- und Results-Ordner. `docs/spec.md` ersetzt die sonst uebliche `docs/prd.md`.
+Solo-Projekt nach Modus Operandi. Markdown im Repo ist die Single Source of Truth. Es gibt keine Meeting- und Results-Ordner. `Spec.md` im Repo-Root ersetzt die sonst uebliche `docs/prd.md`.
 
 ## Was bauen wir?
-Lies zuerst `docs/spec.md`. Diese Datei ist die fachliche Quelle fuer Scope, Entitaeten, Beziehungen, Geschaeftsregeln, Widerspruchsaufloesungen und V1-Prioritaeten.
+Lies zuerst `Spec.md`. Diese Datei ist die fachliche Quelle fuer Scope, Entitaeten, Beziehungen, Geschaeftsregeln, Widerspruchsaufloesungen und V1-Prioritaeten.
 
 ## Tech-Stack + Standards
 Lies `docs/architecture.md`. Der Stack ist noch nicht final festgelegt; bis dahin keine impliziten Framework- oder Datenbankentscheidungen treffen.
@@ -33,14 +33,14 @@ Lies `docs/modus-operandi.md` fuer den projektspezifischen Solo-Workflow.
 
 ## Projektregeln
 - Deutsche UI- und Doku-Texte verwenden, sofern nicht anders verlangt.
-- Fachbegriffe aus `docs/spec.md` konsistent uebernehmen.
-- Bestellstatus, Zahlungsstatus, Rollen, Lager- und Chargenlogik nicht frei erfinden; fehlende Enum-Werte in `docs/spec.md` oder `docs/decisions.md` klaeren.
+- Fachbegriffe aus `Spec.md` konsistent uebernehmen.
+- Bestellstatus, Zahlungsstatus, Rollen, Lager- und Chargenlogik nicht frei erfinden; fehlende Enum-Werte in `Spec.md` oder `docs/decisions.md` klaeren.
 - Keine automatische Stornierung unbezahlter Reservierungen implementieren; die Entscheidung bleibt manuell bei Nina.
 - FIFO nach fruehestem MHD ist Standard fuer Bestandszuteilung und Packlisten.
 - Rollen strikt trennen: Admin, Werkstatt-Hilfe, Packer.
 - Keine Secrets, Tokens, Passwoerter oder echten Kundendaten in Code, Docs oder KI-Konversationen schreiben.
 
 ## Session-Ende
-- Relevante Docs aktualisieren: `docs/spec.md` bei Scope-Aenderung, `docs/architecture.md` bei technischen Strukturentscheidungen, `docs/backlog.md` bei Feature-Status, `docs/decisions.md` bei Entscheidungen.
+- Relevante Docs aktualisieren: `Spec.md` bei Scope-Aenderung, `docs/architecture.md` bei technischen Strukturentscheidungen, `docs/backlog.md` bei Feature-Status, `docs/decisions.md` bei Entscheidungen.
 - Tests oder sinnvolle Verifikation ausfuehren, sobald Code existiert.
 - Commit-Messages im Conventional-Commits-Stil formulieren und Feature-ID referenzieren, wenn das Feature im Backlog steht.

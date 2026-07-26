@@ -74,7 +74,7 @@ npm run prisma:migrate -- --skip-generate
 
 ## Projektdokumentation
 
-- `docs/spec.md`: fachliche Spezifikation und Geschaeftsregeln.
+- `Spec.md`: fachliche Spezifikation und Geschaeftsregeln.
 - `docs/backlog.md`: Feature-Backlog mit `NW-###` IDs.
 - `docs/architecture.md`: technische Architektur und Entscheidungen.
 - `docs/decisions.md`: chronologisches Entscheidungslog.

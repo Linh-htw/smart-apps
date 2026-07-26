@@ -1,5 +1,17 @@
 # Spec — Nina Wolffs Shop- und Kundenmanagement-App
 
+_Diese Datei ist die fachliche Single Source of Truth für Scope, Entitäten, Beziehungen, Geschäftsregeln, Widerspruchsauflösungen und V1-Prioritäten._
+
+## Produktkontext und Zielgruppen
+
+Nina Wolff braucht eine interne Shop- und Kundenmanagement-App, die Bestellungen aus verschiedenen Kanälen, Kunden, Produkte, Chargen, Lagerbestand, Packlisten, Retouren, Abo-Boxen und Mitarbeitenden-Zugriffe zusammenführt.
+
+Der Kernnutzen liegt in einer aktiven Arbeitsansicht: offene Aufgaben, Zahlungsstatus, Bestellstatus, Lagerverfügbarkeit, Packlisten und Warnungen sollen eindeutig sichtbar sein.
+
+- **Admin:** Nina, mit Vollzugriff auf Kunden, Produkte, Preise, Lager, Bestellungen, Retouren, Abo-Boxen und Auswertungen.
+- **Werkstatt-Hilfe:** Legt ausschließlich Chargen an.
+- **Packer:** Sieht nur die Tages-Packliste mit Name, Lieferadresse, zu packenden Produkten, zugewiesener Charge und Paketstatus. Kein Zugriff auf Preise, Umsätze oder vollständige Kundendaten.
+
 ## 1. Entitäten
 
 ### 1 Kunde
@@ -67,6 +79,8 @@
 | Status | Enum |
 | Startdatum | Date |
 | Pausiert seit | Date |
+| Pausiert von | Date |
+| Pausiert bis | Date |
 | Kündigungsdatum | Date |
 
 ### 6 Verkaufsevent
@@ -201,9 +215,11 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 
 **GR-13 — Versandkosten:** B2C-Bestellungen sind ab 39,00 € versandkostenfrei, darunter werden 4,50 € berechnet, während B2B- und Abo-Bestellungen immer kostenfrei versendet werden.
 
-**GR-14 — Abo-Abwicklung:** Alle Abo-Bestellungen werden automatisch am 15. jedes Monats gesammelt abgewickelt, inklusive automatischer Versandlabel-Erstellung, konsolidierter Packliste und gesammelter Lagerabbuchung.
+**GR-14 — Abo-Abwicklung:** Die Abo-Bestellungen werden für den 15. jedes Monats in einem manuell ausgelösten Monatslauf gesammelt abgewickelt. Der Lauf erzeugt die Bestellungen und Positionen, erstellt eine konsolidierte Packliste und bucht den Lagerbestand. Versandlabel werden außerhalb der App erstellt; Tracking- und Versanddaten werden in der App manuell gepflegt.
 
-**GR-15 — Abo-Pausierung:** Eine Abo-Pausierung ist für maximal zwei aufeinanderfolgende Monate möglich und muss bis zum 15. des Vormonats angemeldet werden.
+**GR-15 — Abo-Pausierung:** Eine Abo-Pausierung gilt ab einem konkreten Kalendermonat und ist für maximal zwei aufeinanderfolgende Monate möglich. Sie muss bis einschließlich 15. des Vormonats erfasst werden. Nach Ablauf der Pause wird die Abo-Box nicht automatisch umgestellt; Nina erhält eine Warnung zur Statusprüfung.
+
+**GR-16 — Abo-Box-Inhalt:** Nina wählt monatlich genau vier Produkte für die Abo-Box aus. Enthalten sind die Produkte, die mit `In Abo-Box enthalten` markiert sind. Diese Auswahl gilt für alle aktiven Abo-Boxen; kundenspezifische Abo-Box-Inhalte werden in V1 nicht modelliert.
 
 ---
 
@@ -237,9 +253,40 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 - Packlisten für Mitarbeiter
 - Rollen- und Berechtigungssystem
 - Aktive Arbeitsansicht mit ausschließlich offenen Aufgaben
+- Verpflichtender Allergen-Bestätigungsworkflow bei allergenbehafteten Produkten
 
 ### Kann warten
 - Marketing-Aktionen
 - Rabattcodes
 - Automatische Versandkosten-Berechnung
 - Statistiken und Auswertungen (z. B. Bestseller)
+
+---
+
+## 6. Geklärte Enum-Werte
+
+| Bereich | Feld | Werte |
+|---|---|---|
+| Bestellung | Bestellkanal | Instagram, Email, Abo |
+| Bestellung | Zahlungsstatus | ausstehend, bezahlt |
+| Bestellung | Bestellstatus | Eingegangen, verbindlich, storniert, abgeschlossen |
+| Produkt | Produktkategorie | Seifen, Öle, Balsam, Bodylotions |
+| Lagerbestand | Lagerort | Werkstatt, Markt-Truck, Zuhause |
+| Charge | Chargenstatus | freigegeben, gesperrt |
+| Mitarbeiter | Rolle | Admin, Werkstatt-Hilfe, Packer |
+| Kunde | Kundentyp | B2C, B2B |
+| Kunde | Hauttyp | normale Haut, ölige Haut, trockene Haut, Mischhaut |
+| Paket | Paketstatus | Vorbereitet, Gepackt, Versendet, Zugestellt |
+| Paket | Versandoption | DHL, DHL Express |
+| Abo-Box | Status | aktiv, pausiert, gekuendigt |
+| Retoure | Status | Angemeldet, Eingegangen, In Prüfung, Angenommen, Abgelehnt, Abgeschlossen |
+| Retoure | Produktzustand | Ungeöffnet, Geöffnet, Beschädigt, Mangelhaft |
+| Retoure | Erstattungsart | Keine, Gutschein, Geld zurück, Ersatzprodukt |
+
+## 7. V1-Betrieb und Integrationen
+
+- **Login:** Einfacher Demo-Login mit Mitarbeiter-Auswahl und Rolle, ohne Passwort oder Code.
+- **Betrieb:** Lokal gestartete Web-App, erreichbar über `http://localhost:3000` oder eine lokale Netzwerk-URL.
+- **Versandlabel:** Werden in V1 außerhalb der App erstellt.
+- **Tracking:** Trackingnummer sowie Versand- und Zustelldaten werden manuell in der App gepflegt.
+- **Allergenbestätigung:** Wird als Ja/Nein-Bestätigung gespeichert; ein Zeitpunkt wird nicht gespeichert.
