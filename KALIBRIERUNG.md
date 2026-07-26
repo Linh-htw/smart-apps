@@ -4,9 +4,9 @@
 
 **Aussage:** Beim Speichern einer Bestellposition weist die App automatisch eine passende freigegebene Charge desselben Produkts mit dem frühesten MHD zu.
 
-**Konfidenz:** 8/10
+**Konfidenz:** 9/10
 
-**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene Chargen mit unterschiedlichen MHD-Daten und Beständen angelegt. Bei einer B2B-Bestellposition über 50 Einheiten wurde eine Charge mit zu geringer verfügbarer Menge übersprungen. Die App wählte stattdessen automatisch die geeignete Charge mit ausreichendem Bestand und dem frühesten MHD. Die Auswahl wurde anschließend an der Bestellposition als `Zugewiesene FIFO-Charge` angezeigt.
+**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene Chargen mit unterschiedlichen MHD-Daten und Beständen angelegt. Beim Anlegen einer Bestellposition wurde die Charge mit dem frühesten MHD zugewiesen, sofern sie über eine ausreichende freie Menge verfügte. Reichte ihr Bestand nicht aus, wählte die App automatisch die geeignete Charge mit dem nächstfrühesten MHD.
 
 ## 2. Business Rule: Allergenbestätigung vor Bestellabschluss
 
