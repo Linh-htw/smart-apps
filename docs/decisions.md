@@ -814,3 +814,15 @@ Die gespeicherte Bestellposition bezeichnet die konkrete Auswahl als `Zugewiesen
 ### Konsequenzen
 - Das Ergebnis der FIFO-Zuteilung ist unmittelbar nach dem Speichern nachvollziehbar.
 - Die Packliste zeigt die Charge weiterhin zusaetzlich fuer die operative Arbeit des Packers.
+
+## 2026-07-26 - Keine automatische Weiterleitung nach Speicheraktionen
+
+**Kontext:** Nach dem Speichern wechselte die App automatisch auf einen vorgegebenen naechsten Tab. Dadurch war beispielsweise die gerade erzeugte FIFO-Zuteilung nicht unmittelbar bei der Bestellposition sichtbar.
+
+### Entscheidung
+Speicheraktionen aktualisieren die Daten, lassen den aktuell geoeffneten Tab aber unveraendert. Die automatischen fachlichen Weiterleitungen nach Anlage, Bearbeitung, Statuswechsel und Buchung entfallen zentral. Technisch notwendige Wechsel bei Login und Logout bleiben bestehen.
+
+### Konsequenzen
+- Gespeicherte Ergebnisse koennen direkt im aktuellen Arbeitsbereich kontrolliert werden.
+- Die App entscheidet nach einer Aktion nicht mehr automatisch ueber den naechsten Arbeitsschritt.
+- URL-basierte Erfolgshinweise werden bei neuen Speicheraktionen nicht mehr automatisch gesetzt.

@@ -721,15 +721,15 @@ function getKnappheitsPrioritaetslabel(position: {
     : "B2C-Neukunde";
 }
 
-function redirectAfterSave(tab: WorkspaceTab, saved: string, focusId?: number) {
-  const params = new URLSearchParams({ tab, saved });
-
-  if (focusId) {
-    params.set("focus", focusId.toString());
-  }
-
+function redirectAfterSave(
+  tab: WorkspaceTab,
+  saved: string,
+  focusId?: number,
+) {
+  void tab;
+  void saved;
+  void focusId;
   revalidatePath("/");
-  redirect(`/?${params.toString()}`);
 }
 
 async function aktualisiereStammkundeStatus(

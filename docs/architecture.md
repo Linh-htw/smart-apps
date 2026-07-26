@@ -84,7 +84,7 @@ Der Bestellprozess wird zusätzlich als geführter Ablauf in der Übersicht darg
 
 Das Dashboard fasst die wichtigsten Handlungen als Fokus-Karten zusammen: `Dringend`, `Blockiert` und `Nächster Klick`. Diese Karten werden aus bestehenden Warnungen, offenen Aufgaben und dem geführten Bestellablauf serverseitig berechnet.
 
-Nach erfolgreichen Speichern-Aktionen leitet die App auf den passenden nächsten Tab weiter und übergibt `saved` sowie optional `focus` in der URL. Daraus rendert die Seite einen Erfolgshinweis mit nächstem Schritt und hebt den neu gespeicherten Eintrag in der Liste hervor.
+Nach erfolgreichen Speichern-Aktionen bleibt die App auf dem aktuell geöffneten Tab und aktualisiert dort die Daten. Automatische Weiterleitungen in einen anderen Arbeitsbereich finden nicht statt, damit gespeicherte Ergebnisse unmittelbar an ihrer fachlichen Stelle kontrolliert werden können. Login und Logout wechseln weiterhin technisch notwendig zwischen Anmeldeansicht und Arbeitsoberfläche.
 
 Arbeitslisten nutzen einfache URL-basierte Schnellfilter ueber `filter`, z. B. offene Bestellungen, offene Zahlungen, Packaufgaben ohne Paket, kritische MHD-Chargen, offene Pakete und offene Retouren. Die Filter bleiben serverseitig, direkt teilbar und pro Tab bewusst auf wenige häufige Arbeitszustände begrenzt.
 
