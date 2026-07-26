@@ -4,9 +4,9 @@
 
 **Aussage:** Beim Anlegen einer Bestellposition wählt die App automatisch eine freigegebene Charge desselben Produkts mit ausreichender freier Menge und frühestem MHD.
 
-**Konfidenz:** 10/10
+**Konfidenz:** 9/10
 
-**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene Chargen mit unterschiedlichen MHD-Daten angelegt und anschließend eine Bestellposition erstellt. Die App hat automatisch die Charge mit dem frühesten MHD zugewiesen, sofern dort eine ausreichende freie Menge verfügbar war.
+**Wie geprüft?** Ich habe für dasselbe Produkt mehrere Chargen (freigegebene und gesperrte) mit unterschiedlichen MHD-Daten angelegt und anschließend eine Bestellposition erstellt. Die App hat automatisch darunter die Charge mit dem frühesten MHD zugewiesen, sofern dort eine ausreichende freie Menge verfügbar war.
 
 ## 2. Business Rule: Allergenbestätigung vor Abschluss
 
@@ -22,7 +22,7 @@
 
 **Konfidenz:** 10/10
 
-**Wie geprüft?** Bei einer Bestellung konnte ich mehrere Produkte als einzelne Bestellpositionen zu einer Bestellung hinzugefügen. Außerdem konnte ich dasselbe Produkt über jeweils eine Bestellposition mehreren Bestellungen zuordnen.
+**Wie geprüft?** Bei einer Bestellung konnte ich mehrere Produkte als einzelne Bestellpositionen zu einer Bestellung hinzufügen. Außerdem konnte ich dasselbe Produkt über jeweils eine Bestellposition mehreren Bestellungen zuordnen.
 
 ## 4. Widerspruchsauflösung: Keine automatische Stornierung
 
