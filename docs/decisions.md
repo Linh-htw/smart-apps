@@ -803,3 +803,14 @@ Das Formular verspricht vor dem Speichern keine konkrete Charge mehr. Es erklaer
 ### Konsequenzen
 - Die Oberflaeche zeigt keine Charge mehr an, die fuer die eingegebene Menge ungeeignet sein kann.
 - Die bestehende serverseitige FIFO- und B2B-Pufferlogik bleibt unveraendert.
+
+## 2026-07-26 - FIFO-Zuteilung an der Bestellposition sichtbar
+
+**Kontext:** Nach dem Speichern wurde die automatisch gewaehlte Charge zwar an der Bestellposition angezeigt, aber nur allgemein als `Charge` bezeichnet. Dadurch war nicht eindeutig erkennbar, dass dies das Ergebnis der FIFO-Pruefung ist.
+
+### Entscheidung
+Die gespeicherte Bestellposition bezeichnet die konkrete Auswahl als `Zugewiesene FIFO-Charge` und zeigt dazu Chargen-ID, MHD und reservierte Menge. Die Anzeige gehoert zur Bestellposition und nicht zum Paket, weil Zuteilung und Reservierung bereits vor der Paketbildung je Produktposition erfolgen.
+
+### Konsequenzen
+- Das Ergebnis der FIFO-Zuteilung ist unmittelbar nach dem Speichern nachvollziehbar.
+- Die Packliste zeigt die Charge weiterhin zusaetzlich fuer die operative Arbeit des Packers.

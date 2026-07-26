@@ -5363,9 +5363,9 @@ export default async function Home({
                       </p>
                     </div>
                     <dl>
-                      <dt>Menge</dt>
+                      <dt>Reservierte Menge</dt>
                       <dd>{position.menge}</dd>
-                      <dt>Charge</dt>
+                      <dt>Zugewiesene FIFO-Charge</dt>
                       <dd>
                         #{position.charge.id} · MHD{" "}
                         {formatDate(position.charge.mhd)}
