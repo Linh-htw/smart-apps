@@ -939,12 +939,23 @@ async function updateBestellung(formData: FormData) {
     return;
   }
 
-  const kunde = await prisma.kunde.findUnique({
-    where: { id: kundeId },
-    select: { id: true },
-  });
+  const [kunde, bestehendeBestellung] = await Promise.all([
+    prisma.kunde.findUnique({
+      where: { id: kundeId },
+      select: { id: true },
+    }),
+    prisma.bestellung.findUnique({
+      where: { id },
+      select: { status: true },
+    }),
+  ]);
 
-  if (!kunde) {
+  if (
+    !kunde ||
+    !bestehendeBestellung ||
+    bestehendeBestellung.status === "storniert" ||
+    bestehendeBestellung.status === "abgeschlossen"
+  ) {
     return;
   }
 
@@ -961,6 +972,120 @@ async function updateBestellung(formData: FormData) {
   });
 
   redirectAfterSave("bestellungen", "bestellung", id);
+}
+
+async function storniereBestellung(formData: FormData) {
+  "use server";
+
+  const bestellungId = requiredInt(formData.get("bestellungId"));
+
+  if (!bestellungId) {
+    return;
+  }
+
+  const cookieStore = await cookies();
+  const mitarbeiterId = requiredInt(
+    cookieStore.get(loginCookieName)?.value ?? null,
+  );
+
+  if (!mitarbeiterId) {
+    return;
+  }
+
+  const mitarbeiter = await prisma.mitarbeiter.findUnique({
+    where: { id: mitarbeiterId },
+    select: { rolle: true },
+  });
+
+  if (mitarbeiter?.rolle !== "Admin") {
+    return;
+  }
+
+  let wurdeStorniert = false;
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const bestellung = await tx.bestellung.findUnique({
+        where: { id: bestellungId },
+        include: {
+          kunde: { select: { stammkunde: true } },
+          positionen: { select: { chargeId: true, menge: true } },
+        },
+      });
+
+      if (
+        !bestellung ||
+        bestellung.status !== "Eingegangen" ||
+        bestellung.zahlungsstatus !== "ausstehend" ||
+        getReservierungswarnung(bestellung)?.level !== "critical"
+      ) {
+        return;
+      }
+
+      const mengenProCharge = new Map<number, number>();
+
+      for (const position of bestellung.positionen) {
+        mengenProCharge.set(
+          position.chargeId,
+          (mengenProCharge.get(position.chargeId) ?? 0) + position.menge,
+        );
+      }
+
+      for (const [chargeId, reservierteMenge] of mengenProCharge) {
+        const lagerbestaende = await tx.lagerbestand.findMany({
+          where: {
+            chargeId,
+            mengeVoruebergehendReserviert: { gt: 0 },
+          },
+          orderBy: [{ id: "asc" }],
+        });
+        const verfuegbarReserviert = lagerbestaende.reduce(
+          (summe, bestand) =>
+            summe + bestand.mengeVoruebergehendReserviert,
+          0,
+        );
+
+        if (verfuegbarReserviert < reservierteMenge) {
+          throw new Error("Vorübergehende Reservierung ist inkonsistent.");
+        }
+
+        let verbleibend = reservierteMenge;
+
+        for (const bestand of lagerbestaende) {
+          if (verbleibend === 0) {
+            break;
+          }
+
+          const freizugeben = Math.min(
+            verbleibend,
+            bestand.mengeVoruebergehendReserviert,
+          );
+
+          await tx.lagerbestand.update({
+            where: { id: bestand.id },
+            data: {
+              mengeVoruebergehendReserviert: { decrement: freizugeben },
+            },
+          });
+          verbleibend -= freizugeben;
+        }
+      }
+
+      await tx.bestellung.update({
+        where: { id: bestellung.id },
+        data: { status: "storniert" },
+      });
+      wurdeStorniert = true;
+    });
+  } catch {
+    return;
+  }
+
+  if (!wurdeStorniert) {
+    return;
+  }
+
+  redirectAfterSave("bestellungen", "stornierung", bestellungId);
 }
 
 async function createAboBox(formData: FormData) {
@@ -2267,6 +2392,12 @@ export default async function Home({
       detail: "Füge jetzt die Produkte zur Bestellung hinzu.",
       nextHref: "/?tab=bestellungen",
       nextLabel: "Produkte hinzufügen",
+    },
+    stornierung: {
+      title: "Bestellung storniert",
+      detail: "Die vorübergehend reservierten Mengen wurden freigegeben.",
+      nextHref: "/?tab=bestellungen",
+      nextLabel: "Bestellungen prüfen",
     },
     bestellposition: {
       title: "Produkt zur Bestellung hinzugefügt",
@@ -4511,6 +4642,23 @@ export default async function Home({
                       <button type="submit">Änderungen speichern</button>
                     </form>
                   </details>
+                  {getReservierungswarnung(bestellung)?.level === "critical" ? (
+                    <details className="edit-section">
+                      <summary>Manuelle Stornierung</summary>
+                      <form action={storniereBestellung} className="inline-form">
+                        <input
+                          name="bestellungId"
+                          type="hidden"
+                          value={bestellung.id}
+                        />
+                        <p className="warning-text critical">
+                          Die Bestellung wird storniert und ihre vorübergehende
+                          Lagerreservierung freigegeben.
+                        </p>
+                        <button type="submit">Bestellung stornieren</button>
+                      </form>
+                    </details>
+                  ) : null}
                 </article>
               ))}
             </div>

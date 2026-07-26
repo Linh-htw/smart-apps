@@ -148,7 +148,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-027` bucht beim Anlegen einer Bestellposition im selben Transaktionsschritt auch den Lagerbestand: ausstehende Bestellungen erhoehen `mengeVoruebergehendReserviert`, bezahlte Bestellungen erhoehen `mengeVerbindlichReserviert`. Die Buchung erfolgt am vorhandenen Lagerort der Charge, sonst am Standardort `Werkstatt`. Verkaufsevent-Positionen reduzieren die freie Chargenmenge ueber `mengeMitgenommen`. Abo-Abwicklung und Retouren werden erst angebunden, sobald ihre Fachmodelle existieren.
 
-`NW-007` ergaenzt manuelle Reservierungswarnungen in der aktiven Arbeitsansicht. Ausstehende B2C-Neukunden werden ab Tag 3 gewarnt und ab Tag 5 zur manuellen Stornierungspruefung markiert; Stammkunden ab Tag 7 beziehungsweise Tag 10. Es erfolgt keine automatische Stornierung.
+`NW-007` ergaenzt manuelle Reservierungswarnungen in der aktiven Arbeitsansicht. Ausstehende B2C-Neukunden werden ab Tag 3 gewarnt und koennen ab Tag 5 durch einen Admin manuell storniert werden; fuer Stammkunden gelten Tag 7 beziehungsweise Tag 10. Die Stornierung und die Freigabe aller voruebergehend reservierten Mengen der Bestellung erfolgen gemeinsam in einer Transaktion. Rolle, Zahlungsstatus, Bestellstatus und Frist werden serverseitig geprueft. Es erfolgt keine automatische Stornierung.
 
 `NW-009` ergaenzt eine Packer-spezifische Tages-Packliste für verbindliche Bestellungen mit Bestellpositionen. Die Ansicht zeigt nur Name, Lieferadresse, Produkt, Menge und zugewiesene Charge mit MHD. Preise, Zahlungsstatus und weitere Kundendaten bleiben für Packer ausgeblendet; Paketstatus folgt mit der Paketverwaltung.
 

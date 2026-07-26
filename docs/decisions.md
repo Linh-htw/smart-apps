@@ -731,3 +731,16 @@ Packer können den Status eines ihnen zugewiesenen Pakets direkt in der Tages-Pa
 - Packer bleiben auf den Tab `Packen` beschränkt.
 - Die Statusänderung kann nicht zur Bearbeitung anderer Paket- oder Bestelldaten verwendet werden.
 - Beim Status `Zugestellt` gelten weiterhin Allergenprüfung, automatischer Bestellabschluss und Stammkundenaktualisierung.
+
+## 2026-07-26 - Unbezahlte Bestellungen manuell stornieren
+
+**Kontext:** `GR-02` und `W-2` verbieten eine automatische Stornierung, verlangen nach Ablauf der jeweiligen Frist aber eine manuelle Entscheidung durch Nina. Bisher zeigte die App nur den Prüfhinweis.
+
+### Entscheidung
+Ein Admin kann eine unbezahlte Bestellung im Status `Eingegangen` nach Ablauf der Frist manuell stornieren: B2C-Neukunden ab Tag 5, B2C-Stammkunden ab Tag 10. Die App setzt den Bestellstatus auf `storniert` und gibt die durch ihre Bestellpositionen vorübergehend reservierten Lagermengen innerhalb derselben Transaktion frei.
+
+### Konsequenzen
+- Vor Ablauf der Frist ist die Stornierungsaktion nicht verfügbar.
+- Andere Rollen können die Aktion weder über die Oberfläche noch über einen direkten Server-Action-Aufruf ausführen.
+- Stornierte oder abgeschlossene Bestellungen können nicht über das allgemeine Bearbeitungsformular wieder geöffnet werden.
+- Inkonsistente Reservierungsmengen führen zum Abbruch der gesamten Stornierung.
