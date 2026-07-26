@@ -3239,7 +3239,7 @@ export default async function Home({
             <h2 id="login-heading">Anmelden</h2>
 
             <label>
-              Mitarbeiter
+              Rolle
               <select name="loginMitarbeiterId" required>
                 {mitarbeiter.map((person) => (
                   <option key={person.id} value={person.id}>
