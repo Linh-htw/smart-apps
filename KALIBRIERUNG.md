@@ -14,7 +14,7 @@
 
 **Konfidenz:** 10/10
 
-**Wie geprüft?** Ich habe versucht, einer Bestellung ein allergenbehaftetes Produkt zunächst ohne und anschließend mit Allergenbestätigung hinzuzufügen. Ohne die Auswahl „Allergenliste gelesen und vom Kunden bestätigt“ wurde die Bestellposition nicht angelegt. Nach dem Setzen der Bestätigung konnte ich das Produkt hinzufügen. Die erforderliche Bestätigung wird somit bereits beim Hinzufügen des Produkts erzwungen.
+**Wie geprüft?** Ich habe versucht, einer Bestellung ein allergenbehaftetes Produkt zunächst ohne und anschließend mit Allergenbestätigung hinzuzufügen. Ohne die Auswahl `Allergenliste gelesen und vom Kunden bestätigt` konnte die Bestellposition nicht angelegt werden. Erst nach dem Setzen der Bestätigung konnte dieses Produkt der Bestellung hinzufügt werden.
 
 ## 3. Datenmodell: n:m Bestellung zu Produkt
 
@@ -22,7 +22,7 @@
 
 **Konfidenz:** 10/10
 
-**Wie geprüft?** Ich habe mehrere Produkte als einzelne Bestellpositionen zu einer Bestellung hinzugefügt. Außerdem konnte ich dasselbe Produkt über jeweils eine Bestellposition mehreren Bestellungen zuordnen.
+**Wie geprüft?** Bei einer Bestellung konnte ich mehrere Produkte als einzelne Bestellpositionen zu einer Bestellung hinzugefügen. Außerdem konnte ich dasselbe Produkt über jeweils eine Bestellposition mehreren Bestellungen zuordnen.
 
 ## 4. Widerspruchsauflösung: Keine automatische Stornierung
 
@@ -38,4 +38,4 @@
 
 **Konfidenz:** 10/10
 
-**Wie geprüft?** Ich habe Mitarbeitende mit den Rollen Admin, Packer und Werkstatt-Hilfe angelegt, mich nacheinander mit jeder Rolle angemeldet und die sichtbaren Bereiche sowie die verfügbaren Aktionen geprüft. Als Admin konnte ich auf alle Bereiche zugreifen. Als Packer sah ich ausschließlich die Tages-Packliste und die Paketstatuspflege. Als Werkstatt-Hilfe konnte ich nur den Bereich zur Chargenanlage verwenden.
+**Wie geprüft?** Ich habe Mitarbeitende mit den Rollen Admin, Packer und Werkstatt-Hilfe angelegt, mich nacheinander mit jeder Rolle angemeldet und die sichtbaren Bereiche sowie die verfügbaren Aktionen geprüft. Als Admin konnte ich auf alle Bereiche zugreifen. Als Packer sah ich ausschließlich die Tages-Packliste und nur den Paketstatus durfte ich bearbeiten. Als Werkstatt-Hilfe konnte ich nur den Bereich zur Chargenanlage verwenden.
