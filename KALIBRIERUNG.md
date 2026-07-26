@@ -6,7 +6,7 @@
 
 **Konfidenz:** 9/10
 
-**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene Chargen mit unterschiedlichen MHD-Daten und Beständen angelegt. Beim Anlegen einer Bestellposition wurde die Charge mit dem frühesten MHD zugewiesen, sofern sie über eine ausreichende freie Menge verfügte. Reichte ihr Bestand nicht aus, wählte die App automatisch die geeignete Charge mit dem nächstfrühesten MHD.
+**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene Chargen mit unterschiedlichen MHD-Daten und Beständen angelegt. Beim Anlegen einer Bestellposition wurde der Bestellposition die Charge mit dem frühesten MHD zugewiesen, sofern sie über eine ausreichende freie Menge verfügte. Reichte ihr Bestand nicht aus, wählte die App automatisch die geeignete Charge mit dem nächstfrühesten MHD.
 
 ## 2. Business Rule: Allergenbestätigung vor Bestellabschluss
 
@@ -30,12 +30,12 @@
 
 **Konfidenz:** 10/10
 
-**Wie geprüft?** Ich habe unbezahlte Bestellungen für einen B2C-Neukunden und einen B2C-Stammkunden mit unterschiedlichen Bestelldaten getestet. Beim Neukunden erschien nach drei Tagen eine Zahlungswarnung und ab Tag fünf der Hinweis, eine manuelle Stornierung zu prüfen. Beim Stammkunden erschien die Warnung nach sieben Tagen und der Stornierungshinweis ab Tag zehn. In allen Fällen blieb der Bestellstatus `Eingegangen` und wechselte nicht automatisch zu `storniert`. Im Tab `Bestellungen` erschien für den Admin bei den entsprechenden Bestellungen die Option zur manuellen Stornierung.
+**Wie geprüft?** Ich habe unbezahlte Bestellungen für B2C-Neukunden und B2C-Stammkunden mit unterschiedlichen Bestelldaten getestet. Beim Neukunden erschien nach drei Tagen eine Zahlungswarnung im Übersichtsfenster und ab Tag fünf der Hinweis, eine manuelle Stornierung zu prüfen. Beim Stammkunden erschien die Warnung nach sieben Tagen und der Stornierungshinweis ab Tag zehn. In allen Fällen blieb der Bestellstatus `Eingegangen` und wechselte nicht automatisch zu `Storniert`. (Im Tab `Bestellungen` erschien für den Admin bei den entsprechenden Bestellungen die Option zur manuellen Stornierung.)
 
 ## 5. Frei: Rollentrennung mit verschiedenen Zugriffsrechten
 
-**Aussage:** Der Admin hat Vollzugriff. Die Werkstatt-Hilfe darf ausschließlich Chargen anlegen. Der Packer sieht nur die Tages-Packliste und darf den jeweiligen Paketstatus bearbeiten.
+**Aussage:** Der Admin hat Vollzugriff. Die Werkstatt-Hilfe darf ausschließlich Chargen anlegen oder bearbeiten. Der Packer sieht nur die Tages-Packliste und darf den jeweiligen Paketstatus bearbeiten.
 
 **Konfidenz:** 10/10
 
-**Wie geprüft?** Ich habe Mitarbeitende mit den Rollen Admin, Packer und Werkstatt-Hilfe angelegt, mich nacheinander mit jeder Rolle angemeldet und die sichtbaren Bereiche sowie die verfügbaren Aktionen geprüft. Als Admin konnte ich alle Bereiche aufrufen und die dortigen Daten bearbeiten. Als Packer sah ich ausschließlich die Tages-Packliste und durfte nur den Paketstatus bearbeiten. Als Werkstatt-Hilfe konnte ich nur den Bereich zur Chargenanlage verwenden. Änderungen durch andere Mitarbeitende waren anschließend auch im Admin-Konto sichtbar.
+**Wie geprüft?** Ich habe Mitarbeitende mit den Rollen Admin, Packer und Werkstatt-Hilfe angelegt, mich nacheinander mit jeder Rolle angemeldet und die sichtbaren Bereiche sowie die verfügbaren Aktionen geprüft. Als Admin konnte ich alle Bereiche aufrufen und die dortigen Daten bearbeiten. Als Packer sah ich ausschließlich die Tages-Packliste und durfte nur den Paketstatus ändern. Als Werkstatt-Hilfe konnte ich ausschließlich Chargen anzeigen, anlegen und bearbeiten. Änderungen durch andere Mitarbeitende waren anschließend auch im Admin-Konto sichtbar.
