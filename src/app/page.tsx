@@ -5326,22 +5326,15 @@ export default async function Home({
                   Allergenliste gelesen und vom Kunden bestätigt
                 </label>
 
-                <div className="fifo-box">
-                  <p className="eyebrow">FIFO-Zuteilung</p>
-                  <p>
-                    Die passende Charge wird beim Speichern anhand der
-                    Bestellmenge, des verfügbaren Bestands, des frühesten MHD
-                    und des B2C-Puffers ermittelt.
-                  </p>
-                </div>
-
                 <button type="submit">Position speichern</button>
               </>
             )}
           </form>
 
           <section className="panel list-panel" aria-labelledby="positionen-heading">
-            <h2 id="positionen-heading">Bestellpositionen</h2>
+            <h2 id="positionen-heading">
+              Bestellpositionen mit automatischer FIFO-Zuteilung
+            </h2>
             {filteredBestellpositionen.length === 0 ? (
               <p className="empty-state">Noch keine Bestellpositionen erfasst.</p>
             ) : (

@@ -814,6 +814,7 @@ Die gespeicherte Bestellposition bezeichnet die konkrete Auswahl als `Zugewiesen
 ### Konsequenzen
 - Das Ergebnis der FIFO-Zuteilung ist unmittelbar nach dem Speichern nachvollziehbar.
 - Die Packliste zeigt die Charge weiterhin zusaetzlich fuer die operative Arbeit des Packers.
+- Ein dauerhafter Erklaerungstext im Anlageformular entfaellt; stattdessen benennt die Ergebnisliste die automatische FIFO-Zuteilung eindeutig.
 
 ## 2026-07-26 - Keine automatische Weiterleitung nach Speicheraktionen
 
