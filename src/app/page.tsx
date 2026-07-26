@@ -1844,6 +1844,80 @@ async function updatePaketstatus(formData: FormData) {
   redirectAfterSave("versand", "paket", paket.id);
 }
 
+async function updatePackerPaketstatus(formData: FormData) {
+  "use server";
+
+  const paketId = requiredInt(formData.get("paketId"));
+  const status = formData.get("paketStatus")?.toString() ?? "";
+
+  if (!paketId || !isPaketstatus(status)) {
+    return;
+  }
+
+  const cookieStore = await cookies();
+  const mitarbeiterId = requiredInt(
+    cookieStore.get(loginCookieName)?.value ?? null,
+  );
+
+  if (!mitarbeiterId) {
+    return;
+  }
+
+  const [mitarbeiter, paket] = await Promise.all([
+    prisma.mitarbeiter.findUnique({
+      where: { id: mitarbeiterId },
+      select: { id: true, rolle: true },
+    }),
+    prisma.paket.findUnique({
+      where: { id: paketId },
+      select: {
+        id: true,
+        mitarbeiterId: true,
+        bestellungId: true,
+        bestellung: {
+          select: {
+            kundeId: true,
+            allergeneBestaetigt: true,
+            positionen: {
+              select: { produkt: { select: { allergene: true } } },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  const darfStatusBearbeiten =
+    mitarbeiter?.rolle === "Admin" ||
+    (mitarbeiter?.rolle === "Packer" &&
+      paket?.mitarbeiterId === mitarbeiter.id);
+
+  if (!paket || !darfStatusBearbeiten) {
+    return;
+  }
+
+  if (status === "Zugestellt" && hatUnbestaetigteAllergene(paket.bestellung)) {
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.paket.update({
+      where: { id: paket.id },
+      data: { status },
+    });
+
+    if (status === "Zugestellt") {
+      await tx.bestellung.update({
+        where: { id: paket.bestellungId },
+        data: { status: "abgeschlossen" },
+      });
+      await aktualisiereStammkundeStatus(tx, paket.bestellung.kundeId);
+    }
+  });
+
+  redirectAfterSave("packliste", "paketstatus", paket.id);
+}
+
 async function createRetoure(formData: FormData) {
   "use server";
 
@@ -2205,6 +2279,12 @@ export default async function Home({
       detail: "Tracking und Zustellung können im Versandbereich weiter gepflegt werden.",
       nextHref: "/?tab=versand",
       nextLabel: "Versand prüfen",
+    },
+    paketstatus: {
+      title: "Paketstatus gespeichert",
+      detail: "Der neue Status ist in der Tages-Packliste sichtbar.",
+      nextHref: "/?tab=packliste",
+      nextLabel: "Zur Tages-Packliste",
     },
     retoure: {
       title: "Retoure gespeichert",
@@ -3486,9 +3566,39 @@ export default async function Home({
                           <span className="status-pill">Kein Paket</span>
                         ) : (
                           pakete.map((paket) => (
-                            <span className="status-pill" key={paket.id}>
-                              Paket #{paket.id}: {paket.status}
-                            </span>
+                            <div className="task-meta" key={paket.id}>
+                              <span className="status-pill">
+                                Paket #{paket.id}: {paket.status}
+                              </span>
+                              {activeRolle === "Admin" ||
+                              paket.mitarbeiterId === selectedMitarbeiter?.id ? (
+                                <form
+                                  action={updatePackerPaketstatus}
+                                  className="inline-form"
+                                >
+                                  <input
+                                    name="paketId"
+                                    type="hidden"
+                                    value={paket.id}
+                                  />
+                                  <label>
+                                    Paketstatus
+                                    <select
+                                      defaultValue={paket.status}
+                                      name="paketStatus"
+                                      required
+                                    >
+                                      {paketstatusWerte.map((status) => (
+                                        <option key={status} value={status}>
+                                          {status}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </label>
+                                  <button type="submit">Status speichern</button>
+                                </form>
+                              ) : null}
+                            </div>
                           ))
                         )}
                       </div>

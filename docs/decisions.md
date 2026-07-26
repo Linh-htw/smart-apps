@@ -719,3 +719,15 @@ Die App speichert die Bestätigung als Boolean `Bestellung.allergeneBestaetigt`.
 - Der verpflichtende Allergen-Workflow und die Abschlussprüfung bleiben unverändert.
 - Die Oberfläche zeigt nur noch an, ob die Allergene bestätigt wurden.
 - Die frühere technische Konkretisierung als Timestamp ist durch diese Entscheidung ersetzt.
+
+## 2026-07-26 - Packer dürfen den Paketstatus in der Packliste ändern
+
+**Kontext:** Die Packer-Ansicht zeigte den Paketstatus bisher nur an. `GR-09` sieht für Packer neben der Tages-Packliste auch die Pflege des Paketstatus vor.
+
+### Entscheidung
+Packer können den Status eines ihnen zugewiesenen Pakets direkt in der Tages-Packliste ändern. Andere Paketdaten wie Versandoption, Versandkosten, Trackingnummer sowie Versand- und Zustelldatum bleiben dort unveränderbar. Die Server Action prüft die angemeldete Rolle und die Paketzuordnung; Admins dürfen die Statusfunktion ebenfalls verwenden.
+
+### Konsequenzen
+- Packer bleiben auf den Tab `Packen` beschränkt.
+- Die Statusänderung kann nicht zur Bearbeitung anderer Paket- oder Bestelldaten verwendet werden.
+- Beim Status `Zugestellt` gelten weiterhin Allergenprüfung, automatischer Bestellabschluss und Stammkundenaktualisierung.
