@@ -861,3 +861,15 @@ Der neue Filter `Bezahlt` zeigt Bestellungen mit Zahlungsstatus `bezahlt`, sofer
 ### Konsequenzen
 - Bezahlte Bestellungen in aktiver Bearbeitung sind direkt auffindbar.
 - Abgeschlossene Bestellungen bleiben im Archiv und erscheinen nicht zusaetzlich unter `Bezahlt`.
+
+## 2026-07-26 - Pro Bestellung nur ein Paket anlegen
+
+**Kontext:** Bereits einem Paket zugeordnete Bestellungen blieben im Formular `Paket anlegen` auswaehlbar. Dadurch konnte dieselbe Bestellung versehentlich mehrfach als neues Paket erfasst werden.
+
+### Entscheidung
+Die Bestellungsauswahl bietet nur Bestellungen an, fuer die noch kein Paket existiert. Beim Speichern wird serverseitig erneut geprueft, dass die Bestellung weiterhin paketlos ist.
+
+### Konsequenzen
+- Bereits verpackte Bestellungen verschwinden aus der Neuanlage-Auswahl.
+- Vorhandene Pakete bleiben im Versandbereich bearbeitbar.
+- Doppelte Paketanlagen ueber manipulierte Formulardaten werden abgewiesen.

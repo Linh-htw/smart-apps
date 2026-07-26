@@ -2134,6 +2134,7 @@ async function createPaket(formData: FormData) {
         id: true,
         kundeId: true,
         allergeneBestaetigt: true,
+        pakete: { select: { id: true }, take: 1 },
         positionen: { select: { produkt: { select: { allergene: true } } } },
       },
     }),
@@ -2143,7 +2144,12 @@ async function createPaket(formData: FormData) {
     }),
   ]);
 
-  if (!bestellung || !mitarbeiter || mitarbeiter.rolle !== "Packer") {
+  if (
+    !bestellung ||
+    bestellung.pakete.length > 0 ||
+    !mitarbeiter ||
+    mitarbeiter.rolle !== "Packer"
+  ) {
     return;
   }
 
@@ -2791,21 +2797,26 @@ export default async function Home({
   const packerMitarbeiter = mitarbeiter.filter(
     (person) => person.rolle === "Packer",
   );
-  const bestellungenMitVersandkosten = bestellungen.map((bestellung) => {
-    const positionen = bestellpositionen.filter(
-      (position) => position.bestellungId === bestellung.id,
-    );
-    const bestellwert = getBestellwert(positionen);
+  const bestellungenMitVersandkosten = bestellungen
+    .filter(
+      (bestellung) =>
+        !pakete.some((paket) => paket.bestellungId === bestellung.id),
+    )
+    .map((bestellung) => {
+      const positionen = bestellpositionen.filter(
+        (position) => position.bestellungId === bestellung.id,
+      );
+      const bestellwert = getBestellwert(positionen);
 
-    return {
-      bestellung,
-      bestellwert,
-      versandkostenVorschlag: getVersandkostenVorschlag({
-        ...bestellung,
-        positionen,
-      }),
-    };
-  });
+      return {
+        bestellung,
+        bestellwert,
+        versandkostenVorschlag: getVersandkostenVorschlag({
+          ...bestellung,
+          positionen,
+        }),
+      };
+    });
   const retourenfaehigePositionen = bestellpositionen
     .map((position) => {
       const frist = getRetourenfrist(position.bestellung);
@@ -5520,9 +5531,10 @@ export default async function Home({
           <form action={createPaket} className="panel form-panel">
             <h2>Paket anlegen</h2>
 
-            {bestellungen.length === 0 || packerMitarbeiter.length === 0 ? (
+            {bestellungenMitVersandkosten.length === 0 ||
+            packerMitarbeiter.length === 0 ? (
               <p className="empty-state">
-                Zuerst Bestellung und Packer anlegen.
+                Es wird eine Bestellung ohne Paket und ein Packer benötigt.
               </p>
             ) : (
               <>
