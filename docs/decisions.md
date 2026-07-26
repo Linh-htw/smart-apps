@@ -792,3 +792,14 @@ Ein Admin kann Produkt und Menge einer offenen Bestellposition bearbeiten. Die b
 - Mengen- und Produktkorrekturen bleiben mit dem Lagerbestand konsistent.
 - Die zugehörige Bestellung kann über die Positionsbearbeitung nicht gewechselt werden.
 - Schlägt Validierung, FIFO-Zuteilung oder Reservierung fehl, wird die gesamte Änderung zurückgerollt.
+
+## 2026-07-26 - Statischen FIFO-Vorschlag aus dem Formular entfernt
+
+**Kontext:** Der bisher angezeigte FIFO-Vorschlag zeigte je Produkt lediglich die erste Charge mit freiem Bestand. Er beruecksichtigte die erst danach eingegebene Bestellmenge sowie den B2B-Puffer nicht und konnte deshalb beispielsweise fuer 50 bestellte Einheiten eine Charge mit nur 15 freien Einheiten anzeigen.
+
+### Entscheidung
+Das Formular verspricht vor dem Speichern keine konkrete Charge mehr. Es erklaert, dass die serverseitige FIFO-Zuteilung beim Speichern Bestellmenge, freien Bestand, fruehestes MHD und B2C-Puffer gemeinsam prueft.
+
+### Konsequenzen
+- Die Oberflaeche zeigt keine Charge mehr an, die fuer die eingegebene Menge ungeeignet sein kann.
+- Die bestehende serverseitige FIFO- und B2B-Pufferlogik bleibt unveraendert.

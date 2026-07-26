@@ -2807,25 +2807,14 @@ export default async function Home({
     (retoure) =>
       retoure.status !== "Abgelehnt" && retoure.status !== "Abgeschlossen",
   );
-  const fifoVorschlaege = produkte
-    .map((produkt) => {
-      const charge = chargen.find(
-        (charge) =>
-          charge.produktId === produkt.id &&
-          charge.status === "freigegeben" &&
-          getFreieMenge(charge) > 0,
-      );
-
-      return charge
-        ? {
-            produkt,
-            charge,
-            verfuegbar: getFreieMenge(charge),
-            puffer: getGanzePuffermenge(produkt.b2cPuffermenge),
-          }
-        : null;
-    })
-    .filter((vorschlag) => vorschlag !== null);
+  const produkteMitFreiemBestand = produkte.filter((produkt) =>
+    chargen.some(
+      (charge) =>
+        charge.produktId === produkt.id &&
+        charge.status === "freigegeben" &&
+        getFreieMenge(charge) > 0,
+    ),
+  );
   const produktKnappheiten = produkte
     .map((produkt) => {
       const produktChargen = chargen.filter(
@@ -5291,7 +5280,8 @@ export default async function Home({
           <form action={createBestellposition} className="panel form-panel">
             <h2>Bestellposition anlegen</h2>
 
-            {bestellungen.length === 0 || fifoVorschlaege.length === 0 ? (
+            {bestellungen.length === 0 ||
+            produkteMitFreiemBestand.length === 0 ? (
               <p className="empty-state">
                 Zuerst Bestellung und freigegebene Charge mit Bestand anlegen.
               </p>
@@ -5315,14 +5305,11 @@ export default async function Home({
                 <label>
                   Produkt
                   <select name="positionProduktId" required>
-                    {fifoVorschlaege.map((vorschlag) => (
-                      <option
-                        key={vorschlag.produkt.id}
-                        value={vorschlag.produkt.id}
-                      >
-                        {vorschlag.produkt.name}
-                        {vorschlag.produkt.allergene
-                          ? ` - Allergene: ${vorschlag.produkt.allergene}`
+                    {produkteMitFreiemBestand.map((produkt) => (
+                      <option key={produkt.id} value={produkt.id}>
+                        {produkt.name}
+                        {produkt.allergene
+                          ? ` - Allergene: ${produkt.allergene}`
                           : ""}
                       </option>
                     ))}
@@ -5340,26 +5327,12 @@ export default async function Home({
                 </label>
 
                 <div className="fifo-box">
-                  <p className="eyebrow">FIFO-Vorschlag</p>
-                  <div className="customer-list">
-                    {fifoVorschlaege.map((vorschlag) => (
-                      <article className="task-item" key={vorschlag.produkt.id}>
-                        <div>
-                          <h3>{vorschlag.produkt.name}</h3>
-                          <p>B2C-Puffer: {vorschlag.puffer}</p>
-                          <p>
-                            Charge #{vorschlag.charge.id} · MHD{" "}
-                            {formatDate(vorschlag.charge.mhd)}
-                          </p>
-                        </div>
-                        <div className="task-meta">
-                          <span className="status-pill">
-                            {vorschlag.verfuegbar} verfügbar
-                          </span>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
+                  <p className="eyebrow">FIFO-Zuteilung</p>
+                  <p>
+                    Die passende Charge wird beim Speichern anhand der
+                    Bestellmenge, des verfügbaren Bestands, des frühesten MHD
+                    und des B2C-Puffers ermittelt.
+                  </p>
                 </div>
 
                 <button type="submit">Position speichern</button>

@@ -144,7 +144,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-029` ergaenzt `Bestellposition` als Verbindung zwischen Bestellung, Produkt, Charge und Menge. Beim Anlegen wird serverseitig geprueft, dass die zugewiesene Charge zum gewählten Produkt gehoert. Automatische Bestandsreservierung folgt separat in den Lagerfeatures.
 
-`NW-008` weist Bestellpositionen serverseitig per FIFO der freigegebenen Charge mit fruehestem MHD zu, sofern genuegend verfügbare Menge vorhanden ist. Verfügbarkeit wird aus produzierter Chargenmenge minus gebuchten Lagerreservierungen berechnet.
+`NW-008` weist Bestellpositionen serverseitig per FIFO der freigegebenen Charge mit fruehestem MHD zu, sofern genuegend verfügbare Menge vorhanden ist. Verfügbarkeit wird aus produzierter Chargenmenge minus gebuchten Lagerreservierungen berechnet. Das Formular zeigt vor dem Speichern keine konkrete Charge als Vorschlag, weil die korrekte Auswahl von Bestellung, Bestellmenge und B2B-Puffer abhaengt; die konkrete Charge wird erst bei der serverseitigen Speicherung bestimmt.
 
 `NW-027` bucht beim Anlegen einer Bestellposition im selben Transaktionsschritt auch den Lagerbestand: ausstehende Bestellungen erhoehen `mengeVoruebergehendReserviert`, bezahlte Bestellungen erhoehen `mengeVerbindlichReserviert`. Die Buchung erfolgt am vorhandenen Lagerort der Charge, sonst am Standardort `Werkstatt`. Beim Bearbeiten einer offenen Bestellposition werden alte Reservierung, erneute FIFO-Zuteilung und neue Reservierung gemeinsam transaktional ausgefuehrt. Abgeschlossene, stornierte oder bereits mit einer Retoure verknuepfte Positionen sind nicht bearbeitbar. Verkaufsevent-Positionen reduzieren die freie Chargenmenge ueber `mengeMitgenommen`.
 

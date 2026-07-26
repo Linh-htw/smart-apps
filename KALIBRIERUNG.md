@@ -4,7 +4,7 @@
 
 **Aussage:** Beim Anlegen einer Bestellposition wählt die App automatisch eine freigegebene Charge desselben Produkts mit ausreichender freier Menge und frühestem MHD.
 
-**Konfidenz:** 9/10
+**Konfidenz:** 7/10
 
 **Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene und gesperrte Chargen mit unterschiedlichen MHD-Daten angelegt und anschließend eine Bestellposition erstellt. Die App hat automatisch die freigegebene Charge mit dem frühesten MHD zugewiesen, sofern dort eine ausreichende freie Menge verfügbar war.
 
