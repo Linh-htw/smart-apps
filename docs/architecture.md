@@ -162,7 +162,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-014` erweitert die Bestandszuteilung für B2B-Bestellungen. Wenn eine B2B-Bestellposition mindestens 50 Einheiten umfasst, darf die FIFO-Zuteilung nur eine Charge waehlen, bei der nach der Reservierung mindestens die am Produkt gepflegte B2C-Puffermenge frei bleibt. B2B-Bestellpositionen unter 50 Einheiten werden wie B2C behandelt.
 
-`NW-025` ergaenzt `Bestellung.allergeneBestaetigtAm` als Timestamp für die Allergenbestätigung. Beim Anlegen einer Bestellposition mit einem Produkt, dessen `allergene`-Feld befuellt ist, muss die Bestätigung gesetzt oder bereits vorhanden sein. Eine Bestellung mit allergenbehafteten Positionen ohne Timestamp kann nicht ueber den Paketstatus `Zugestellt` auf `abgeschlossen` wechseln.
+`NW-025` ergaenzt `Bestellung.allergeneBestaetigt` als Boolean fuer die Allergenbestätigung. Beim Anlegen einer Bestellposition mit einem Produkt, dessen `allergene`-Feld befuellt ist, muss die Bestätigung gesetzt oder bereits vorhanden sein. Eine Bestellung mit allergenbehafteten Positionen ohne Bestätigung kann nicht ueber den Paketstatus `Zugestellt` auf `abgeschlossen` wechseln.
 
 `NW-038` berechnet einen Versandkosten-Vorschlag für Pakete nach `GR-13`: B2C ab 39,00 EUR Warenwert versandkostenfrei, darunter 4,50 EUR; B2B- und Abo-Bestellungen immer versandkostenfrei. Der Vorschlag wird beim Anlegen eines Pakets als Default angezeigt, bleibt aber manuell ueberschreibbar, weil die automatische Versandkostenberechnung als separates späteres Feature (`NW-021`) gefuehrt wird.
 

@@ -427,11 +427,11 @@ function getNextBestellschritt(bestellung: {
 }
 
 function hatUnbestaetigteAllergene(bestellung: {
-  allergeneBestaetigtAm: Date | null;
+  allergeneBestaetigt: boolean;
   positionen: Array<{ produkt: { allergene: string | null } }>;
 }) {
   return (
-    !bestellung.allergeneBestaetigtAm &&
+    !bestellung.allergeneBestaetigt &&
     bestellung.positionen.some((position) =>
       Boolean(position.produkt.allergene?.trim()),
     )
@@ -1213,9 +1213,7 @@ async function createAboAbwicklung(formData: FormData) {
             datum: abwicklungsdatum,
             kanal: "Abo",
             lieferadresse: eintrag.aboBox.lieferadresse,
-            allergeneBestaetigtAm: brauchtAllergenbestaetigung
-              ? new Date()
-              : null,
+            allergeneBestaetigt: brauchtAllergenbestaetigung,
             zahlungsstatus: "bezahlt",
             status: "verbindlich",
             aboAbwicklungId: abwicklung.id,
@@ -1277,7 +1275,7 @@ async function createBestellposition(formData: FormData) {
       where: { id: bestellungId },
       select: {
         id: true,
-        allergeneBestaetigtAm: true,
+        allergeneBestaetigt: true,
         zahlungsstatus: true,
         kunde: { select: { typ: true } },
       },
@@ -1306,7 +1304,7 @@ async function createBestellposition(formData: FormData) {
   if (
     brauchtAllergenbestaetigung &&
     !allergenBestaetigt &&
-    !bestellung.allergeneBestaetigtAm
+    !bestellung.allergeneBestaetigt
   ) {
     return;
   }
@@ -1335,7 +1333,7 @@ async function createBestellposition(formData: FormData) {
     if (brauchtAllergenbestaetigung && allergenBestaetigt) {
       await tx.bestellung.update({
         where: { id: bestellungId },
-        data: { allergeneBestaetigtAm: new Date() },
+        data: { allergeneBestaetigt: true },
       });
     }
 
@@ -1741,7 +1739,7 @@ async function createPaket(formData: FormData) {
       select: {
         id: true,
         kundeId: true,
-        allergeneBestaetigtAm: true,
+        allergeneBestaetigt: true,
         positionen: { select: { produkt: { select: { allergene: true } } } },
       },
     }),
@@ -1808,7 +1806,7 @@ async function updatePaketstatus(formData: FormData) {
       bestellung: {
         select: {
           kundeId: true,
-          allergeneBestaetigtAm: true,
+          allergeneBestaetigt: true,
           positionen: { select: { produkt: { select: { allergene: true } } } },
         },
       },
@@ -2155,14 +2153,14 @@ export default async function Home({
     { id: "kunden", label: "Kunden", visible: canManageCustomers },
     { id: "produkte", label: "Produkte", visible: canManageProducts },
     { id: "bestellungen", label: "Bestellungen", visible: canManageOrders },
-    { id: "versand", label: "Versand & Pakete", visible: canManageOrders },
-    { id: "retouren", label: "Retouren", visible: canManageOrders },
     { id: "abo", label: "Abo-Boxen", visible: canManageOrders },
     {
       id: "lager",
       label: "Lager & Chargen",
       visible: canCreateBatches || canManageInventory,
     },
+    { id: "versand", label: "Versand & Pakete", visible: canManageOrders },
+    { id: "retouren", label: "Retouren", visible: canManageOrders },
     {
       id: "mitarbeitende",
       label: "Mitarbeitende",
@@ -2409,7 +2407,7 @@ export default async function Home({
     .filter(
       (eintrag) =>
         eintrag.positionen.length > 0 &&
-        !eintrag.bestellung.allergeneBestaetigtAm,
+        !eintrag.bestellung.allergeneBestaetigt,
     );
   const stammkundenInaktiv = kunden
     .filter((kunde) => kunde.stammkunde)
@@ -4324,10 +4322,10 @@ export default async function Home({
                     <dd>
                       <span className="status-pill">{bestellung.status}</span>
                     </dd>
-                    {bestellung.allergeneBestaetigtAm ? (
+                    {bestellung.allergeneBestaetigt ? (
                       <>
                         <dt>Allergene</dt>
-                        <dd>{formatDate(bestellung.allergeneBestaetigtAm)}</dd>
+                        <dd>Bestätigt</dd>
                       </>
                     ) : null}
                     {bestellung.lieferadresse ? (
@@ -4762,7 +4760,7 @@ export default async function Home({
                       <option key={bestellung.id} value={bestellung.id}>
                         #{bestellung.id} · {bestellung.kunde.name} ·{" "}
                         {formatDate(bestellung.datum)}
-                        {bestellung.allergeneBestaetigtAm
+                        {bestellung.allergeneBestaetigt
                           ? " - Allergene bestätigt"
                           : ""}
                       </option>

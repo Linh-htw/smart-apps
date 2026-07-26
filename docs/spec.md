@@ -135,7 +135,7 @@ Der Kernnutzen liegt in einer aktiven Arbeitsansicht: offene Aufgaben, Zahlungss
 | Datum | Date |
 | Kanal | Enum |
 | Lieferadresse | String |
-| Allergenbestaetigung | DateTime |
+| Allergenbestaetigung | Boolean |
 | Zahlungsstatus | Enum |
 | Status | Enum |
 
@@ -220,7 +220,7 @@ Aufgeloeste n:m-Beziehungen:
 | GR-07 | B2C-Retourenfrist: 14 Tage ab Lieferung. B2B: 7 Tage nur bei eindeutigen Maengeln oder Transportschaeden. Abo-Box: 7 Tage fuer fehlerhafte oder beschaedigte Produkte, keine komplette Box-Retoure. |
 | GR-08 | Ungeoeffnete Ware mit mehr als vier Wochen MHD-Restlaufzeit wird wieder dem Chargenbestand zugefuehrt. Vier Wochen oder weniger werden als reduzierter Restposten gefuehrt. Geoeffnete oder beschaedigte Ware wird ausgebucht. |
 | GR-09 | Zugriffsrechte sind strikt nach Rolle getrennt: Admin Vollzugriff, Werkstatt-Hilfe nur Chargenanlage, Packer nur Tages-Packliste und Paketstatus. |
-| GR-10 | Bei allergenbehafteten Produkten muss der Kunde vor Bestellabschluss mit Timestamp bestaetigen, die Allergenliste gelesen zu haben. |
+| GR-10 | Bei allergenbehafteten Produkten muss der Kunde vor Bestellabschluss bestaetigen, die Allergenliste gelesen zu haben. |
 | GR-11 | Eine Bestellung gilt automatisch als abgeschlossen und wandert ins Archiv, sobald das Tracking die Zustellung bestaetigt. |
 | GR-12 | Acht Wochen vor MHD: 20 %-Rabattvorschlag. Dreissig Tage vor MHD: 50 %-Rabattvorschlag. Preis wird erst nach manueller Bestaetigung durch Nina geaendert. |
 | GR-13 | B2C ab 39,00 EUR versandkostenfrei, darunter 4,50 EUR. B2B- und Abo-Bestellungen immer versandkostenfrei. |

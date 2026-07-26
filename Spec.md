@@ -95,7 +95,7 @@
 | Datum | Date |
 | Kanal | Enum |
 | Lieferadresse | String |
-| Allergene gelesen | Enum |
+| Allergene gelesen | Boolean |
 | Zahlungsstatus | Enum |
 | Status | Enum |
 
@@ -193,7 +193,7 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 
 **GR-09 — Strikte Rollentrennung:** Zugriffsrechte sind strikt nach Rolle getrennt — Admin (Nina) hat Vollzugriff, Werkstatt-Hilfe darf ausschließlich Chargen anlegen, und der Packer darf nur seine Tages-Packliste mit Name, Lieferadresse, den zu packenden Produkten und der zugewiesenen Charge sehen und den Paketstatus entsprechend setzen, jeweils ohne Zugriff auf Preise, Umsätze oder vollständige Kundendaten.
 
-**GR-10 — Allergen-Bestätigung:** Bei allergenbehafteten Produkten muss der Kunde vor Bestellabschluss mit Timestamp bestätigen, die Allergenliste gelesen zu haben, sonst kann die Bestellung nicht abgeschlossen werden.
+**GR-10 — Allergen-Bestätigung:** Bei allergenbehafteten Produkten muss der Kunde vor Bestellabschluss bestätigen, die Allergenliste gelesen zu haben, sonst kann die Bestellung nicht abgeschlossen werden.
 
 **GR-11 — Bestellabschluss:** Eine Bestellung gilt automatisch als abgeschlossen und wandert ins Archiv, sobald das Tracking die Zustellung bestätigt.
 

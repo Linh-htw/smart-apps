@@ -707,3 +707,15 @@ Listen-Karten bekommen aufklappbare Bearbeiten-Bereiche für Kunden, Produkte, B
 - Testdaten können direkt in der App korrigiert werden.
 - Die UI bleibt ruhig, weil Bearbeiten-Formulare erst nach Klick sichtbar sind.
 - Bereits gebuchte oder bestandswirksame Vorgänge werden nicht nachträglich inkonsistent gemacht.
+
+## 2026-07-26 - Allergenbestätigung ohne Zeitpunkt
+
+**Kontext:** `GR-10` verlangt weiterhin eine Allergenbestätigung vor dem Bestellabschluss, aber keinen gespeicherten Bestätigungszeitpunkt mehr.
+
+### Entscheidung
+Die App speichert die Bestätigung als Boolean `Bestellung.allergeneBestaetigt`. Der bisherige Timestamp `allergeneBestaetigtAm` entfällt. Vorhandene Datensätze mit Timestamp werden bei der Migration als bestätigt übernommen; Datensätze ohne Timestamp bleiben unbestätigt.
+
+### Konsequenzen
+- Der verpflichtende Allergen-Workflow und die Abschlussprüfung bleiben unverändert.
+- Die Oberfläche zeigt nur noch an, ob die Allergene bestätigt wurden.
+- Die frühere technische Konkretisierung als Timestamp ist durch diese Entscheidung ersetzt.

@@ -10,11 +10,11 @@
 
 ## 2. Business Rule: Allergenbestätigung vor Abschluss
 
-**Aussage:** Eine Bestellung mit allergenbehafteten Produkten kann nicht über den Paketstatus `Zugestellt` abgeschlossen werden, solange `allergeneBestaetigtAm` fehlt.
+**Aussage:** Eine Bestellung mit allergenbehafteten Produkten kann nicht über den Paketstatus `Zugestellt` abgeschlossen werden, solange `allergeneBestaetigt` nicht gesetzt ist.
 
 **Konfidenz:** 9/10
 
-**Wie geprüft?** In `src/app/page.tsx` verhindern `createPaket` und `updatePaketstatus` bei `status === "Zugestellt"` den Abschluss über `hatUnbestaetigteAllergene(...)`; das Feld `allergeneBestaetigtAm` steht im Prisma-Modell `Bestellung`.
+**Wie geprüft?** In `src/app/page.tsx` verhindern `createPaket` und `updatePaketstatus` bei `status === "Zugestellt"` den Abschluss über `hatUnbestaetigteAllergene(...)`; das Boolean-Feld `allergeneBestaetigt` steht im Prisma-Modell `Bestellung`.
 
 ## 3. Datenmodell: n:m Bestellung zu Produkt
 

@@ -62,17 +62,17 @@ model Produkt {
 }
 
 model Bestellung {
-  id                    Int       @id @default(autoincrement())
-  kundeId               Int
-  datum                 DateTime
-  kanal                 String
-  lieferadresse         String?
-  allergeneBestaetigtAm DateTime?
-  zahlungsstatus        String
-  status                String
-  aboAbwicklungId       Int?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                  Int      @id @default(autoincrement())
+  kundeId             Int
+  datum               DateTime
+  kanal               String
+  lieferadresse       String?
+  allergeneBestaetigt Boolean  @default(false)
+  zahlungsstatus      String
+  status              String
+  aboAbwicklungId     Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 
   kunde         Kunde             @relation(fields: [kundeId], references: [id])
   aboAbwicklung AboAbwicklung?    @relation(fields: [aboAbwicklungId], references: [id])
@@ -85,7 +85,7 @@ model Bestellung {
   @@index([zahlungsstatus])
   @@index([status])
   @@index([datum])
-  @@index([allergeneBestaetigtAm])
+  @@index([allergeneBestaetigt])
 }
 
 model Mitarbeiter {
