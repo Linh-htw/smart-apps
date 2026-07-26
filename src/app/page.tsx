@@ -2554,7 +2554,15 @@ export default async function Home({
   const filterLinkClassName = (filter: string) =>
     activeFilter === filter ? "filter-link active" : "filter-link";
   const aktiveBestellungen = bestellungen.filter(
-    (bestellung) => bestellung.status !== "storniert",
+    (bestellung) =>
+      bestellung.status !== "storniert" &&
+      bestellung.status !== "abgeschlossen",
+  );
+  const archivierteBestellungen = bestellungen.filter(
+    (bestellung) => bestellung.status === "abgeschlossen",
+  );
+  const stornierteBestellungen = bestellungen.filter(
+    (bestellung) => bestellung.status === "storniert",
   );
   const ausstehendeZahlungen = aktiveBestellungen.filter(
     (bestellung) => bestellung.zahlungsstatus === "ausstehend",
@@ -2938,7 +2946,7 @@ export default async function Home({
       return bestellung.zahlungsstatus === "ausstehend";
     }
 
-    if (activeFilter === "abgeschlossen") {
+    if (activeFilter === "archiv" || activeFilter === "abgeschlossen") {
       return bestellung.status === "abgeschlossen";
     }
 
@@ -2956,7 +2964,7 @@ export default async function Home({
       return position.bestellung.zahlungsstatus === "ausstehend";
     }
 
-    if (activeFilter === "abgeschlossen") {
+    if (activeFilter === "archiv" || activeFilter === "abgeschlossen") {
       return position.bestellung.status === "abgeschlossen";
     }
 
@@ -3876,8 +3884,12 @@ export default async function Home({
               <strong>{verbindlicheBestellungen.length}</strong>
             </div>
             <div className="metric-tile">
-              <span>Stornierte ausgeblendet</span>
-              <strong>{bestellungen.length - aktiveBestellungen.length}</strong>
+              <span>Archivierte Bestellungen</span>
+              <strong>{archivierteBestellungen.length}</strong>
+            </div>
+            <div className="metric-tile">
+              <span>Stornierte Bestellungen</span>
+              <strong>{stornierteBestellungen.length}</strong>
             </div>
             <div className="metric-tile">
               <span>Produktknappheit</span>
@@ -4603,10 +4615,14 @@ export default async function Home({
               Zahlung offen
             </a>
             <a
-              className={filterLinkClassName("abgeschlossen")}
-              href={filterHref("bestellungen", "abgeschlossen")}
+              className={
+                activeFilter === "archiv" || activeFilter === "abgeschlossen"
+                  ? "filter-link active"
+                  : "filter-link"
+              }
+              href={filterHref("bestellungen", "archiv")}
             >
-              Abgeschlossen
+              Archiv
             </a>
           </div>
           {filteredBestellungen.length === 0 ? (

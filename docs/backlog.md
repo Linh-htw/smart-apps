@@ -34,7 +34,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-029 | Bestellpositionen | P1 - Kern | done | docs/spec.md Entitaet Bestellposition, Beziehungen 2-5 | Bestellpositionen verbinden Bestellung, Produkt, Charge und Menge. |
 | NW-006 | Zahlungsstatus und Verbindlichkeit | P1 - Kern | done | docs/spec.md GR-01, W-1 | DM-Zusage reserviert nur; bei Zahlungseingang werden Bestellstatus und Lagerreservierungen transaktional auf verbindlich umgestellt. |
 | NW-028 | Klarer Bestellstatus | P1 - Kern | done | docs/spec.md V1-Scope | Bestellung braucht sichtbaren, eindeutigen Status fuer aktive Bearbeitung. |
-| NW-011 | Aktive Arbeitsansicht | P1 - Kern | done | docs/spec.md V1-Scope | Ausschliesslich offene Aufgaben, relevante Warnungen und naechste Schritte anzeigen. |
+| NW-011 | Aktive Arbeitsansicht | P1 - Kern | done | docs/spec.md V1-Scope | Ausschliesslich Bestellungen in offenen Status, relevante Warnungen und naechste Schritte anzeigen; abgeschlossene Bestellungen liegen im Archiv. |
 | NW-010 | Rollen- und Berechtigungssystem | P1 - Kern | done | docs/spec.md V1-Scope, GR-09 | Serverseitige Rollenansicht trennt Admin, Werkstatt-Hilfe und Packer fuer die vorhandenen Arbeitsbereiche. |
 | NW-032 | Mitarbeiterverwaltung | P1 - Kern | done | docs/spec.md Entitaet Mitarbeiter | Mitarbeitende mit Rolle, Rechten und Kontakt. Zuordnung zu Chargen/Paketen folgt mit den jeweiligen Fachmodellen. |
 | NW-033 | Admin-Vollzugriff | P1 - Kern | done | docs/spec.md Zielgruppe, GR-09 | Nina sieht und bearbeitet alle vorhandenen Bereiche inklusive Tages-Packliste. |
@@ -52,7 +52,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-008 | FIFO-Bestandszuteilung | P2 - Lager & Fulfillment | done | docs/spec.md GR-03 | Automatischer Vorschlag und Zuweisung der freigegebenen Charge mit fruehestem MHD bei Bestellpositionen. |
 | NW-009 | Packlisten fuer Packer | P2 - Lager & Fulfillment | done | docs/spec.md V1-Scope, GR-03, GR-09 | Tages-Packliste fuer verbindliche Bestellungen mit Name, Lieferadresse, Produkt, Menge und zugewiesener Charge; Packer koennen bei den ihnen zugewiesenen Paketen ausschliesslich den Paketstatus aendern. |
 | NW-030 | Paketverwaltung | P2 - Lager & Fulfillment | done | docs/spec.md Entitaet Paket, Beziehung 7, 13 | Paket mit Bestellung, Packer, Versandoption, Versandkosten, Status, Tracking und Zustellung. |
-| NW-016 | Paket- und Trackingstatus | P2 - Lager & Fulfillment | done | docs/spec.md GR-11 | Wenn ein Paket `Zugestellt` ist, wird die Bestellung automatisch auf `abgeschlossen` gesetzt. |
+| NW-016 | Paket- und Trackingstatus | P2 - Lager & Fulfillment | done | docs/spec.md GR-11 | Wenn ein Paket `Zugestellt` ist, wird die Bestellung automatisch auf `abgeschlossen` gesetzt, aus der aktiven Arbeitsansicht entfernt und im Archiv angezeigt. |
 | NW-020 | Verkaufsevent-Verwaltung | P2 - Lager & Fulfillment | done | docs/spec.md Entitaeten Verkaufsevent, Verkaufsevent-Position | Verkaufsevents mit Datum und Ort sowie mitgenommenen und verkauften Chargenmengen erfassen. |
 | NW-036 | Verkaufsevent-zu-Charge-Beziehung | P2 - Lager & Fulfillment | done | docs/spec.md Beziehungen 10-11 | Verkaufsevents werden ueber Positionen n:m mit Chargen verbunden. |
 

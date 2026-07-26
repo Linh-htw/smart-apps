@@ -128,7 +128,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-006` leitet den Bestellstatus beim Anlegen und Bearbeiten aus dem Zahlungsstatus ab: `ausstehend` bleibt `Eingegangen`, `bezahlt` wird `verbindlich`. Beim Zahlungswechsel werden die Mengen aller Bestellpositionen innerhalb derselben Transaktion zwischen `mengeVoruebergehendReserviert` und `mengeVerbindlichReserviert` umgebucht. Bei inkonsistenten Reservierungen wird weder der Zahlungsstatus noch der Bestand teilweise geaendert. Dadurch kann eine Bestellung nicht versehentlich ohne Zahlung als verbindlich angelegt werden. Der Status bleibt in der Bestellliste sichtbar (`NW-028`).
 
-`NW-011` stellt die aktive Arbeitsansicht als erste Oberflaeche dar. Sie zeigt offene, nicht stornierte Bestellungen, Zahlungswarnungen, verbindliche Bestellungen und den nächsten Schritt pro Bestellung. Lager-, Chargen- und Packlistenwarnungen werden erst ergaenzt, sobald die zugehörigen Fachmodelle existieren.
+`NW-011` stellt die aktive Arbeitsansicht als erste Oberflaeche dar. Sie zeigt ausschliesslich Bestellungen in den offenen Status `Eingegangen` und `verbindlich`, dazu Zahlungswarnungen und den naechsten Schritt pro Bestellung. Stornierte Bestellungen werden ausgeblendet; abgeschlossene Bestellungen werden nicht mehr als offene Aufgaben gezaehlt und sind im Bestellungen-Tab ueber den Filter `Archiv` erreichbar.
 
 `NW-032` ergaenzt `Mitarbeiter` als Stammdatenmodell mit Rolle, Zugriffsrechten und Kontaktfeldern. Mitarbeitende können angelegt und mit Name, Rolle, E-Mail, Telefonnummer und Zugriffsrechten bearbeitet werden. Rollen werden zentral gegen `Admin`, `Werkstatt-Hilfe` und `Packer` validiert. Die Zuordnung zu Chargen und Paketen folgt, sobald diese Fachmodelle umgesetzt werden.
 
@@ -154,7 +154,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-030` ergaenzt `Paket` mit Bestellung-Relation, verantwortlichem Packer, Versandoption, Versandkosten, Paketstatus, Trackingnummer, Versanddatum und Zustelldatum. Paket- und Versandwerte werden zentral validiert. Die Packer-Packliste zeigt vorhandene Paketstatus, ohne Preise, Zahlungsstatus oder vollständige Kundendaten offenzulegen. Der automatische Bestellabschluss bei Zustellung bleibt Teil von `NW-016`.
 
-`NW-016` ergaenzt die manuelle Paketstatuspflege. Wenn ein Paket beim Anlegen oder Aktualisieren den Status `Zugestellt` erhaelt, setzt die App die zugehörige Bestellung in derselben Transaktion auf `abgeschlossen`. Ein späteres Zuruecksetzen eines Paketstatus öffnet die Bestellung nicht automatisch wieder, weil dafür keine fachliche Regel definiert ist.
+`NW-016` ergaenzt die manuelle Paketstatuspflege. Wenn ein Paket beim Anlegen oder Aktualisieren den Status `Zugestellt` erhaelt, setzt die App die zugehörige Bestellung in derselben Transaktion auf `abgeschlossen`. Sie verschwindet damit aus der aktiven Arbeitsansicht und wird im Bestellungen-Tab unter `Archiv` angezeigt. Ein späteres Zuruecksetzen eines Paketstatus öffnet die Bestellung nicht automatisch wieder, weil dafür keine fachliche Regel definiert ist.
 
 `NW-020` und `NW-036` ergaenzen `Verkaufsevent` und `VerkaufseventPosition`. Ein Verkaufsevent hat Datum und Ort. Positionen verbinden ein Event mit einer Charge und speichern `mengeMitgenommen` sowie `mengeVerkauft`; `mengeVerkauft` darf nicht groesser sein als `mengeMitgenommen`. Pro Event und Charge gibt es maximal eine Position. Nicht verkaufte Event-Mengen bleiben bis zu einer späteren Rueckbuchungsfunktion blockiert.
 

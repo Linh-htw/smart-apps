@@ -756,3 +756,15 @@ Beim Wechsel von `ausstehend` zu `bezahlt` werden die Mengen aller Bestellpositi
 - Zahlungsstatus, Bestellstatus und Reservierungsart bleiben konsistent.
 - Die freie Gesamtmenge einer Charge verändert sich durch die Umbuchung nicht.
 - Reicht die erwartete Quellreservierung nicht aus, wird die gesamte Änderung abgebrochen.
+
+## 2026-07-26 - Abgeschlossene Bestellungen ins Archiv verschieben
+
+**Kontext:** `GR-11` verlangt, dass eine Bestellung nach bestätigter Zustellung automatisch abgeschlossen wird und ins Archiv wandert. Bisher setzte die App zwar den Status `abgeschlossen`, zählte diese Bestellungen in der aktiven Arbeitsansicht aber weiterhin als offene Aufgaben.
+
+### Entscheidung
+Die aktive Arbeitsansicht berücksichtigt nur Bestellungen in den Status `Eingegangen` und `verbindlich`. Bestellungen mit Status `abgeschlossen` sind im Bestellungen-Tab über den Filter `Archiv` erreichbar. Stornierte Bestellungen werden separat gezählt und gehören nicht zum Archiv.
+
+### Konsequenzen
+- Der Paketstatus `Zugestellt` entfernt die zugehörige Bestellung automatisch aus den offenen Aufgaben.
+- Archivierte Bestellungen bleiben vollständig einsehbar.
+- Der bisherige URL-Filter `abgeschlossen` bleibt aus Kompatibilitätsgründen weiterhin auswertbar.
