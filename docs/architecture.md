@@ -86,7 +86,7 @@ Das Dashboard fasst die wichtigsten Handlungen als Fokus-Karten zusammen: `Dring
 
 Nach erfolgreichen Speichern-Aktionen bleibt die App auf dem aktuell geöffneten Tab und aktualisiert dort die Daten. Automatische Weiterleitungen in einen anderen Arbeitsbereich finden nicht statt, damit gespeicherte Ergebnisse unmittelbar an ihrer fachlichen Stelle kontrolliert werden können. Login und Logout wechseln weiterhin technisch notwendig zwischen Anmeldeansicht und Arbeitsoberfläche.
 
-Arbeitslisten nutzen einfache URL-basierte Schnellfilter ueber `filter`, z. B. offene Bestellungen, offene Zahlungen, Packaufgaben ohne Paket, kritische MHD-Chargen, offene Pakete und offene Retouren. Die Filter bleiben serverseitig, direkt teilbar und pro Tab bewusst auf wenige häufige Arbeitszustände begrenzt.
+Arbeitslisten nutzen einfache URL-basierte Schnellfilter ueber `filter`, z. B. offene Bestellungen, offene Zahlungen, Packaufgaben ohne Paket, kritische MHD-Chargen, offene Pakete und offene Retouren. Die Chargenliste kann zusaetzlich ueber den URL-Parameter `produkt` nach einem konkreten Produkt gefiltert werden; Produkt- und Statusfilter lassen sich kombinieren. Die Filter bleiben serverseitig, direkt teilbar und pro Tab bewusst auf wenige häufige Arbeitszustände begrenzt.
 
 Die zentrale UI-Akzentfarbe ist `#B23F00` Dunkelorange. Abgeleitete Hover- und Soft-Tones werden in `src/app/globals.css` ueber CSS-Variablen gepflegt.
 

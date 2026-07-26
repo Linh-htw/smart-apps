@@ -2508,6 +2508,7 @@ export default async function Home({
   searchParams?: Promise<{
     filter?: string;
     focus?: string;
+    produkt?: string;
     saved?: string;
     tab?: string;
   }>;
@@ -2742,8 +2743,20 @@ export default async function Home({
   const savedClassName = (baseClassName: string, entity: string, id: number) =>
     isFocused(entity, id) ? `${baseClassName} just-saved` : baseClassName;
   const activeFilter = params?.filter ?? "alle";
-  const filterHref = (tab: WorkspaceTab, filter: string) =>
-    filter === "alle" ? `/?tab=${tab}` : `/?tab=${tab}&filter=${filter}`;
+  const selectedProduktId = requiredInt(params?.produkt ?? null);
+  const filterHref = (tab: WorkspaceTab, filter: string) => {
+    const query = new URLSearchParams({ tab });
+
+    if (filter !== "alle") {
+      query.set("filter", filter);
+    }
+
+    if (tab === "lager" && selectedProduktId) {
+      query.set("produkt", selectedProduktId.toString());
+    }
+
+    return `/?${query.toString()}`;
+  };
   const filterLinkClassName = (filter: string) =>
     activeFilter === filter ? "filter-link active" : "filter-link";
   const aktiveBestellungen = bestellungen.filter(
@@ -3191,6 +3204,10 @@ export default async function Home({
     return true;
   });
   const filteredChargen = chargen.filter((charge) => {
+    if (selectedProduktId && charge.produktId !== selectedProduktId) {
+      return false;
+    }
+
     if (activeFilter === "mhd-kritisch") {
       return getMhdWarnung(charge)?.level === "critical";
     }
@@ -3443,8 +3460,31 @@ export default async function Home({
                 Gesperrt
               </a>
             </div>
+            <form action="/" className="inline-form" method="get">
+              <input name="tab" type="hidden" value="lager" />
+              {activeFilter !== "alle" ? (
+                <input name="filter" type="hidden" value={activeFilter} />
+              ) : null}
+              <label>
+                Produkt
+                <select
+                  defaultValue={selectedProduktId?.toString() ?? ""}
+                  name="produkt"
+                >
+                  <option value="">Alle Produkte</option>
+                  {produkte.map((produkt) => (
+                    <option key={produkt.id} value={produkt.id}>
+                      {produkt.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit">Filtern</button>
+            </form>
             {filteredChargen.length === 0 ? (
-              <p className="empty-state">Noch keine Chargen erfasst.</p>
+              <p className="empty-state">
+                Keine Chargen für diesen Filter gefunden.
+              </p>
             ) : (
               <div className="customer-list">
                 {filteredChargen.map((charge) => (
