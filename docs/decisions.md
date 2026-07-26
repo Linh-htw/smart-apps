@@ -744,3 +744,15 @@ Ein Admin kann eine unbezahlte Bestellung im Status `Eingegangen` nach Ablauf de
 - Andere Rollen können die Aktion weder über die Oberfläche noch über einen direkten Server-Action-Aufruf ausführen.
 - Stornierte oder abgeschlossene Bestellungen können nicht über das allgemeine Bearbeitungsformular wieder geöffnet werden.
 - Inkonsistente Reservierungsmengen führen zum Abbruch der gesamten Stornierung.
+
+## 2026-07-26 - Reservierungen beim Zahlungswechsel umbuchen
+
+**Kontext:** Bestellpositionen reservieren Bestand abhängig vom Zahlungsstatus vorübergehend oder verbindlich. Beim nachträglichen Zahlungseingang änderte die App bisher nur Zahlungs- und Bestellstatus, nicht aber die bereits gebuchten Reservierungen.
+
+### Entscheidung
+Beim Wechsel von `ausstehend` zu `bezahlt` werden die Mengen aller Bestellpositionen je Charge von `mengeVoruebergehendReserviert` nach `mengeVerbindlichReserviert` umgebucht. Bei einer Korrektur zurück zu `ausstehend` erfolgt die Umbuchung in Gegenrichtung. Statusänderung und Bestandsumbuchung laufen in einer gemeinsamen Transaktion.
+
+### Konsequenzen
+- Zahlungsstatus, Bestellstatus und Reservierungsart bleiben konsistent.
+- Die freie Gesamtmenge einer Charge verändert sich durch die Umbuchung nicht.
+- Reicht die erwartete Quellreservierung nicht aus, wird die gesamte Änderung abgebrochen.

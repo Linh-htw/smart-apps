@@ -126,7 +126,7 @@ Bis die Enum-Werte aus `NW-039` geklaert sind, enthaelt das Prisma-Schema nur fa
 
 `NW-005` ergaenzt `Bestellung` mit Kunde-Relation, Bestellkanal, Zahlungsstatus, Bestellstatus, Datum und Lieferadresse. Die Bestellwerte werden zentral validiert.
 
-`NW-006` leitet den Bestellstatus beim Anlegen aus dem Zahlungsstatus ab: `ausstehend` bleibt `Eingegangen`, `bezahlt` wird `verbindlich`. Dadurch kann eine Bestellung nicht versehentlich ohne Zahlung als verbindlich angelegt werden. Der Status bleibt in der Bestellliste sichtbar (`NW-028`).
+`NW-006` leitet den Bestellstatus beim Anlegen und Bearbeiten aus dem Zahlungsstatus ab: `ausstehend` bleibt `Eingegangen`, `bezahlt` wird `verbindlich`. Beim Zahlungswechsel werden die Mengen aller Bestellpositionen innerhalb derselben Transaktion zwischen `mengeVoruebergehendReserviert` und `mengeVerbindlichReserviert` umgebucht. Bei inkonsistenten Reservierungen wird weder der Zahlungsstatus noch der Bestand teilweise geaendert. Dadurch kann eine Bestellung nicht versehentlich ohne Zahlung als verbindlich angelegt werden. Der Status bleibt in der Bestellliste sichtbar (`NW-028`).
 
 `NW-011` stellt die aktive Arbeitsansicht als erste Oberflaeche dar. Sie zeigt offene, nicht stornierte Bestellungen, Zahlungswarnungen, verbindliche Bestellungen und den nächsten Schritt pro Bestellung. Lager-, Chargen- und Packlistenwarnungen werden erst ergaenzt, sobald die zugehörigen Fachmodelle existieren.
 

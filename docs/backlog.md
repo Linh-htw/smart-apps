@@ -32,7 +32,7 @@ _Stabile Feature-IDs. Nicht umnummerieren. Killed-IDs bleiben killed._
 | NW-005 | Bestellverwaltung kanaluebergreifend | P1 - Kern | done | docs/spec.md V1-Scope, Entitaet Bestellung | Zentrale Verwaltung aller Bestellungen aus verschiedenen Kanaelen. |
 | NW-026 | Kundenzuordnung fuer Bestellungen | P1 - Kern | done | docs/spec.md Beziehung 1 | Jede Bestellung ist genau einem Kunden zugeordnet; Kunde hat 1:n Bestellungen. |
 | NW-029 | Bestellpositionen | P1 - Kern | done | docs/spec.md Entitaet Bestellposition, Beziehungen 2-5 | Bestellpositionen verbinden Bestellung, Produkt, Charge und Menge. |
-| NW-006 | Zahlungsstatus und Verbindlichkeit | P1 - Kern | done | docs/spec.md GR-01, W-1 | DM-Zusage reserviert nur; verbindlich erst nach Zahlungseingang. |
+| NW-006 | Zahlungsstatus und Verbindlichkeit | P1 - Kern | done | docs/spec.md GR-01, W-1 | DM-Zusage reserviert nur; bei Zahlungseingang werden Bestellstatus und Lagerreservierungen transaktional auf verbindlich umgestellt. |
 | NW-028 | Klarer Bestellstatus | P1 - Kern | done | docs/spec.md V1-Scope | Bestellung braucht sichtbaren, eindeutigen Status fuer aktive Bearbeitung. |
 | NW-011 | Aktive Arbeitsansicht | P1 - Kern | done | docs/spec.md V1-Scope | Ausschliesslich offene Aufgaben, relevante Warnungen und naechste Schritte anzeigen. |
 | NW-010 | Rollen- und Berechtigungssystem | P1 - Kern | done | docs/spec.md V1-Scope, GR-09 | Serverseitige Rollenansicht trennt Admin, Werkstatt-Hilfe und Packer fuer die vorhandenen Arbeitsbereiche. |

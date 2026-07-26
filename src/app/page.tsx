@@ -946,7 +946,11 @@ async function updateBestellung(formData: FormData) {
     }),
     prisma.bestellung.findUnique({
       where: { id },
-      select: { status: true },
+      select: {
+        status: true,
+        zahlungsstatus: true,
+        positionen: { select: { chargeId: true, menge: true } },
+      },
     }),
   ]);
 
@@ -959,17 +963,90 @@ async function updateBestellung(formData: FormData) {
     return;
   }
 
-  await prisma.bestellung.update({
-    where: { id },
-    data: {
-      kundeId,
-      datum,
-      kanal,
-      lieferadresse: nullableText(formData.get("lieferadresse")),
-      zahlungsstatus,
-      status: getBestellstatusForZahlung(zahlungsstatus),
-    },
-  });
+  try {
+    await prisma.$transaction(async (tx) => {
+      if (bestehendeBestellung.zahlungsstatus !== zahlungsstatus) {
+        const mengenProCharge = new Map<number, number>();
+
+        for (const position of bestehendeBestellung.positionen) {
+          mengenProCharge.set(
+            position.chargeId,
+            (mengenProCharge.get(position.chargeId) ?? 0) + position.menge,
+          );
+        }
+
+        const wirdVerbindlich = zahlungsstatus === "bezahlt";
+
+        for (const [chargeId, umzubuchendeMenge] of mengenProCharge) {
+          const lagerbestaende = await tx.lagerbestand.findMany({
+            where: wirdVerbindlich
+              ? {
+                  chargeId,
+                  mengeVoruebergehendReserviert: { gt: 0 },
+                }
+              : {
+                  chargeId,
+                  mengeVerbindlichReserviert: { gt: 0 },
+                },
+            orderBy: [{ id: "asc" }],
+          });
+          const vorhandeneQuellmenge = lagerbestaende.reduce(
+            (summe, bestand) =>
+              summe +
+              (wirdVerbindlich
+                ? bestand.mengeVoruebergehendReserviert
+                : bestand.mengeVerbindlichReserviert),
+            0,
+          );
+
+          if (vorhandeneQuellmenge < umzubuchendeMenge) {
+            throw new Error("Reservierung ist inkonsistent.");
+          }
+
+          let verbleibend = umzubuchendeMenge;
+
+          for (const bestand of lagerbestaende) {
+            if (verbleibend === 0) {
+              break;
+            }
+
+            const quellmenge = wirdVerbindlich
+              ? bestand.mengeVoruebergehendReserviert
+              : bestand.mengeVerbindlichReserviert;
+            const umzubuchen = Math.min(verbleibend, quellmenge);
+
+            await tx.lagerbestand.update({
+              where: { id: bestand.id },
+              data: wirdVerbindlich
+                ? {
+                    mengeVoruebergehendReserviert: { decrement: umzubuchen },
+                    mengeVerbindlichReserviert: { increment: umzubuchen },
+                  }
+                : {
+                    mengeVoruebergehendReserviert: { increment: umzubuchen },
+                    mengeVerbindlichReserviert: { decrement: umzubuchen },
+                  },
+            });
+            verbleibend -= umzubuchen;
+          }
+        }
+      }
+
+      await tx.bestellung.update({
+        where: { id },
+        data: {
+          kundeId,
+          datum,
+          kanal,
+          lieferadresse: nullableText(formData.get("lieferadresse")),
+          zahlungsstatus,
+          status: getBestellstatusForZahlung(zahlungsstatus),
+        },
+      });
+    });
+  } catch {
+    return;
+  }
 
   redirectAfterSave("bestellungen", "bestellung", id);
 }
