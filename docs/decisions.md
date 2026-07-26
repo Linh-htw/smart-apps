@@ -839,14 +839,14 @@ Die Arbeitsansicht zeigt ausschliesslich Name und Rolle der aktuell angemeldeten
 - Die sichtbare Rolle stimmt eindeutig mit der serverseitig aus dem Login-Cookie gelesenen Rolle ueberein.
 - Ein Rollenwechsel erfordert immer Abmelden und erneutes Anmelden.
 
-## 2026-07-26 - Chargen nach Produkt filtern
+## 2026-07-26 - Chargen und Lagerbestand nach Produkt filtern
 
 **Kontext:** Bei mehreren Produkten war die gemeinsame Chargenliste unuebersichtlich. Fuer Bestands- und MHD-Pruefungen muessen alle Chargen eines bestimmten Produkts schnell auffindbar sein.
 
 ### Entscheidung
-Die Chargenliste im Tab `Lager & Chargen` erhaelt einen serverseitigen Produktfilter. Die Produktauswahl wird ueber den URL-Parameter `produkt` abgebildet und kann mit den bestehenden Filtern `MHD kritisch` und `Gesperrt` kombiniert werden.
+Die Chargen- und Lagerbestandslisten im Tab `Lager & Chargen` erhalten einen serverseitigen Produktfilter. Die Produktauswahl wird ueber den URL-Parameter `produkt` abgebildet und kann bei Chargen mit den bestehenden Filtern `MHD kritisch` und `Gesperrt` kombiniert werden.
 
 ### Konsequenzen
-- Nina kann alle Chargen eines Produkts gezielt anzeigen.
+- Nina kann alle Chargen und Lagerbestände eines Produkts gezielt anzeigen.
 - Der Filter bleibt beim Neuladen und beim Wechsel des Chargenstatusfilters erhalten.
 - FIFO-Zuteilung und gespeicherte Daten werden durch den reinen Anzeigefilter nicht veraendert.

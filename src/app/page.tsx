@@ -3218,6 +3218,11 @@ export default async function Home({
 
     return true;
   });
+  const filteredLagerbestaende = lagerbestaende.filter(
+    (bestand) =>
+      !selectedProduktId ||
+      bestand.charge.produktId === selectedProduktId,
+  );
 
   if (!isAuthenticated) {
     return (
@@ -3668,11 +3673,31 @@ export default async function Home({
 
           <section className="panel list-panel" aria-labelledby="lagerbestand-heading">
             <h2 id="lagerbestand-heading">Lagerbestand</h2>
-            {lagerbestaende.length === 0 ? (
-              <p className="empty-state">Noch kein Lagerbestand erfasst.</p>
+            <form action="/" className="inline-form" method="get">
+              <input name="tab" type="hidden" value="lager" />
+              <label>
+                Produkt
+                <select
+                  defaultValue={selectedProduktId?.toString() ?? ""}
+                  name="produkt"
+                >
+                  <option value="">Alle Produkte</option>
+                  {produkte.map((produkt) => (
+                    <option key={produkt.id} value={produkt.id}>
+                      {produkt.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit">Filtern</button>
+            </form>
+            {filteredLagerbestaende.length === 0 ? (
+              <p className="empty-state">
+                Keine Lagerbestände für diesen Filter gefunden.
+              </p>
             ) : (
               <div className="customer-list">
-                {lagerbestaende.map((bestand) => (
+                {filteredLagerbestaende.map((bestand) => (
                   <article
                     className={savedClassName(
                       "customer-card",
