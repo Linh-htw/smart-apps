@@ -2,11 +2,11 @@
 
 ## 1. Business Rule: FIFO-Zuteilung nach frühestem MHD
 
-**Aussage:** Beim Anlegen einer Bestellposition wählt die App automatisch eine freigegebene Charge desselben Produkts mit ausreichender freier Menge und frühestem MHD.
+**Aussage:** Beim Speichern einer Bestellposition weist die App automatisch eine passende freigegebene Charge desselben Produkts mit dem frühesten MHD zu.
 
-**Konfidenz:** 7/10
+**Konfidenz:** 8/10
 
-**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene und gesperrte Chargen mit unterschiedlichen MHD-Daten angelegt und anschließend eine Bestellposition erstellt. Die App hat automatisch die freigegebene Charge mit dem frühesten MHD zugewiesen, sofern dort eine ausreichende freie Menge verfügbar war.
+**Wie geprüft?** Ich habe für dasselbe Produkt mehrere freigegebene Chargen mit unterschiedlichen MHD-Daten und Beständen angelegt. Bei einer B2B-Bestellposition über 50 Einheiten wurde eine Charge mit zu geringer verfügbarer Menge übersprungen. Die App wählte stattdessen automatisch die geeignete Charge mit ausreichendem Bestand und dem frühesten MHD. Die Auswahl wurde anschließend an der Bestellposition als `Zugewiesene FIFO-Charge` angezeigt.
 
 ## 2. Business Rule: Allergenbestätigung vor Bestellabschluss
 
