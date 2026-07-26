@@ -3268,19 +3268,6 @@ export default async function Home({
                 Angemeldet als {selectedMitarbeiter?.name} mit Rolle{" "}
                 {activeRolle}.
               </p>
-              <label hidden>
-                Mitarbeiter
-                <select
-                  name="mitarbeiterId"
-                  defaultValue={selectedMitarbeiter?.id ?? ""}
-                >
-                  {mitarbeiter.map((person) => (
-                    <option key={person.id} value={person.id}>
-                      {person.name} · {person.rolle}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <button type="submit">Abmelden</button>
             </form>
           )}

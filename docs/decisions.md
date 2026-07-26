@@ -827,3 +827,14 @@ Speicheraktionen aktualisieren die Daten, lassen den aktuell geoeffneten Tab abe
 - Gespeicherte Ergebnisse koennen direkt im aktuellen Arbeitsbereich kontrolliert werden.
 - Die App entscheidet nach einer Aktion nicht mehr automatisch ueber den naechsten Arbeitsschritt.
 - URL-basierte Erfolgshinweise werden bei neuen Speicheraktionen nicht mehr automatisch gesetzt.
+
+## 2026-07-26 - Rollenwechsel nur durch erneute Anmeldung
+
+**Kontext:** In der Arbeitsansicht war neben der angemeldeten Person noch ein technisch wirkungsloses Auswahlfeld fuer Mitarbeitende vorhanden. Dadurch entstand der Eindruck, die aktive Rolle koenne ohne Abmeldung gewechselt werden.
+
+### Entscheidung
+Die Arbeitsansicht zeigt ausschliesslich Name und Rolle der aktuell angemeldeten Person sowie den Button `Abmelden`. Eine andere Person oder Rolle kann erst auf der anschliessenden Login-Seite ausgewaehlt werden.
+
+### Konsequenzen
+- Die sichtbare Rolle stimmt eindeutig mit der serverseitig aus dem Login-Cookie gelesenen Rolle ueberein.
+- Ein Rollenwechsel erfordert immer Abmelden und erneutes Anmelden.
