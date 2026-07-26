@@ -873,3 +873,14 @@ Die Bestellungsauswahl bietet nur Bestellungen an, fuer die noch kein Paket exis
 - Bereits verpackte Bestellungen verschwinden aus der Neuanlage-Auswahl.
 - Vorhandene Pakete bleiben im Versandbereich bearbeitbar.
 - Doppelte Paketanlagen ueber manipulierte Formulardaten werden abgewiesen.
+
+## 2026-07-26 - Gefuehrten Ablauf aus der Uebersicht entfernt
+
+**Kontext:** Die separate Schrittfolge `Gefuehrter Ablauf` wiederholte Orientierung, die bereits durch Fokus-Karten und Fach-Tabs gegeben ist, und nahm viel Platz in der Uebersicht ein.
+
+### Entscheidung
+Die sichtbare Schrittfolge wird aus der Uebersicht entfernt. Die kompakten Fokus-Karten `Dringend`, `Blockiert` und `Naechster Klick` sowie die Fach-Tabs bleiben erhalten.
+
+### Konsequenzen
+- Die Uebersicht wird kuerzer und ruhiger.
+- Fachfunktionen, Warnungen, Rollen und Kalibrierungsregeln bleiben unveraendert.

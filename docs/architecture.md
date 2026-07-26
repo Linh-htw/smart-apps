@@ -80,9 +80,7 @@ Die Arbeitsoberflaeche ist in rollenbasierte Tabs gegliedert. Sichtbar sind nur 
 
 Tabs werden ueber den Query-Parameter `tab` gesteuert, z. B. `/?tab=kunden`. Das haelt die Navigation serverseitig, teilbar und ohne zusätzlichen Client-State.
 
-Der Bestellprozess wird zusätzlich als geführter Ablauf in der Übersicht dargestellt. Die Schritte sind: Kunde erfassen, Produkt und Bestand vorbereiten, Bestellung anlegen, Produkte zur Bestellung hinzufügen, Paket und Versand pflegen sowie Retoure bei Bedarf bearbeiten. Jeder Schritt zeigt Status, kurze Orientierung und den direkten Sprung zum passenden Tab. In den Fach-Tabs beginnt die Ansicht direkt mit den jeweiligen Formularen und Listen.
-
-Das Dashboard fasst die wichtigsten Handlungen als Fokus-Karten zusammen: `Dringend`, `Blockiert` und `Nächster Klick`. Diese Karten werden aus bestehenden Warnungen, offenen Aufgaben und dem geführten Bestellablauf serverseitig berechnet.
+Das Dashboard fasst die wichtigsten Handlungen als Fokus-Karten zusammen: `Dringend`, `Blockiert` und `Nächster Klick`. Diese Karten werden aus bestehenden Warnungen, offenen Aufgaben und dem aktuellen Bearbeitungsstand serverseitig berechnet. Ein zusaetzlicher gefuehrter Ablauf wird nicht angezeigt, weil die Fokus-Karten und Fach-Tabs die notwendige Orientierung bereits abdecken.
 
 Nach erfolgreichen Speichern-Aktionen bleibt die App auf dem aktuell geöffneten Tab und aktualisiert dort die Daten. Automatische Weiterleitungen in einen anderen Arbeitsbereich finden nicht statt, damit gespeicherte Ergebnisse unmittelbar an ihrer fachlichen Stelle kontrolliert werden können. Login und Logout wechseln weiterhin technisch notwendig zwischen Anmeldeansicht und Arbeitsoberfläche.
 

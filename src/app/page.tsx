@@ -3353,49 +3353,6 @@ export default async function Home({
         </section>
       ) : null}
 
-      {canManageOrders && activeTab === "arbeit" ? (
-        <section className="workspace-overview" aria-labelledby="workflow-heading">
-          <div className="panel workflow-panel">
-            <div className="overview-header">
-              <div>
-                <p className="eyebrow">Geführter Ablauf</p>
-                <h2 id="workflow-heading">Bestellung bearbeiten</h2>
-              </div>
-              <p className="summary">
-                {orderWorkflowSteps.filter((step) => step.status === "done").length}/
-                {orderWorkflowSteps.length} Schritte bereit
-              </p>
-            </div>
-
-            <div className="workflow-steps">
-              {orderWorkflowSteps.map((step, index) => (
-                <article className="workflow-step" key={step.label}>
-                  <span className={`workflow-index ${step.status}`}>
-                    {index + 1}
-                  </span>
-                  <div>
-                    <h3>{step.label}</h3>
-                    <p>{step.detail}</p>
-                    <a className="text-link" href={step.href}>
-                      {step.action}
-                    </a>
-                  </div>
-                  <span className={`status-pill workflow-status ${step.status}`}>
-                    {step.status === "done"
-                      ? "Erledigt"
-                      : step.status === "current"
-                        ? "Jetzt"
-                        : step.status === "optional"
-                          ? "Optional"
-                          : "Wartet"}
-                  </span>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       {canCreateBatches && activeTab === "lager" ? (
         <section className="layout-grid feature-section">
           <form action={createCharge} className="panel form-panel">
