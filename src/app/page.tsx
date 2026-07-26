@@ -5084,14 +5084,23 @@ export default async function Home({
                 />
               </label>
 
-              <dl>
-                <dt>Aktive Abo-Boxen</dt>
-                <dd>{aktiveAboBoxenAktuellerMonat.length}</dd>
-                <dt>Im aktuellen Monat pausiert</dt>
-                <dd>{pausierteAboBoxenAktuellerMonat.length}</dd>
-                <dt>Abo-Produkte</dt>
-                <dd>{aboBoxProdukte.length}/4</dd>
-              </dl>
+              <div
+                className="metric-grid"
+                aria-label="Kennzahlen der Abo-Abwicklung"
+              >
+                <div className="metric-tile">
+                  <span>Aktive Abo-Boxen</span>
+                  <strong>{aktiveAboBoxenAktuellerMonat.length}</strong>
+                </div>
+                <div className="metric-tile">
+                  <span>Aktuell pausiert</span>
+                  <strong>{pausierteAboBoxenAktuellerMonat.length}</strong>
+                </div>
+                <div className="metric-tile">
+                  <span>Abo-Produkte</span>
+                  <strong>{aboBoxProdukte.length} / 4</strong>
+                </div>
+              </div>
 
               {aboBoxProdukte.length === 0 ? (
                 <p className="empty-state">
