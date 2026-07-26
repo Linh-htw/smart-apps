@@ -289,4 +289,4 @@ B2B-Bestellungen dürfen den B2C-Bestand nicht vollständig leeren. Pro Produkt 
 - **Betrieb:** Lokal gestartete Web-App, erreichbar über `http://localhost:3000` oder eine lokale Netzwerk-URL.
 - **Versandlabel:** Werden in V1 außerhalb der App erstellt.
 - **Tracking:** Trackingnummer sowie Versand- und Zustelldaten werden manuell in der App gepflegt.
-- **Allergenbestätigung:** Wird als Ja/Nein-Bestätigung gespeichert; ein Zeitpunkt wird nicht gespeichert.
+- **Allergenbestätigung:** Wird als Ja/Nein-Bestätigung gespeichert.
