@@ -30,7 +30,8 @@
 
 **Konfidenz:** 9/10
 
-**Wie geprüft?** `docs/spec.md` legt in `GR-02` fest, dass unbezahlte Bestellungen nicht automatisch storniert werden; in `src/app/page.tsx` erzeugt `getReservierungswarnung(...)` nur Warntexte wie „manuelle Stornierung prüfen“ und ändert keinen Bestellstatus.
+**Wie geprüft?** Ich habe unbezahlte Bestellungen für einen B2C-Neukunden und einen B2C-Stammkunden mit unterschiedlichen Bestelldaten getestet. Beim Neukunden erschien nach drei Tagen eine Zahlungswarnung und ab Tag fünf der Hinweis, eine manuelle Stornierung zu prüfen. Beim Stammkunden erschien die Warnung nach sieben Tagen und der Stornierungshinweis ab Tag zehn. In allen Fällen blieb der Bestellstatus `Eingegangen` und nicht als `Storniert`; die App führte keine automatische Stornierung durch.
+
 
 ## 5. Frei: Rollentrennung mit verschiedenen Zugriffsrechten
 
