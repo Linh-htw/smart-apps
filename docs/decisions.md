@@ -780,3 +780,15 @@ Die aktive Arbeitsansicht berücksichtigt nur Bestellungen in den Status `Eingeg
 - Fachliche Änderungen werden künftig ausschließlich in `Spec.md` vorgenommen.
 - `AGENTS.md`, README, Architektur, Backlog und Modus Operandi verweisen auf die Root-Spec.
 - Frühere Entscheidungen, die `docs/spec.md` als Quelle nannten, bleiben als historische Einträge erhalten und werden durch diese Entscheidung ersetzt.
+
+## 2026-07-26 - Bestellpositionen transaktional bearbeitbar
+
+**Kontext:** Produkt und Menge einer Bestellposition mussten bisher durch eine neue Position korrigiert werden. Eine direkte Bearbeitung darf FIFO-Zuteilung und Lagerreservierungen nicht umgehen.
+
+### Entscheidung
+Ein Admin kann Produkt und Menge einer offenen Bestellposition bearbeiten. Die bestehende Reservierung wird innerhalb derselben Transaktion freigegeben, die Charge erneut per FIFO bestimmt und die neue Reservierung passend zum Zahlungsstatus gebucht. Abgeschlossene, stornierte oder bereits mit einer Retoure verknüpfte Positionen bleiben unveränderbar. Bei allergenbehafteten Produkten gilt weiterhin die verpflichtende Allergenbestätigung.
+
+### Konsequenzen
+- Mengen- und Produktkorrekturen bleiben mit dem Lagerbestand konsistent.
+- Die zugehörige Bestellung kann über die Positionsbearbeitung nicht gewechselt werden.
+- Schlägt Validierung, FIFO-Zuteilung oder Reservierung fehl, wird die gesamte Änderung zurückgerollt.

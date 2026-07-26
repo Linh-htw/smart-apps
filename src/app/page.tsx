@@ -582,6 +582,53 @@ function getReservierungsLagerort(charge: {
   return charge.lagerbestaende[0]?.lagerort ?? "Werkstatt";
 }
 
+async function gebeReservierungFrei(
+  tx: Prisma.TransactionClient,
+  chargeId: number,
+  menge: number,
+  isVerbindlich: boolean,
+) {
+  const lagerbestaende = await tx.lagerbestand.findMany({
+    where: isVerbindlich
+      ? { chargeId, mengeVerbindlichReserviert: { gt: 0 } }
+      : { chargeId, mengeVoruebergehendReserviert: { gt: 0 } },
+    orderBy: [{ id: "asc" }],
+  });
+  const reservierteMenge = lagerbestaende.reduce(
+    (summe, bestand) =>
+      summe +
+      (isVerbindlich
+        ? bestand.mengeVerbindlichReserviert
+        : bestand.mengeVoruebergehendReserviert),
+    0,
+  );
+
+  if (reservierteMenge < menge) {
+    throw new Error("Reservierung ist inkonsistent.");
+  }
+
+  let verbleibend = menge;
+
+  for (const bestand of lagerbestaende) {
+    if (verbleibend === 0) {
+      break;
+    }
+
+    const bestandReserviert = isVerbindlich
+      ? bestand.mengeVerbindlichReserviert
+      : bestand.mengeVoruebergehendReserviert;
+    const freizugeben = Math.min(verbleibend, bestandReserviert);
+
+    await tx.lagerbestand.update({
+      where: { id: bestand.id },
+      data: isVerbindlich
+        ? { mengeVerbindlichReserviert: { decrement: freizugeben } }
+        : { mengeVoruebergehendReserviert: { decrement: freizugeben } },
+    });
+    verbleibend -= freizugeben;
+  }
+}
+
 function getFreieMenge(charge: {
   produzierteMenge: number;
   lagerbestaende: Array<{
@@ -1571,6 +1618,151 @@ async function createBestellposition(formData: FormData) {
   redirectAfterSave("versand", "bestellposition", bestellpositionId ?? undefined);
 }
 
+async function updateBestellposition(formData: FormData) {
+  "use server";
+
+  const id = requiredInt(formData.get("bestellpositionId"));
+  const produktId = requiredInt(formData.get("positionProduktId"));
+  const menge = requiredInt(formData.get("positionMenge"));
+
+  if (!id || !produktId || !menge || menge < 1) {
+    return;
+  }
+
+  const cookieStore = await cookies();
+  const mitarbeiterId = requiredInt(
+    cookieStore.get(loginCookieName)?.value ?? null,
+  );
+  const mitarbeiter = mitarbeiterId
+    ? await prisma.mitarbeiter.findUnique({
+        where: { id: mitarbeiterId },
+        select: { rolle: true },
+      })
+    : null;
+
+  if (mitarbeiter?.rolle !== "Admin") {
+    return;
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const [position, produkt] = await Promise.all([
+        tx.bestellposition.findUnique({
+          where: { id },
+          include: {
+            bestellung: {
+              select: {
+                id: true,
+                status: true,
+                zahlungsstatus: true,
+                allergeneBestaetigt: true,
+                kunde: { select: { typ: true } },
+              },
+            },
+            retouren: { select: { id: true }, take: 1 },
+          },
+        }),
+        tx.produkt.findUnique({
+          where: { id: produktId },
+          select: { id: true, allergene: true, b2cPuffermenge: true },
+        }),
+      ]);
+
+      if (
+        !position ||
+        !produkt ||
+        position.retouren.length > 0 ||
+        position.bestellung.status === "storniert" ||
+        position.bestellung.status === "abgeschlossen"
+      ) {
+        throw new Error("Bestellposition kann nicht bearbeitet werden.");
+      }
+
+      const allergeneBestaetigt =
+        formData.get("allergeneBestaetigt") === "on";
+      const brauchtAllergenbestaetigung = Boolean(produkt.allergene?.trim());
+
+      if (
+        brauchtAllergenbestaetigung &&
+        !allergeneBestaetigt &&
+        !position.bestellung.allergeneBestaetigt
+      ) {
+        throw new Error("Allergenbestätigung fehlt.");
+      }
+
+      const isVerbindlich = position.bestellung.zahlungsstatus === "bezahlt";
+      await gebeReservierungFrei(
+        tx,
+        position.chargeId,
+        position.menge,
+        isVerbindlich,
+      );
+
+      const chargenFuerProdukt = await tx.charge.findMany({
+        where: { produktId, status: "freigegeben" },
+        include: {
+          lagerbestaende: true,
+          verkaufseventPositionen: { select: { mengeMitgenommen: true } },
+        },
+        orderBy: [{ mhd: "asc" }, { id: "asc" }],
+      });
+      const vorgeschlageneCharge = chargenFuerProdukt.find(
+        (charge) =>
+          getFreieMenge(charge) >= menge &&
+          schuetztB2cPuffer({
+            charge,
+            kundeTyp: position.bestellung.kunde.typ,
+            menge,
+            produkt,
+          }),
+      );
+
+      if (!vorgeschlageneCharge) {
+        throw new Error("Keine passende FIFO-Charge verfügbar.");
+      }
+
+      const lagerort = getReservierungsLagerort(vorgeschlageneCharge);
+
+      if (brauchtAllergenbestaetigung && allergeneBestaetigt) {
+        await tx.bestellung.update({
+          where: { id: position.bestellung.id },
+          data: { allergeneBestaetigt: true },
+        });
+      }
+
+      await tx.bestellposition.update({
+        where: { id },
+        data: {
+          produktId,
+          chargeId: vorgeschlageneCharge.id,
+          menge,
+        },
+      });
+      await tx.lagerbestand.upsert({
+        where: {
+          chargeId_lagerort: {
+            chargeId: vorgeschlageneCharge.id,
+            lagerort,
+          },
+        },
+        create: {
+          chargeId: vorgeschlageneCharge.id,
+          lagerort,
+          mengeVoruebergehendReserviert: isVerbindlich ? 0 : menge,
+          mengeVerbindlichReserviert: isVerbindlich ? menge : 0,
+        },
+        update: isVerbindlich
+          ? { mengeVerbindlichReserviert: { increment: menge } }
+          : { mengeVoruebergehendReserviert: { increment: menge } },
+      });
+    });
+  } catch {
+    return;
+  }
+
+  redirectAfterSave("bestellungen", "bestellposition", id);
+}
+
 async function createMitarbeiter(formData: FormData) {
   "use server";
 
@@ -2338,6 +2530,7 @@ export default async function Home({
       bestellung: { include: { kunde: true, pakete: true } },
       produkt: true,
       charge: true,
+      retouren: { select: { id: true } },
     },
     orderBy: [{ id: "desc" }],
   });
@@ -5207,6 +5400,64 @@ export default async function Home({
                       <dt>Status</dt>
                       <dd>{position.bestellung.status}</dd>
                     </dl>
+                    {position.bestellung.status !== "storniert" &&
+                    position.bestellung.status !== "abgeschlossen" &&
+                    position.retouren.length === 0 ? (
+                      <details className="edit-section">
+                        <summary>Bearbeiten</summary>
+                        <form
+                          action={updateBestellposition}
+                          className="inline-form"
+                        >
+                          <input
+                            name="bestellpositionId"
+                            type="hidden"
+                            value={position.id}
+                          />
+                          <label>
+                            Produkt
+                            <select
+                              name="positionProduktId"
+                              defaultValue={position.produktId}
+                              required
+                            >
+                              {produkte.map((produkt) => (
+                                <option key={produkt.id} value={produkt.id}>
+                                  {produkt.name}
+                                  {produkt.allergene
+                                    ? ` - Allergene: ${produkt.allergene}`
+                                    : ""}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label>
+                            Menge
+                            <input
+                              defaultValue={position.menge}
+                              min="1"
+                              name="positionMenge"
+                              required
+                              type="number"
+                            />
+                          </label>
+                          {!position.bestellung.allergeneBestaetigt ? (
+                            <label className="checkbox-label">
+                              <input
+                                name="allergeneBestaetigt"
+                                type="checkbox"
+                              />
+                              Allergenliste gelesen und vom Kunden bestätigt
+                            </label>
+                          ) : null}
+                          <p className="form-hint">
+                            Die Charge wird beim Speichern erneut per FIFO
+                            zugewiesen.
+                          </p>
+                          <button type="submit">Änderungen speichern</button>
+                        </form>
+                      </details>
+                    ) : null}
                   </article>
                 ))}
               </div>
